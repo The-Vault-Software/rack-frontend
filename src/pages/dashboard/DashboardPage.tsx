@@ -30,7 +30,7 @@ const shortcuts = [
     shadow: 'shadow-orange-200',
   },
   {
-    name: 'Clientes',
+    name: 'Contactos',
     description: 'Administración de clientes y proveedores.',
     href: '/contacts',
     icon: Users,

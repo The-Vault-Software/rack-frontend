@@ -14,7 +14,7 @@ export default function DashboardLayout() {
     { name: 'Ventas', href: '/sales', icon: ShoppingCart, color: 'text-emerald-500' },
     { name: 'Cuentas', href: '/accounts', icon: Wallet, color: 'text-indigo-500' },
     { name: 'Inventario', href: '/inventory', icon: Package, color: 'text-orange-500' },
-    { name: 'Clientes', href: '/contacts', icon: Users, color: 'text-purple-500' },
+    { name: 'Contactos', href: '/contacts', icon: Users, color: 'text-purple-500' },
     { name: 'Configuración', href: '/settings', icon: Settings, color: 'text-gray-500' },
   ];
 
