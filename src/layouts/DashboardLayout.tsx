@@ -1,4 +1,4 @@
-import { Outlet, Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useOutlet } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { cn } from '../lib/utils';
 import { LayoutDashboard, ShoppingCart, Package, Users, Settings, LogOut, Wallet, ChevronRight } from 'lucide-react';
@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from 'motion/react';
 export default function DashboardLayout() {
   const { logout, user } = useAuth();
   const location = useLocation();
+  const outlet = useOutlet();
 
   const navigation = [
     { name: 'Inicio', href: '/dashboard', icon: LayoutDashboard, color: 'text-blue-500' },
@@ -17,6 +18,9 @@ export default function DashboardLayout() {
     { name: 'Contactos', href: '/contacts', icon: Users, color: 'text-purple-500' },
     { name: 'Configuración', href: '/settings', icon: Settings, color: 'text-gray-500' },
   ];
+
+  const activeNav = navigation.find(item => location.pathname.startsWith(item.href));
+  const pageTitle = activeNav?.name || 'Dashboard';
 
   return (
     <div className="flex h-screen bg-[#F8FAFC]">
@@ -116,12 +120,12 @@ export default function DashboardLayout() {
       <div className="flex flex-col flex-1 min-w-0 overflow-hidden relative">
         <header className="bg-white/80 backdrop-blur-md border-b border-gray-100 px-8 py-4 flex items-center justify-between sticky top-0 z-10">
           <motion.h1 
-            key={location.pathname}
+            key={pageTitle}
             initial={{ opacity: 0, x: -10 }}
             animate={{ opacity: 1, x: 0 }}
             className="text-xl font-bold text-gray-900"
           >
-            {navigation.find(item => location.pathname.startsWith(item.href))?.name || 'Dashboard'}
+            {pageTitle}
           </motion.h1>
           <div className="flex items-center gap-4">
             <BranchSelector />
@@ -138,7 +142,7 @@ export default function DashboardLayout() {
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.2 }}
               >
-                <Outlet />
+                {outlet}
               </motion.div>
             </AnimatePresence>
           </div>
