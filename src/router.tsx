@@ -6,10 +6,9 @@ import CreateCompanyPage from './pages/company/CreateCompanyPage';
 import { ProtectedLayout } from './components/layouts/ProtectedLayout';
 import InventoryPage from './pages/inventory/InventoryPage';
 import DashboardLayout from './layouts/DashboardLayout';
-import CustomersPage from './pages/customers/CustomersPage';
-import ProvidersPage from './pages/providers/ProvidersPage';
+import ContactsPage from './pages/contacts/ContactsPage';
 import AccountsPage from './pages/accounts/AccountsPage';
-import BranchSettingsPage from './pages/settings/BranchSettingsPage';
+import SettingsPage from './pages/settings/SettingsPage';
 import SalesPage from './pages/sales/SalesPage';
 
 export const router = createBrowserRouter([
@@ -44,20 +43,24 @@ export const router = createBrowserRouter([
                         element: <SalesPage />
                     },
                     {
+                        path: '/contacts',
+                        element: <ContactsPage />
+                    },
+                    {
                         path: '/customers',
-                        element: <CustomersPage />
+                        element: <ContactsPage />
                     },
                     {
                         path: '/providers',
-                        element: <ProvidersPage />
+                        element: <ContactsPage />
                     },
                     {
                         path: '/accounts',
                         element: <AccountsPage />
                     },
                     {
-                        path: '/settings/branches',
-                        element: <BranchSettingsPage />
+                        path: '/settings',
+                        element: <SettingsPage />
                     },
                     {
                         path: '/',

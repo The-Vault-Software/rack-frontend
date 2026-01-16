@@ -1,7 +1,7 @@
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { cn } from '../lib/utils';
-import { LayoutDashboard, ShoppingCart, Package, Users, Truck, Settings, LogOut, Wallet } from 'lucide-react';
+import { LayoutDashboard, ShoppingCart, Package, Users, Settings, LogOut, Wallet } from 'lucide-react';
 import { BranchSelector } from '../components/BranchSelector';
 
 export default function DashboardLayout() {
@@ -13,9 +13,8 @@ export default function DashboardLayout() {
     { name: 'Ventas', href: '/sales', icon: ShoppingCart },
     { name: 'Cuentas', href: '/accounts', icon: Wallet },
     { name: 'Inventario', href: '/inventory', icon: Package },
-    { name: 'Clientes', href: '/customers', icon: Users },
-    { name: 'Proveedores', href: '/providers', icon: Truck },
-    { name: 'Configuración', href: '/settings/branches', icon: Settings },
+    { name: 'Contactos', href: '/contacts', icon: Users },
+    { name: 'Configuración', href: '/settings', icon: Settings },
   ];
 
   return (

@@ -11,7 +11,8 @@ import {
   categoryDestroyMutation,
   measurementDestroyMutation,
   productDestroyMutation,
-  productBranchStockListOptions
+  productBranchStockListOptions,
+  exchangeRatesTodayRetrieveOptions
 } from '../../client/@tanstack/react-query.gen';
 import { useBranch } from '../../context/BranchContext';
 import type { Category, MeasurementUnit, ProductMaster } from '../../client/types.gen';
@@ -57,6 +58,13 @@ export default function InventoryPage() {
     }),
     enabled: !!selectedBranch?.id
   });
+
+  const { data: ratesData } = useQuery({
+    ...exchangeRatesTodayRetrieveOptions(),
+    staleTime: 1000 * 60 * 30, // 30 minutes
+  });
+
+  const rates = ratesData as { bcv_rate: string; parallel_rate: string } | undefined;
 
   const deleteProduct = useMutation({
     ...productDestroyMutation(),
@@ -274,6 +282,8 @@ export default function InventoryPage() {
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Categoría</th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Unidad</th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Precio Costo (USD)</th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Precio de Venta (USD)</th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Precio de Venta (Bs - BCV)</th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stock</th>
                   <th scope="col" className="relative px-6 py-3">
                     <span className="sr-only">Actions</span>
@@ -287,6 +297,12 @@ export default function InventoryPage() {
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{getCategoryName(product.category)}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{getUnitName(product.measurement_unit)}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${product.cost_price_usd}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                      ${(parseFloat(product.cost_price_usd) * (1 + parseFloat(product.profit_margin || '0') / 100)).toFixed(2)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {rates ? `Bs. ${(parseFloat(product.cost_price_usd) * (1 + parseFloat(product.profit_margin || '0') / 100) * parseFloat(rates.bcv_rate)).toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '-'}
+                    </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-bold">
                         <span className={parseFloat(getStock(product.id)) > 0 ? 'text-green-600' : 'text-red-600'}>
                             {getStock(product.id)}
@@ -311,7 +327,7 @@ export default function InventoryPage() {
                 ))}
                 {products.length === 0 && (
                    <tr>
-                       <td colSpan={5} className="px-6 py-4 text-center text-gray-500 text-sm">No se encontraron productos.</td>
+                       <td colSpan={7} className="px-6 py-4 text-center text-gray-500 text-sm">No se encontraron productos.</td>
                    </tr>
                 )}
               </tbody>

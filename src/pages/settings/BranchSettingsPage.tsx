@@ -8,7 +8,11 @@ import ConfirmationDialog from '../../components/ui/ConfirmationDialog';
 import type { Branch, BranchRequest } from '../../client/types.gen';
 import { useForm } from 'react-hook-form';
 
-export default function BranchSettingsPage() {
+interface BranchSettingsPageProps {
+  hideHeader?: boolean;
+}
+
+export default function BranchSettingsPage({ hideHeader = false }: BranchSettingsPageProps) {
   const queryClient = useQueryClient();
   const { data: branches = [], isLoading } = useQuery(branchListOptions());
   
@@ -84,19 +88,33 @@ export default function BranchSettingsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Sucursales</h1>
-          <p className="text-sm text-gray-500">Gestiona las ubicaciones físicas de tu negocio</p>
+      {!hideHeader && (
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Sucursales</h1>
+            <p className="text-sm text-gray-500">Gestiona las ubicaciones físicas de tu negocio</p>
+          </div>
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Nueva Sucursal
+          </button>
         </div>
-        <button
-          onClick={() => setIsModalOpen(true)}
-          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700"
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          Nueva Sucursal
-        </button>
-      </div>
+      )}
+
+      {hideHeader && (
+        <div className="flex justify-end mb-4">
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Nueva Sucursal
+          </button>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {branches.map((branch) => (

@@ -1,5 +1,5 @@
-import { useForm } from 'react-hook-form';
-import { useMemo } from 'react';
+import { useForm, useWatch } from 'react-hook-form';
+import { useMemo, useEffect } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
@@ -37,30 +37,46 @@ export default function PaymentForm({ type, id, onSuccess, pendingAmount }: Paym
     staleTime: 1000 * 60 * 30,
   });
 
-  const rates = ratesData as { bcv: string; parallel: string } | undefined;
+  const rates = ratesData as { bcv_rate?: string; parallel_rate?: string; bcv?: string; parallel?: string } | undefined;
 
   const {
     register,
     handleSubmit,
-    watch,
+    control,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<PaymentFormValues>({
     resolver: zodResolver(schema),
     defaultValues: {
-      currency: 'USD',
-      payment_method: 'CASH',
-      amount: pendingAmount.toFixed(2),
+      currency: 'VES',
+      payment_method: 'PAGO_MOVIL',
+      amount: '0.00',
       ...(type === 'account' ? { REF: '' } : { discount: '0.00' })
     }
   });
 
-  const amount = watch('amount');
+  const currency = useWatch({ control, name: 'currency' });
+  const amount = useWatch({ control, name: 'amount' });
 
-  const vesAmount = useMemo(() => {
+  useEffect(() => {
+    if (rates && (rates.bcv_rate || rates.bcv)) {
+      const rate = parseFloat(rates.bcv_rate || rates.bcv || '0');
+      const vesAmount = pendingAmount * rate;
+      setValue('amount', vesAmount.toFixed(2));
+    }
+  }, [rates, pendingAmount, setValue]);
+
+  const previewAmount = useMemo(() => {
     if (!rates || !amount) return 0;
-    const rate = parseFloat(rates.parallel);
-    return parseFloat(amount || '0') * rate;
-  }, [rates, amount]);
+    const rate = parseFloat(rates.bcv_rate || rates.bcv || rates.parallel_rate || rates.parallel || '0');
+    if (rate === 0) return 0;
+    
+    if (currency === 'USD') {
+      return parseFloat(amount) * rate;
+    } else {
+      return parseFloat(amount) / rate;
+    }
+  }, [rates, amount, currency]);
 
   const accountMutation = useMutation({
     ...accountsPaymentsCreateMutation(),
@@ -112,17 +128,17 @@ export default function PaymentForm({ type, id, onSuccess, pendingAmount }: Paym
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
       <div>
         <label className="block text-sm font-bold text-gray-700 mb-1">
-          Monto a {type === 'account' ? 'Pagar' : 'Cobrar'} (USD)
+          Monto a {type === 'account' ? 'Pagar' : 'Cobrar'} ({currency})
         </label>
         <div className="relative mt-1">
           <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-            <span className="text-gray-500 sm:text-sm">$</span>
+            <span className="text-gray-500 sm:text-sm">{currency === 'USD' ? '$' : 'Bs.'}</span>
           </div>
           <input
             {...register('amount')}
             type="number"
             step="0.01"
-            className="block w-full rounded-md border-gray-300 pl-7 pr-12 focus:border-blue-500 focus:ring-blue-500 sm:text-sm border py-2"
+            className="block w-full rounded-md border-gray-300 pl-10 pr-12 focus:border-blue-500 focus:ring-blue-500 sm:text-sm border py-2"
             placeholder="0.00"
           />
         </div>
@@ -131,7 +147,7 @@ export default function PaymentForm({ type, id, onSuccess, pendingAmount }: Paym
           <p className="text-gray-500 font-medium">Saldo pendiente: ${pendingAmount.toFixed(2)}</p>
           {rates && (
             <p className="text-blue-600 font-bold">
-              ≈ Bs. {vesAmount.toLocaleString('es-VE', { minimumFractionDigits: 2 })} (USDT)
+              ≈ {currency === 'USD' ? 'Bs.' : '$'} {previewAmount.toLocaleString('es-VE', { minimumFractionDigits: 2 })} {currency === 'USD' ? '(BCV)' : ''}
             </p>
           )}
         </div>

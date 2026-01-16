@@ -5,13 +5,15 @@ import {
   providersListOptions,
   accountsCreateMutation,
   accountsListQueryKey,
+  exchangeRatesTodayRetrieveOptions
 } from '../../../client/@tanstack/react-query.gen';
 import { useBranch } from '../../../context/BranchContext';
-import { ShoppingCart, Plus, Minus, Trash2, Search, Truck, Edit2 } from 'lucide-react';
+import { ShoppingCart, Plus, Minus, Trash2, Search, Truck, Edit2, ArrowRight } from 'lucide-react';
 import { toast } from 'sonner';
-import type { ProductMaster, AccountRequestWritable, Provider } from '../../../client/types.gen';
+import type { ProductMaster, AccountRequestWritable, Provider, Account } from '../../../client/types.gen';
 import Modal from '../../../components/ui/Modal';
 import ProductForm from '../../../components/inventory/ProductForm';
+import PaymentForm from './PaymentForm';
 
 interface CartItem {
   product: ProductMaster;
@@ -25,19 +27,28 @@ export default function AccountBuilder() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedProviderId, setSelectedProviderId] = useState<string>('');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [createdAccount, setCreatedAccount] = useState<Account | null>(null);
   const [editingProduct, setEditingProduct] = useState<ProductMaster | null>(null);
 
   const { data: products = [] } = useQuery(productListOptions());
   const { data: providers = [], isLoading: loadingProviders } = useQuery(providersListOptions());
+  const { data: ratesData } = useQuery({
+    ...exchangeRatesTodayRetrieveOptions(),
+    staleTime: 1000 * 60 * 30, // 30 minutes
+  });
+  const rates = ratesData as { bcv_rate: string; parallel_rate: string } | undefined;
   const { branches, isLoading: loadingBranches } = useBranch();
 
   const createAccountMutation = useMutation({
     ...accountsCreateMutation(),
-    onSuccess: () => {
+    onSuccess: (data: Account) => {
       queryClient.invalidateQueries({ queryKey: accountsListQueryKey() });
       toast.success('Compra registrada con éxito');
       setCart([]);
       setSelectedProviderId('');
+      setCreatedAccount(data);
+      setIsPaymentModalOpen(true);
     },
     onError: () => {
       toast.error('Error al realizar la compra');
@@ -283,16 +294,42 @@ export default function AccountBuilder() {
         </div>
 
         <div className="p-4 border-t bg-gray-50 rounded-b-lg">
-          <div className="flex justify-between items-center mb-4">
-            <span className="text-gray-600">Total Compra</span>
+          <div className="flex justify-between items-center mb-1">
+            <span className="text-gray-600 font-medium">Total USD</span>
             <span className="text-2xl font-bold text-gray-900">${total.toFixed(2)}</span>
           </div>
+
+          {rates && (
+            <div className="space-y-1 mb-4 border-t pt-2">
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-gray-500">BCV: <span className="font-semibold">{rates.bcv_rate}</span></span>
+                <span className="text-gray-500"> VES USDT: <span className="font-semibold">{rates.parallel_rate}</span></span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-gray-600 font-medium text-sm">Total VES</span>
+                <span className="text-lg font-bold text-blue-600">
+                  Bs. {total ? (total * parseFloat(rates.bcv_rate)).toLocaleString('es-VE', { 
+                    minimumFractionDigits: 2, 
+                    maximumFractionDigits: 2 
+                  }) : '0,00'}
+                </span>
+              </div>
+            </div>
+          )}
+
           <button
             onClick={handleCheckout}
             disabled={cart.length === 0 || createAccountMutation.isPending || !selectedProviderId}
-            className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg shadow-md transition-colors disabled:opacity-50 disabled:bg-gray-400"
+            className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg shadow-md transition-colors disabled:opacity-50 disabled:bg-gray-400 flex items-center justify-center space-x-2"
           >
-            {createAccountMutation.isPending ? 'Registrando...' : 'Registrar Compra'}
+            {createAccountMutation.isPending ? (
+              'Registrando...'
+            ) : (
+              <>
+                <span>Registrar y Pagar</span>
+                <ArrowRight className="h-5 w-5" />
+              </>
+            )}
           </button>
         </div>
       </div>
@@ -306,6 +343,49 @@ export default function AccountBuilder() {
           initialData={editingProduct} 
           onSuccess={closeModal} 
         />
+      </Modal>
+
+      <Modal
+        isOpen={isPaymentModalOpen}
+        onClose={() => setIsPaymentModalOpen(false)}
+        title="Registrar Pago a Proveedor"
+      >
+        {createdAccount && (
+          <div className="space-y-4">
+            <div className="bg-blue-50 p-4 rounded-lg flex items-center justify-between">
+              <div>
+                <p className="text-xs text-blue-600 font-bold uppercase">Monto de la Compra</p>
+                <p className="text-2xl font-black text-blue-900">${parseFloat(createdAccount.total_amount_usd || '0').toFixed(2)}</p>
+              </div>
+              <div className="text-right text-sm text-blue-700">
+                <p className="font-medium">Compra #{createdAccount.seq_number}</p>
+                <p>{createdAccount.provider_name}</p>
+              </div>
+            </div>
+
+            <PaymentForm 
+              type="account" 
+              id={createdAccount.id} 
+              pendingAmount={parseFloat(createdAccount.total_amount_usd || '0') - parseFloat(createdAccount.total_paid || '0')}
+              onSuccess={() => {
+                setIsPaymentModalOpen(false);
+                setCreatedAccount(null);
+              }}
+            />
+            
+            <div className="pt-2 border-t flex justify-center">
+              <button 
+                onClick={() => {
+                  setIsPaymentModalOpen(false);
+                  setCreatedAccount(null);
+                }}
+                className="text-sm text-gray-400 hover:text-gray-600 underline font-medium"
+              >
+                Pagar después (Quedar a deber)
+              </button>
+            </div>
+          </div>
+        )}
       </Modal>
     </div>
   );

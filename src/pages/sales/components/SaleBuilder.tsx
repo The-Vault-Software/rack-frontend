@@ -49,7 +49,7 @@ export default function SaleBuilder() {
     staleTime: 1000 * 60 * 30, // 30 minutes
   });
 
-  const rates = ratesData as { bcv: string; parallel: string } | undefined;
+  const rates = ratesData as { bcv_rate: string; parallel_rate: string } | undefined;
 
   const { branches, isLoading: loadingBranches } = useBranch();
 
@@ -328,13 +328,13 @@ export default function SaleBuilder() {
           {rates && (
             <div className="space-y-1 mb-4 border-t pt-2">
               <div className="flex justify-between items-center text-sm">
-                <span className="text-gray-500">BCV: <span className="font-semibold">{rates.bcv}</span></span>
-                <span className="text-gray-500"> VES USDT: <span className="font-semibold">{rates.parallel}</span></span>
+                <span className="text-gray-500">BCV: <span className="font-semibold">{rates.bcv_rate}</span></span>
+                <span className="text-gray-500"> VES USDT: <span className="font-semibold">{rates.parallel_rate}</span></span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-gray-600 font-medium text-sm">Total VES</span>
                 <span className="text-lg font-bold text-blue-600">
-                  Bs. {total ? (total * parseFloat(rates.parallel)).toLocaleString('es-VE', { 
+                  Bs. {total ? (total * parseFloat(rates.bcv_rate)).toLocaleString('es-VE', { 
     minimumFractionDigits: 2, 
     maximumFractionDigits: 2 
 }) : '0,00'}
@@ -359,7 +359,7 @@ export default function SaleBuilder() {
           </button>
         </div>
       </div>
-
+-
       <Modal
         isOpen={isPaymentModalOpen}
         onClose={() => setIsPaymentModalOpen(false)}
