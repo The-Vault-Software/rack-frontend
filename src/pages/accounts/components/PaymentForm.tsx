@@ -1,12 +1,14 @@
 import { useForm } from 'react-hook-form';
+import { useMemo } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { 
   accountsPaymentsCreateMutation, 
   salesPaymentsCreateMutation, 
   accountsListQueryKey, 
-  salesListQueryKey 
+  salesListQueryKey,
+  exchangeRatesTodayRetrieveOptions
 } from '../../../client/@tanstack/react-query.gen';
 import { zAccountPaymentRequestWritable, zSalePaymentRequestWritable } from '../../../client/zod.gen';
 import type { AccountPaymentRequestWritable, SalePaymentRequestWritable } from '../../../client/types.gen';
@@ -30,9 +32,17 @@ export default function PaymentForm({ type, id, onSuccess, pendingAmount }: Paym
   const queryClient = useQueryClient();
   const schema = type === 'account' ? zAccountPaymentRequestWritable : zSalePaymentRequestWritable;
 
+  const { data: ratesData } = useQuery({
+    ...exchangeRatesTodayRetrieveOptions(),
+    staleTime: 1000 * 60 * 30,
+  });
+
+  const rates = ratesData as { bcv: string; parallel: string } | undefined;
+
   const {
     register,
     handleSubmit,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm<PaymentFormValues>({
     resolver: zodResolver(schema),
@@ -43,6 +53,14 @@ export default function PaymentForm({ type, id, onSuccess, pendingAmount }: Paym
       ...(type === 'account' ? { REF: '' } : { discount: '0.00' })
     }
   });
+
+  const amount = watch('amount');
+
+  const vesAmount = useMemo(() => {
+    if (!rates || !amount) return 0;
+    const rate = parseFloat(rates.parallel);
+    return parseFloat(amount || '0') * rate;
+  }, [rates, amount]);
 
   const accountMutation = useMutation({
     ...accountsPaymentsCreateMutation(),
@@ -109,7 +127,14 @@ export default function PaymentForm({ type, id, onSuccess, pendingAmount }: Paym
           />
         </div>
         {errors.amount && <p className="mt-1 text-sm text-red-600">{errors.amount.message}</p>}
-        <p className="mt-1 text-xs text-gray-500 font-medium">Saldo pendiente: ${pendingAmount.toFixed(2)}</p>
+        <div className="mt-1 flex justify-between items-center text-xs">
+          <p className="text-gray-500 font-medium">Saldo pendiente: ${pendingAmount.toFixed(2)}</p>
+          {rates && (
+            <p className="text-blue-600 font-bold">
+              ≈ Bs. {vesAmount.toLocaleString('es-VE', { minimumFractionDigits: 2 })} (USDT)
+            </p>
+          )}
+        </div>
       </div>
 
       <div className="grid grid-cols-2 gap-4">

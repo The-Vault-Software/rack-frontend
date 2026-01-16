@@ -7,9 +7,11 @@ import {
   accountsListQueryKey,
 } from '../../../client/@tanstack/react-query.gen';
 import { useBranch } from '../../../context/BranchContext';
-import { ShoppingCart, Plus, Minus, Trash2, Search, Truck } from 'lucide-react';
+import { ShoppingCart, Plus, Minus, Trash2, Search, Truck, Edit2 } from 'lucide-react';
 import { toast } from 'sonner';
 import type { ProductMaster, AccountRequestWritable, Provider } from '../../../client/types.gen';
+import Modal from '../../../components/ui/Modal';
+import ProductForm from '../../../components/inventory/ProductForm';
 
 interface CartItem {
   product: ProductMaster;
@@ -22,6 +24,8 @@ export default function AccountBuilder() {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedProviderId, setSelectedProviderId] = useState<string>('');
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<ProductMaster | null>(null);
 
   const { data: products = [] } = useQuery(productListOptions());
   const { data: providers = [], isLoading: loadingProviders } = useQuery(providersListOptions());
@@ -137,6 +141,22 @@ export default function AccountBuilder() {
     createAccountMutation.mutate({ body: payload });
   };
 
+  const handleCreateProduct = () => {
+    setEditingProduct(null);
+    setIsModalOpen(true);
+  };
+
+  const handleEditProduct = (e: React.MouseEvent, product: ProductMaster) => {
+    e.stopPropagation();
+    setEditingProduct(product);
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setEditingProduct(null);
+  };
+
   return (
     <div className="flex flex-col lg:flex-row gap-6 h-[calc(100vh-16rem)]">
       {/* Product Selection */}
@@ -178,19 +198,38 @@ export default function AccountBuilder() {
         </div>
 
         <div className="flex-1 overflow-y-auto p-4 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+          {/* Add Product Card */}
+          <button
+            onClick={handleCreateProduct}
+            className="flex flex-col items-center justify-center p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all group"
+          >
+            <div className="bg-gray-100 group-hover:bg-blue-100 p-3 rounded-full mb-2">
+              <Plus className="h-6 w-6 text-gray-400 group-hover:text-blue-600" />
+            </div>
+            <span className="text-sm font-medium text-gray-500 group-hover:text-blue-600">Nuevo Producto</span>
+          </button>
+
           {filteredProducts.map(product => (
             <button
               key={product.id}
               onClick={() => addToCart(product)}
-              className="flex flex-col p-4 border rounded-lg hover:border-blue-500 hover:shadow-md transition-all text-left"
+              className="flex flex-col p-4 border rounded-lg hover:border-blue-500 hover:shadow-md transition-all text-left relative group"
             >
-              <h4 className="font-semibold text-gray-900 truncate w-full">{product.name}</h4>
+              <div className="flex justify-between items-start w-full">
+                <h4 className="font-semibold text-gray-900 truncate pr-8">{product.name}</h4>
+                <button
+                  onClick={(e) => handleEditProduct(e, product)}
+                  className="absolute right-2 top-2 p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  <Edit2 className="h-4 w-4" />
+                </button>
+              </div>
               <div className="mt-2 flex justify-between items-end">
                 <div>
                   <p className="text-lg font-bold text-gray-700">${parseFloat(product.cost_price_usd).toFixed(2)}</p>
                   <p className="text-xs text-gray-500">Costo</p>
                 </div>
-                <div className="bg-green-50 p-2 rounded-full">
+                <div className="bg-green-50 p-2 rounded-full group-hover:bg-green-100 transition-colors">
                   <Plus className="h-4 w-4 text-green-600" />
                 </div>
               </div>
@@ -257,6 +296,17 @@ export default function AccountBuilder() {
           </button>
         </div>
       </div>
+
+      <Modal
+        isOpen={isModalOpen}
+        onClose={closeModal}
+        title={editingProduct ? 'Editar Producto' : 'Crear Nuevo Producto'}
+      >
+        <ProductForm 
+          initialData={editingProduct} 
+          onSuccess={closeModal} 
+        />
+      </Modal>
     </div>
   );
 }

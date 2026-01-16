@@ -24,7 +24,7 @@ export default function DashboardLayout() {
       <div className="hidden md:flex md:w-64 md:flex-col">
         <div className="flex flex-col grow bg-white border-r pt-5 pb-4 overflow-y-auto">
           <div className="flex items-center shrink-0 px-4 mb-5">
-            <span className="text-xl font-bold text-gray-800">POS System</span>
+            <span className="text-xl font-bold text-gray-800">Rack</span>
           </div>
           <div className="mt-5 grow flex flex-col">
             <nav className="flex-1 px-2 space-y-1">

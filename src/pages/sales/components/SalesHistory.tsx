@@ -1,10 +1,17 @@
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { salesListOptions } from '../../../client/@tanstack/react-query.gen';
 import { useBranch } from '../../../context/BranchContext';
-import { Calendar, User, DollarSign, Package } from 'lucide-react';
+import { Calendar, User, DollarSign, Eye } from 'lucide-react';
+import Modal from '../../../components/ui/Modal';
+import SaleDetail from './SaleDetail';
+import { format } from 'date-fns';
+import { es } from 'date-fns/locale';
 
 export default function SalesHistory() {
   const { selectedBranch } = useBranch();
+  const [selectedSaleId, setSelectedSaleId] = useState<string | null>(null);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
 
   const { data: sales = [], isLoading } = useQuery({
     ...salesListOptions({
@@ -13,6 +20,11 @@ export default function SalesHistory() {
     }),
     enabled: !!selectedBranch?.id
   });
+
+  const handleViewDetail = (id: string) => {
+    setSelectedSaleId(id);
+    setIsDetailModalOpen(true);
+  };
 
   if (isLoading) {
     return <div className="p-8 text-center text-gray-500">Cargando historial de ventas...</div>;
@@ -37,12 +49,6 @@ export default function SalesHistory() {
             </th>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                <div className="flex items-center space-x-1">
-                <Package className="h-3 w-3" />
-                <span>Productos</span>
-              </div>
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-               <div className="flex items-center space-x-1">
                 <DollarSign className="h-3 w-3" />
                 <span>Total</span>
               </div>
@@ -50,27 +56,42 @@ export default function SalesHistory() {
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
               Estado
             </th>
+            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Acciones
+            </th>
           </tr>
         </thead>
         <tbody className="bg-white divide-y divide-gray-200">
           {sales.map((sale) => (
             <tr key={sale.id} className="hover:bg-gray-50 transition-colors">
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                {new Date(sale.created_at).toLocaleDateString()} {new Date(sale.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                {format(new Date(sale.created_at), "dd/MM/yyyy HH:mm", { locale: es })}
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                 {sale.customer_name || 'Consumidor Final'}
               </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                {sale.details?.length || 0} items
-              </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
-                ${parseFloat(sale.total_amount).toFixed(2)}
+                ${parseFloat(sale.total_amount_usd || '0').toFixed(2)}
               </td>
               <td className="px-6 py-4 whitespace-nowrap">
-                <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                  Completada
+                <span className={`px-2 inline-flex text-xs leading-5 font-bold rounded-full ${
+                  sale.payment_status === 'PAID' 
+                    ? 'bg-green-100 text-green-800' 
+                    : sale.payment_status === 'PARTIALLY_PAID'
+                    ? 'bg-yellow-100 text-yellow-800'
+                    : 'bg-red-100 text-red-800'
+                }`}>
+                  {sale.payment_status === 'PAID' ? 'Pagado' : sale.payment_status === 'PARTIALLY_PAID' ? 'Parcial' : 'Pendiente'}
                 </span>
+              </td>
+              <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                <button 
+                  onClick={() => handleViewDetail(sale.id)}
+                  className="text-blue-600 hover:text-blue-900 bg-blue-50 p-2 rounded-full transition-colors"
+                  title="Ver detalles"
+                >
+                  <Eye className="h-4 w-4" />
+                </button>
               </td>
             </tr>
           ))}
@@ -83,6 +104,14 @@ export default function SalesHistory() {
           )}
         </tbody>
       </table>
+
+      <Modal
+        isOpen={isDetailModalOpen}
+        onClose={() => setIsDetailModalOpen(false)}
+        title="Detalles de la Venta"
+      >
+        {selectedSaleId && <SaleDetail saleId={selectedSaleId} />}
+      </Modal>
     </div>
   );
 }
