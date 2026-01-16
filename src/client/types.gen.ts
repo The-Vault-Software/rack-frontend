@@ -1092,6 +1092,13 @@ export type CustomersUpdateResponses = {
 
 export type CustomersUpdateResponse = CustomersUpdateResponses[keyof CustomersUpdateResponses];
 
+export type ExchangeRate = {
+    readonly id: string;
+    bcv_rate: string;
+    parallel_rate: string;
+    readonly created_at: string;
+};
+
 export type ExchangeRatesHistoryRetrieveData = {
     body?: never;
     path?: never;
@@ -1119,6 +1126,21 @@ export type ExchangeRatesTodayRetrieveResponses = {
      */
     200: unknown;
 };
+
+export type ExchangeRatesRetrieveData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/v1/exchange-rates/{id}/';
+};
+
+export type ExchangeRatesRetrieveResponses = {
+    200: ExchangeRate;
+};
+
+export type ExchangeRatesRetrieveResponse = ExchangeRatesRetrieveResponses[keyof ExchangeRatesRetrieveResponses];
 
 export type LoginCreateData = {
     body?: never;

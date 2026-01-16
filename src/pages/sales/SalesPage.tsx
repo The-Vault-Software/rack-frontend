@@ -37,7 +37,7 @@ export default function SalesPage() {
       </div>
 
       {/* Content */}
-      <div className="bg-white shadow-sm overflow-hidden sm:rounded-lg min-h-[400px]">
+      <div className="bg-white shadow-sm overflow-visible sm:rounded-lg min-h-[400px]">
         {activeTab === 'pos' && <SaleBuilder />}
         {activeTab === 'history' && <SalesHistory />}
       </div>

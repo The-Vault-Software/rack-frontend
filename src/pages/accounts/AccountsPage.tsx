@@ -57,7 +57,7 @@ export default function AccountsPage() {
       </div>
 
       {/* Content */}
-      <div className="bg-white shadow overflow-hidden sm:rounded-lg min-h-[400px]">
+      <div className="bg-white shadow overflow-visible sm:rounded-lg min-h-[400px]">
         {activeTab === 'new-account' && <AccountBuilder />}
         {activeTab === 'cashflow' && <CashFlow />}
         {activeTab === 'receivable' && <AccountsReceivable />}
