@@ -100,7 +100,9 @@ export default function RegisterPage() {
 
         if (!companyResponse.ok) {
             const errorData = await companyResponse.json();
-            throw new Error(errorData.detail || 'Error al crear la empresa');
+            // Store the error object to handle it in the catch block if needed, 
+            // or handle it here and throw.
+            throw errorData; 
         }
 
         const company = await companyResponse.json();
@@ -133,27 +135,55 @@ export default function RegisterPage() {
         // Go to Setup Branch
         navigate('/setup-branch');
 
-    } catch (error) {
+    } catch (error: unknown) {
         console.error(error);
         
         let message = "Error durante el registro.";
         
-        // Handle hey-api error structure nicely
-        if (error && typeof error === 'object' && 'body' in error) {
-            const body = (error as { body?: { detail?: string; company_id?: string[] } }).body;
-            if (body?.detail) {
-                message = body.detail;
-            } else if (body?.company_id) {
-                message = `Error en company_id: ${body.company_id.join(', ')}`;
+        // Helper to extract messages from DRF-like error objects
+        const getFirstErrorMessage = (errObj: unknown): string | null => {
+            if (!errObj || typeof errObj !== 'object') return null;
+            
+            const obj = errObj as Record<string, unknown>;
+            
+            // If it has a detail property
+            if (obj.detail && typeof obj.detail === 'string') return obj.detail;
+            
+            // If it's a field-error object { email: ["..."], username: ["..."] }
+            const fields = Object.keys(obj);
+            if (fields.length > 0) {
+                const firstField = fields[0];
+                const fieldErrors = obj[firstField];
+                if (Array.isArray(fieldErrors) && fieldErrors.length > 0) {
+                    return `${firstField}: ${fieldErrors[0]}`;
+                } else if (typeof fieldErrors === 'string') {
+                    return `${firstField}: ${fieldErrors}`;
+                }
             }
-        } else if (error instanceof Error) {
-            message = error.message;
+            return null;
+        };
+
+        const apiError = error as { body?: unknown; detail?: string; [key: string]: unknown };
+
+        // Handle error from mutateAsync (wrapped in 'body')
+        if (apiError.body) {
+            const msg = getFirstErrorMessage(apiError.body);
+            if (msg) message = msg;
+        } 
+        // Handle direct fetch threw object (companyResponse)
+        else {
+            const msg = getFirstErrorMessage(apiError);
+            if (msg) message = msg;
+            else if (error instanceof Error) message = error.message;
         }
 
-        toast.error(message);
+        // Friendly translations for common errors
+        if (message.includes("Company with this name already exists")) message = "El nombre de esta empresa ya está registrado.";
+        if (message.includes("Company with this email already exists")) message = "Este correo corporativo ya está en uso.";
+        if (message.includes("user with this email already exists")) message = "Este correo electrónico ya está registrado.";
+        if (message.includes("A user with that username already exists")) message = "Este nombre de usuario ya está en uso.";
 
-        // Recovery logic: if company was created but user registration failed,
-        // the user might need to contact support or try with a different username/email
+        toast.error(message);
     }
   };
 

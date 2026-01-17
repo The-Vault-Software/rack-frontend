@@ -188,20 +188,24 @@ export default function InventoryPage() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold text-gray-900">Gestión de Inventario</h1>
-        <button
-          onClick={() => setIsImportModalOpen(true)}
-          className="mr-3 inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-        >
-          <FileSpreadsheet className="h-4 w-4 mr-2 text-green-600" />
-          Importar
-        </button>
-        <button
-          onClick={handleCreate}
-          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          Crear {activeTab === 'products' ? 'Producto' : activeTab === 'categories' ? 'Categoría' : 'Unidad'}
-        </button>
+        <div className="flex items-center gap-3">
+          {activeTab === 'products' && (
+            <button
+              onClick={() => setIsImportModalOpen(true)}
+              className="inline-flex cursor-pointer items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            >
+              <FileSpreadsheet className="h-4 w-4 mr-2 text-green-600" />
+              Importar
+            </button>
+          )}
+          <button
+            onClick={handleCreate}
+            className="inline-flex cursor-pointer items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Crear {activeTab === 'products' ? 'Producto' : activeTab === 'categories' ? 'Categoría' : 'Unidad'}
+          </button>
+        </div>
       </div>
 
       <div className="flex flex-col sm:flex-row gap-4">
@@ -223,7 +227,7 @@ export default function InventoryPage() {
             <select
               value={filterCategory}
               onChange={(e) => setFilterCategory(e.target.value)}
-              className="block w-full sm:w-48 pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md border"
+              className="block cursor-pointer w-full sm:w-48 pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md border"
             >
               <option value="all">Todas las categorías</option>
               {(Array.isArray(categoriesData) ? categoriesData : []).map((cat: Category) => (
@@ -233,7 +237,7 @@ export default function InventoryPage() {
             <select
               value={filterUnit}
               onChange={(e) => setFilterUnit(e.target.value)}
-              className="block w-full sm:w-48 pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md border"
+              className="block cursor-pointer w-full sm:w-48 pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md border"
             >
               <option value="all">Todas las unidades</option>
               {(Array.isArray(unitsData) ? unitsData : []).map((unit: MeasurementUnit) => (
