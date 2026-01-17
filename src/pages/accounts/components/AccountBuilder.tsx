@@ -5,20 +5,34 @@ import {
   providersListOptions,
   accountsCreateMutation,
   accountsListQueryKey,
-  exchangeRatesTodayRetrieveOptions
+  exchangeRatesTodayRetrieveOptions,
+  measurementListOptions,
+  productRetrieveOptions
 } from '../../../client/@tanstack/react-query.gen';
 import { useBranch } from '../../../context/BranchContext';
-import { ShoppingCart, Plus, Minus, Trash2, Search, Truck, Edit2, ArrowRight } from 'lucide-react';
+import { ShoppingCart, Plus, Minus, Trash2, Search, Truck, Edit2, ArrowRight, Layers } from 'lucide-react';
 import { toast } from 'sonner';
-import type { ProductMaster, AccountRequestWritable, Provider, Account } from '../../../client/types.gen';
+import type { ProductMaster, AccountRequestWritable, Provider, Account, MeasurementUnit } from '../../../client/types.gen';
 import Modal from '../../../components/ui/Modal';
 import ActionConfirmationModal from '../../../components/ui/ActionConfirmationModal';
 import ProductForm from '../../../components/inventory/ProductForm';
 import PaymentForm from './PaymentForm';
 
+interface SellingUnit {
+  id: string;
+  name: string;
+  unit_conversion_factor: string;
+  measurement_unit: string;
+}
+
 interface CartItem {
   product: ProductMaster;
   quantity: number;
+  // Dynamic fields from product detail
+  sellingUnits?: SellingUnit[]; 
+  selectedSellingUnit?: SellingUnit;
+  measurementUnitDetail?: MeasurementUnit;
+  loadingDetails?: boolean;
 }
 
 export default function AccountBuilder() {
@@ -40,6 +54,7 @@ export default function AccountBuilder() {
     staleTime: 1000 * 60 * 30, // 30 minutes
   });
   const rates = ratesData as { bcv_rate: string; parallel_rate: string } | undefined;
+  const { data: measurementUnits = [] } = useQuery(measurementListOptions());
   const { branches, isLoading: loadingBranches } = useBranch();
 
   const createAccountMutation = useMutation({
@@ -94,16 +109,47 @@ export default function AccountBuilder() {
     );
   }
 
-  const addToCart = (product: ProductMaster) => {
+  const addToCart = async (product: ProductMaster) => {
     const existingItem = cart.find(item => item.product.id === product.id);
     if (existingItem) {
-      setCart(cart.map(item => 
+      updateQuantity(product.id, 1);
+      return;
+    }
+
+    // Add with loading state
+    const newItem: CartItem = { 
+      product, 
+      quantity: 1, 
+      loadingDetails: true 
+    };
+    setCart([...cart, newItem]);
+
+    try {
+      // Fetch full product detail to get selling_units and check decimals
+      const fullProduct = await queryClient.fetchQuery(
+        productRetrieveOptions({ path: { id: product.id } })
+      );
+
+      // @ts-expect-error - selling_units is not in the generated type yet
+      const sellingUnits = (fullProduct.selling_units || []) as SellingUnit[];
+      const unitDetail = measurementUnits.find((u: MeasurementUnit) => u.id === fullProduct.measurement_unit);
+
+      setCart(currentCart => currentCart.map(item => 
         item.product.id === product.id 
-          ? { ...item, quantity: item.quantity + 1 } 
+          ? { 
+              ...item, 
+              loadingDetails: false, 
+              sellingUnits,
+              measurementUnitDetail: unitDetail
+            } 
           : item
       ));
-    } else {
-      setCart([...cart, { product, quantity: 1 }]);
+    } catch (error) {
+      console.error("Error fetching product details:", error);
+      toast.error("Error al obtener detalles del producto");
+      setCart(currentCart => currentCart.map(item => 
+        item.product.id === product.id ? { ...item, loadingDetails: false } : item
+      ));
     }
   };
 
@@ -115,18 +161,58 @@ export default function AccountBuilder() {
     const item = cart.find(i => i.product.id === productId);
     if (!item) return;
 
-    const newQty = item.quantity + delta;
+    const baseStep = item.measurementUnitDetail?.decimals ? 0.1 : 1;
+    const newQty = Math.max(0, item.quantity + (delta * baseStep));
+    
     if (newQty <= 0) {
       removeFromCart(productId);
     } else {
       setCart(cart.map(i => 
-        i.product.id === productId ? { ...i, quantity: newQty } : i
+        i.product.id === productId ? { ...i, quantity: parseFloat(newQty.toFixed(3)) } : i
       ));
     }
   };
 
+  const handleManualQuantityChange = (productId: string, value: string) => {
+    const item = cart.find(i => i.product.id === productId);
+    if (!item) return;
+
+    let numValue = parseFloat(value);
+    if (isNaN(numValue)) numValue = 0;
+
+    // If decimals are not allowed, round down
+    if (!item.measurementUnitDetail?.decimals) {
+      numValue = Math.floor(numValue);
+    }
+
+    setCart(cart.map(i => 
+      i.product.id === productId ? { ...i, quantity: numValue } : i
+    ));
+  };
+
+  const handleSelectSellingUnit = (productId: string, sellingUnitId: string) => {
+    setCart(cart.map(item => {
+      if (item.product.id !== productId) return item;
+      
+      const sellingUnit = item.sellingUnits?.find(u => u.id === sellingUnitId);
+      if (!sellingUnit) {
+        // Revert to base unit (quantity is already in base terms mostly, but this serves as a reset)
+        return { ...item, selectedSellingUnit: undefined };
+      }
+
+      // When selecting a selling unit, we might want to keep the same "visual" quantity
+      // or just keep the base quantity. Usually, the user wants to buy "1" of the new unit.
+      return { ...item, selectedSellingUnit: sellingUnit };
+    }));
+  };
+
   const total = cart.reduce((acc, item) => {
-    return acc + (parseFloat(item.product.cost_price_usd) * item.quantity);
+    const baseCost = parseFloat(item.product.cost_price_usd);
+    // If selling unit is selected, the factor applies to the base COST
+    // Fact: if 1 unit costs $10 and a box has 12, the box cost is $120.
+    // The details in the payload SHOULD BE in base units, but we need to convert back.
+    const factor = item.selectedSellingUnit ? parseFloat(item.selectedSellingUnit.unit_conversion_factor) : 1;
+    return acc + (baseCost * item.quantity * factor);
   }, 0);
 
   const handleCheckout = () => {
@@ -145,10 +231,13 @@ export default function AccountBuilder() {
     const payload: AccountRequestWritable = {
       branch: selectedBranch.id,
       provider: selectedProviderId,
-      details: cart.map(item => ({
-        product: item.product.id,
-        quantity: item.quantity
-      }))
+      details: cart.map(item => {
+        const factor = item.selectedSellingUnit ? parseFloat(item.selectedSellingUnit.unit_conversion_factor) : 1;
+        return {
+          product: item.product.id,
+          quantity: item.quantity * factor
+        };
+      })
     };
 
     createAccountMutation.mutate({ body: payload });
@@ -275,25 +364,82 @@ export default function AccountBuilder() {
 
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
           {cart.map(item => (
-            <div key={item.product.id} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
-              <div className="flex-1 min-w-0 mr-4">
-                <h5 className="text-sm font-medium text-gray-900 truncate">{item.product.name}</h5>
-                <p className="text-xs text-gray-500">${parseFloat(item.product.cost_price_usd).toFixed(2)} c/u</p>
-              </div>
-              <div className="flex items-center space-x-2">
-                <div className="flex items-center border rounded-md">
-                  <button onClick={() => updateQuantity(item.product.id, -1)} className="p-1 hover:bg-gray-100">
-                    <Minus className="h-3 w-3" />
-                  </button>
-                  <span className="px-2 text-sm font-semibold">{item.quantity}</span>
-                  <button onClick={() => updateQuantity(item.product.id, 1)} className="p-1 hover:bg-gray-100">
-                    <Plus className="h-3 w-3" />
-                  </button>
+            <div key={item.product.id} className="py-3 border-b border-gray-100 last:border-0 space-y-2">
+              <div className="flex items-center justify-between">
+                <div className="flex-1 min-w-0 mr-4">
+                  <h5 className="text-sm font-medium text-gray-900 truncate">{item.product.name}</h5>
+                  <div className="flex items-center gap-2">
+                    <p className="text-xs text-gray-500">
+                      ${(parseFloat(item.product.cost_price_usd) * (item.selectedSellingUnit ? parseFloat(item.selectedSellingUnit.unit_conversion_factor) : 1)).toFixed(2)} 
+                      <span className="ml-1 italic text-[10px]">
+                        ({item.selectedSellingUnit ? item.selectedSellingUnit.name : (item.measurementUnitDetail?.name || 'Base')})
+                      </span>
+                    </p>
+                  </div>
                 </div>
                 <button onClick={() => removeFromCart(item.product.id)} className="text-gray-400 hover:text-red-500">
                   <Trash2 className="h-4 w-4" />
                 </button>
               </div>
+
+              {/* Selling Units Selector */}
+              {item.sellingUnits && item.sellingUnits.length > 0 && (
+                <div className="flex items-center gap-2">
+                  <Layers className="h-3 w-3 text-gray-400" />
+                  <select
+                    className="text-[10px] bg-gray-50 border-none rounded p-1 focus:ring-1 focus:ring-blue-500 outline-none"
+                    value={item.selectedSellingUnit?.id || ''}
+                    onChange={(e) => handleSelectSellingUnit(item.product.id, e.target.value)}
+                  >
+                    <option value="">{item.measurementUnitDetail?.name || 'Unidad Base'}</option>
+                    {item.sellingUnits.map((u: SellingUnit) => (
+                      <option key={u.id} value={u.id}>{u.name}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <div className="flex items-center border rounded-md overflow-hidden bg-white">
+                    <button 
+                      onClick={() => updateQuantity(item.product.id, -1)} 
+                      className="p-1 px-2 hover:bg-gray-100 border-r"
+                    >
+                      <Minus className="h-3 w-3" />
+                    </button>
+                    <input 
+                      type="number"
+                      step={item.measurementUnitDetail?.decimals ? "0.01" : "1"}
+                      value={item.quantity}
+                      onChange={(e) => handleManualQuantityChange(item.product.id, e.target.value)}
+                      className="w-16 text-center text-sm font-semibold outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                    />
+                    <button 
+                      onClick={() => updateQuantity(item.product.id, 1)} 
+                      className="p-1 px-2 hover:bg-gray-100 border-l"
+                    >
+                      <Plus className="h-3 w-3" />
+                    </button>
+                  </div>
+                  <span className="text-[10px] font-medium text-gray-400 truncate">
+                    {item.selectedSellingUnit ? item.selectedSellingUnit.name : (item.measurementUnitDetail?.name || 'u')}
+                  </span>
+                </div>
+                
+                <div className="text-right">
+                  <p className="text-sm font-bold text-gray-900">
+                    ${(parseFloat(item.product.cost_price_usd) * item.quantity * (item.selectedSellingUnit ? parseFloat(item.selectedSellingUnit.unit_conversion_factor) : 1)).toFixed(2)}
+                  </p>
+                </div>
+              </div>
+
+              {item.loadingDetails && (
+                <div className="flex items-center gap-2 text-[10px] text-blue-500 animate-pulse">
+                  <div className="h-2 w-2 bg-blue-500 rounded-full"></div>
+                  Cargando opciones...
+                </div>
+              )}
             </div>
           ))}
 

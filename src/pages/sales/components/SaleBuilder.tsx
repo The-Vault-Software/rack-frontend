@@ -7,20 +7,33 @@ import {
   salesListQueryKey,
   productBranchStockListQueryKey,
   customersListOptions,
-  exchangeRatesTodayRetrieveOptions
+  exchangeRatesTodayRetrieveOptions,
+  measurementListOptions,
+  productRetrieveOptions
 } from '../../../client/@tanstack/react-query.gen';
 import { useBranch } from '../../../context/BranchContext';
-import { ShoppingCart, Plus, Minus, Trash2, Search, User, ArrowRight, Edit2 } from 'lucide-react';
+import { ShoppingCart, Plus, Minus, Trash2, Search, User, ArrowRight, Edit2, Layers } from 'lucide-react';
 import { toast } from 'sonner';
-import type { ProductMaster, SaleRequestWritable, Customer, ProductStockSale, Sale } from '../../../client/types.gen';
+import type { ProductMaster, SaleRequestWritable, Customer, ProductStockSale, Sale, MeasurementUnit } from '../../../client/types.gen';
 import Modal from '../../../components/ui/Modal';
 import PaymentForm from '../../accounts/components/PaymentForm';
 import ProductForm from '../../../components/inventory/ProductForm';
 import ActionConfirmationModal from '../../../components/ui/ActionConfirmationModal';
 
+interface SellingUnit {
+  id: string;
+  name: string;
+  unit_conversion_factor: string;
+  measurement_unit: string;
+}
+
 interface CartItem {
   product: ProductMaster;
   quantity: number;
+  sellingUnits?: SellingUnit[];
+  selectedSellingUnit?: SellingUnit;
+  measurementUnitDetail?: MeasurementUnit;
+  loadingDetails?: boolean;
 }
 
 export default function SaleBuilder() {
@@ -53,6 +66,7 @@ export default function SaleBuilder() {
 
   const rates = ratesData as { bcv_rate: string; parallel_rate: string } | undefined;
 
+  const { data: measurementUnits = [] } = useQuery(measurementListOptions());
   const { branches, isLoading: loadingBranches } = useBranch();
 
   const createSaleMutation = useMutation({
@@ -86,7 +100,9 @@ export default function SaleBuilder() {
       const margin = parseFloat(item.product.profit_margin || '0');
       const basePrice = cost_price * (1 + margin / 100);
       const finalPrice = item.product.IVA ? basePrice * 1.16 : basePrice;
-      return acc + (finalPrice * item.quantity);
+      
+      const factor = item.selectedSellingUnit ? parseFloat(item.selectedSellingUnit.unit_conversion_factor) : 1;
+      return acc + (finalPrice * item.quantity * factor);
     }, 0);
   }, [cart]);
 
@@ -117,24 +133,42 @@ export default function SaleBuilder() {
     );
   }
 
-  const addToCart = (product: ProductMaster) => {
+  const addToCart = async (product: ProductMaster) => {
     const availableStock = getStock(product.id);
     const existingItem = cart.find((item: CartItem) => item.product.id === product.id);
-    const currentQty = existingItem ? existingItem.quantity : 0;
-
-    if (currentQty + 1 > availableStock) {
-      toast.error(`Stock insuficiente. Disponible: ${availableStock}`);
+    
+    if (existingItem) {
+      updateQuantity(product.id, 1);
       return;
     }
 
-    if (existingItem) {
-      setCart(cart.map((item: CartItem) => 
+    if (availableStock <= 0) {
+      toast.error(`Stock insuficiente.`);
+      return;
+    }
+
+    const newItem: CartItem = { product, quantity: 1, loadingDetails: true };
+    setCart([...cart, newItem]);
+
+    try {
+      const fullProduct = await queryClient.fetchQuery(
+        productRetrieveOptions({ path: { id: product.id } })
+      );
+
+      // @ts-expect-error - selling_units not in types
+      const sellingUnits = (fullProduct.selling_units || []) as SellingUnit[];
+      const unitDetail = measurementUnits.find((u: MeasurementUnit) => u.id === fullProduct.measurement_unit);
+
+      setCart(current => current.map(item => 
         item.product.id === product.id 
-          ? { ...item, quantity: item.quantity + 1 } 
+          ? { ...item, loadingDetails: false, sellingUnits, measurementUnitDetail: unitDetail }
           : item
       ));
-    } else {
-      setCart([...cart, { product, quantity: 1 }]);
+    } catch (e) {
+      console.error(e);
+      setCart(current => current.map(item => 
+        item.product.id === product.id ? { ...item, loadingDetails: false } : item
+      ));
     }
   };
 
@@ -147,9 +181,12 @@ export default function SaleBuilder() {
     if (!item) return;
 
     const availableStock = getStock(productId);
-    const newQty = item.quantity + delta;
+    const factor = item.selectedSellingUnit ? parseFloat(item.selectedSellingUnit.unit_conversion_factor) : 1;
+    
+    const baseStep = item.measurementUnitDetail?.decimals ? 0.1 : 1;
+    const newQty = item.quantity + (delta * baseStep);
 
-    if (newQty > availableStock) {
+    if (newQty * factor > availableStock) {
       toast.error(`Stock insuficiente. Disponible: ${availableStock}`);
       return;
     }
@@ -158,9 +195,41 @@ export default function SaleBuilder() {
       removeFromCart(productId);
     } else {
       setCart(cart.map((i: CartItem) => 
-        i.product.id === productId ? { ...i, quantity: newQty } : i
+        i.product.id === productId ? { ...i, quantity: parseFloat(newQty.toFixed(3)) } : i
       ));
     }
+  };
+
+  const handleManualQuantityChange = (productId: string, value: string) => {
+    const item = cart.find(i => i.product.id === productId);
+    if (!item) return;
+
+    const availableStock = getStock(productId);
+    const factor = item.selectedSellingUnit ? parseFloat(item.selectedSellingUnit.unit_conversion_factor) : 1;
+
+    let numValue = parseFloat(value);
+    if (isNaN(numValue)) numValue = 0;
+
+    if (!item.measurementUnitDetail?.decimals) {
+      numValue = Math.floor(numValue);
+    }
+
+    if (numValue * factor > availableStock) {
+      toast.error(`Stock insuficiente. Disponible: ${availableStock}`);
+      return;
+    }
+
+    setCart(cart.map(i => 
+      i.product.id === productId ? { ...i, quantity: numValue } : i
+    ));
+  };
+
+  const handleSelectSellingUnit = (productId: string, sellingUnitId: string) => {
+    setCart(cart.map(item => {
+      if (item.product.id !== productId) return item;
+      const sellingUnit = item.sellingUnits?.find(u => u.id === sellingUnitId);
+      return { ...item, selectedSellingUnit: sellingUnit };
+    }));
   };
 
 
@@ -175,10 +244,13 @@ export default function SaleBuilder() {
     const payload: SaleRequestWritable = {
       branch: selectedBranch.id,
       customer: selectedCustomerId || null,
-      details: cart.map((item: CartItem) => ({
-        product: item.product.id,
-        quantity: item.quantity
-      }))
+      details: cart.map((item: CartItem) => {
+        const factor = item.selectedSellingUnit ? parseFloat(item.selectedSellingUnit.unit_conversion_factor) : 1;
+        return {
+          product: item.product.id,
+          quantity: item.quantity * factor
+        };
+      })
     };
 
     createSaleMutation.mutate({ body: payload });
@@ -306,31 +378,76 @@ export default function SaleBuilder() {
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
           {cart.map(item => {
             const basePrice = parseFloat(item.product.cost_price_usd) * (1 + parseFloat(item.product.profit_margin) / 100);
-            const finalPrice = item.product.IVA ? basePrice * 1.16 : basePrice;
+            const factor = item.selectedSellingUnit ? parseFloat(item.selectedSellingUnit.unit_conversion_factor) : 1;
+            const finalPrice = (item.product.IVA ? basePrice * 1.16 : basePrice) * factor;
 
             return (
-              <div key={item.product.id} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
-                <div className="flex-1 min-w-0 mr-4">
-                  <h5 className="text-sm font-medium text-gray-900 truncate">{item.product.name}</h5>
-                  <div className="flex items-center gap-1.5">
-                    <p className="text-xs text-gray-500">${finalPrice.toFixed(2)} c/u</p>
-                    {item.product.IVA && <span className="text-[10px] text-gray-400 border px-1 rounded">IVA</span>}
-                  </div>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <div className="flex items-center border rounded-md">
-                    <button onClick={() => updateQuantity(item.product.id, -1)} className="p-1 hover:bg-gray-100">
-                      <Minus className="h-3 w-3" />
-                    </button>
-                    <span className="px-2 text-sm font-semibold">{item.quantity}</span>
-                    <button onClick={() => updateQuantity(item.product.id, 1)} className="p-1 hover:bg-gray-100">
-                      <Plus className="h-3 w-3" />
-                    </button>
+              <div key={item.product.id} className="py-3 border-b border-gray-100 last:border-0 space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex-1 min-w-0 mr-4">
+                    <h5 className="text-sm font-medium text-gray-900 truncate">{item.product.name}</h5>
+                    <div className="flex items-center gap-1.5">
+                      <p className="text-xs text-gray-500">${finalPrice.toFixed(2)} c/u</p>
+                      {item.product.IVA && <span className="text-[10px] text-gray-400 border px-1 rounded">IVA</span>}
+                      <span className="text-[10px] italic text-gray-400">
+                        ({item.selectedSellingUnit ? item.selectedSellingUnit.name : (item.measurementUnitDetail?.name || 'Base')})
+                      </span>
+                    </div>
                   </div>
                   <button onClick={() => removeFromCart(item.product.id)} className="text-gray-400 hover:text-red-500">
                     <Trash2 className="h-4 w-4" />
                   </button>
                 </div>
+
+                {/* Selling Units Selector */}
+                {item.sellingUnits && item.sellingUnits.length > 0 && (
+                  <div className="flex items-center gap-2">
+                    <Layers className="h-3 w-3 text-gray-400" />
+                    <select
+                      className="text-[10px] bg-gray-50 border-none rounded p-1 focus:ring-1 focus:ring-blue-500 outline-none"
+                      value={item.selectedSellingUnit?.id || ''}
+                      onChange={(e) => handleSelectSellingUnit(item.product.id, e.target.value)}
+                    >
+                      <option value="">{item.measurementUnitDetail?.name || 'Unidad Base'}</option>
+                      {item.sellingUnits.map((u: SellingUnit) => (
+                        <option key={u.id} value={u.id}>{u.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <div className="flex items-center border rounded-md overflow-hidden bg-white">
+                      <button onClick={() => updateQuantity(item.product.id, -1)} className="p-1 px-2 hover:bg-gray-100 border-r">
+                        <Minus className="h-3 w-3" />
+                      </button>
+                      <input 
+                        type="number"
+                        step={item.measurementUnitDetail?.decimals ? "0.01" : "1"}
+                        value={item.quantity}
+                        onChange={(e) => handleManualQuantityChange(item.product.id, e.target.value)}
+                        className="w-16 text-center text-sm font-semibold outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                      />
+                      <button onClick={() => updateQuantity(item.product.id, 1)} className="p-1 px-2 hover:bg-gray-100 border-l">
+                        <Plus className="h-3 w-3" />
+                      </button>
+                    </div>
+                    <span className="text-[10px] font-medium text-gray-400">
+                      {item.selectedSellingUnit ? item.selectedSellingUnit.name : (item.measurementUnitDetail?.name || 'u')}
+                    </span>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm font-bold text-gray-900">${(finalPrice * item.quantity).toFixed(2)}</p>
+                  </div>
+                </div>
+
+                {item.loadingDetails && (
+                  <div className="flex items-center gap-2 text-[10px] text-blue-500 animate-pulse">
+                    <div className="h-2 w-2 bg-blue-500 rounded-full"></div>
+                    Cargando opciones...
+                  </div>
+                )}
               </div>
             );
           })}
