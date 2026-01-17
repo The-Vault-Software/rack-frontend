@@ -195,7 +195,7 @@ export default function AccountsAnalytics() {
                     <Tooltip 
                       cursor={{fill: '#f8fafc'}}
                       contentStyle={{ borderRadius: '20px', border: 'none', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)' }}
-                      formatter={(value: number) => [`$${value.toFixed(2)}`, 'Balance']}
+                      formatter={(value: number | string | undefined) => [`$${Number(value || 0).toFixed(2)}`, 'Balance']}
                     />
                     <Bar dataKey="amount" radius={[0, 10, 10, 0]} barSize={40}>
                       {analyticsData.comparisonData.map((entry, index) => (

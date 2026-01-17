@@ -186,7 +186,7 @@ export default function SalesAnalytics() {
                     />
                     <Tooltip 
                       contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
-                      formatter={(value: number) => [`$${value.toFixed(2)}`, 'Ventas']}
+                      formatter={(value: number | string | undefined) => [`$${Number(value || 0).toFixed(2)}`, 'Ventas']}
                     />
                     <Area 
                       type="monotone" 
@@ -223,7 +223,7 @@ export default function SalesAnalytics() {
                     <Tooltip 
                       cursor={{fill: '#f8fafc'}}
                       contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
-                      formatter={(value: number) => [`$${value.toFixed(2)}`, 'Ventas']}
+                      formatter={(value: number | string | undefined) => [`$${Number(value || 0).toFixed(2)}`, 'Ventas']}
                     />
                     <Bar dataKey="amount" radius={[6, 6, 0, 0]}>
                       {analyticsData.dayOfWeekData.map((_entry, index) => (
