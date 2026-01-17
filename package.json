@@ -8,7 +8,8 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "generate-api": "openapi-ts"
+    "generate-api": "openapi-ts",
+    "start": "serve -s dist -l $PORT"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.9",
@@ -26,6 +27,7 @@
     "react-dom": "^19.2.0",
     "react-hook-form": "^7.71.1",
     "react-router-dom": "^7.12.0",
+    "serve": "^14.2.5",
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.4.0",
     "tailwindcss": "^4.1.18",
