@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { branchListOptions, branchListQueryKey, branchCreateMutation, branchDestroyMutation, branchPartialUpdateMutation } from '../../client/@tanstack/react-query.gen';
+import { v1BranchListOptions, v1BranchListQueryKey, v1BranchCreateMutation, v1BranchDestroyMutation, v1BranchPartialUpdateMutation } from '../../client/@tanstack/react-query.gen';
 import { Plus, Edit2, Trash2, MapPin, Phone, Mail, Store } from 'lucide-react';
 import { toast } from 'sonner';
 import Modal from '../../components/ui/Modal';
@@ -14,16 +14,16 @@ interface BranchSettingsPageProps {
 
 export default function BranchSettingsPage({ hideHeader = false }: BranchSettingsPageProps) {
   const queryClient = useQueryClient();
-  const { data: branches = [], isLoading } = useQuery(branchListOptions());
+  const { data: branches = [], isLoading } = useQuery(v1BranchListOptions());
   
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingBranch, setEditingBranch] = useState<Branch | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
 
   const createMutation = useMutation({
-    ...branchCreateMutation(),
+    ...v1BranchCreateMutation(),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: branchListQueryKey() });
+      queryClient.invalidateQueries({ queryKey: v1BranchListQueryKey() });
       toast.success('Sucursal creada correctamente');
       handleCloseModal();
     },
@@ -31,9 +31,9 @@ export default function BranchSettingsPage({ hideHeader = false }: BranchSetting
   });
 
   const updateMutation = useMutation({
-    ...branchPartialUpdateMutation(),
+    ...v1BranchPartialUpdateMutation(),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: branchListQueryKey() });
+      queryClient.invalidateQueries({ queryKey: v1BranchListQueryKey() });
       toast.success('Sucursal actualizada correctamente');
       handleCloseModal();
     },
@@ -41,9 +41,9 @@ export default function BranchSettingsPage({ hideHeader = false }: BranchSetting
   });
 
   const deleteMutation = useMutation({
-    ...branchDestroyMutation(),
+    ...v1BranchDestroyMutation(),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: branchListQueryKey() });
+      queryClient.invalidateQueries({ queryKey: v1BranchListQueryKey() });
       toast.success('Sucursal eliminada correctamente');
       setConfirmDelete(null);
     },

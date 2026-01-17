@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { useNavigate } from 'react-router-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { companyCreateMutation, userInfoRetrieveOptions, companyRetrieveOptions } from '../../client/@tanstack/react-query.gen';
+import { v1CompanyCreateMutation, v1UserInfoRetrieveOptions, v1CompanyRetrieveOptions } from '../../client/@tanstack/react-query.gen';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { Loader2 } from 'lucide-react';
@@ -29,11 +29,11 @@ export default function CreateCompanyPage() {
   });
 
   const createCompany = useMutation({
-    ...companyCreateMutation(),
+    ...v1CompanyCreateMutation(),
     onSuccess: async () => {
         // Invalidate user info and company retrieve
-        await queryClient.invalidateQueries({ queryKey: userInfoRetrieveOptions({}).queryKey });
-        await queryClient.invalidateQueries({ queryKey: companyRetrieveOptions({}).queryKey });
+        await queryClient.invalidateQueries({ queryKey: v1UserInfoRetrieveOptions({}).queryKey });
+        await queryClient.invalidateQueries({ queryKey: v1CompanyRetrieveOptions({}).queryKey });
         toast.success('Compañía configurada correctamente');
         navigate('/dashboard');
     },

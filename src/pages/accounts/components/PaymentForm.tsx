@@ -6,11 +6,11 @@ import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'motion/react';
 import { RefreshCw } from 'lucide-react';
 import { 
-  accountsPaymentsCreateMutation, 
-  salesPaymentsCreateMutation, 
-  accountsListQueryKey, 
-  salesListQueryKey,
-  exchangeRatesTodayRetrieveOptions
+  v1AccountsPaymentsCreateMutation, 
+  v1SalesPaymentsCreateMutation, 
+  v1AccountsListQueryKey, 
+  v1SalesListQueryKey,
+  v1ExchangeRatesTodayRetrieveOptions
 } from '../../../client/@tanstack/react-query.gen';
 import { zAccountPaymentRequestWritable, zSalePaymentRequestWritable } from '../../../client/zod.gen';
 import type { AccountPaymentRequestWritable, SalePaymentRequestWritable } from '../../../client/types.gen';
@@ -36,7 +36,7 @@ export default function PaymentForm({ type, id, onSuccess, pendingAmount }: Paym
   const schema = type === 'account' ? zAccountPaymentRequestWritable : zSalePaymentRequestWritable;
 
   const { data: ratesData } = useQuery({
-    ...exchangeRatesTodayRetrieveOptions(),
+    ...v1ExchangeRatesTodayRetrieveOptions(),
     staleTime: 1000 * 60 * 30, // 30 minutes
   });
 
@@ -108,9 +108,9 @@ export default function PaymentForm({ type, id, onSuccess, pendingAmount }: Paym
   };
 
   const accountMutation = useMutation({
-    ...accountsPaymentsCreateMutation(),
+    ...v1AccountsPaymentsCreateMutation(),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: accountsListQueryKey() });
+      queryClient.invalidateQueries({ queryKey: v1AccountsListQueryKey() });
       toast.success('Pago registrado correctamente');
       onSuccess();
     },
@@ -118,9 +118,9 @@ export default function PaymentForm({ type, id, onSuccess, pendingAmount }: Paym
   });
 
   const saleMutation = useMutation({
-    ...salesPaymentsCreateMutation(),
+    ...v1SalesPaymentsCreateMutation(),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: salesListQueryKey() });
+      queryClient.invalidateQueries({ queryKey: v1SalesListQueryKey() });
       toast.success('Cobro registrado correctamente');
       onSuccess();
     },

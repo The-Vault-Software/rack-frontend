@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { salesRetrieveOptions, salesPaymentsListOptions, exchangeRatesRetrieveOptions, exchangeRatesTodayRetrieveOptions, productListOptions } from '../../../client/@tanstack/react-query.gen';
+import { v1SalesRetrieveOptions, v1SalesPaymentsListOptions, v1ExchangeRatesRetrieveOptions, v1ExchangeRatesTodayRetrieveOptions, v1ProductListOptions } from '../../../client/@tanstack/react-query.gen';
 import { Package, User, Calendar, CreditCard, Receipt, Search, Info } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -13,7 +13,7 @@ interface SaleDetailProps {
 
 function PaymentRow({ payment }: { payment: SalePayment }) {
   const { data: xr } = useQuery({
-    ...exchangeRatesRetrieveOptions({
+    ...v1ExchangeRatesRetrieveOptions({
       path: { id: payment.exchange_rate as string }
     }),
     enabled: !!payment.exchange_rate
@@ -64,21 +64,21 @@ function PaymentRow({ payment }: { payment: SalePayment }) {
 export default function SaleDetail({ saleId }: SaleDetailProps) {
   const [showPaymentsModal, setShowPaymentsModal] = useState(false);
 
-  const { data: products } = useQuery(productListOptions());
+  const { data: products } = useQuery(v1ProductListOptions());
 
-  const { data: sale, isLoading, error } = useQuery(salesRetrieveOptions({
+  const { data: sale, isLoading, error } = useQuery(v1SalesRetrieveOptions({
     path: { id: saleId }
   }));
 
   const { data: payments, isLoading: isLoadingPayments } = useQuery({
-    ...salesPaymentsListOptions({
+    ...v1SalesPaymentsListOptions({
       path: { sale_id: saleId }
     }),
     enabled: showPaymentsModal
   });
 
   const { data: ratesData } = useQuery({
-    ...exchangeRatesTodayRetrieveOptions(),
+    ...v1ExchangeRatesTodayRetrieveOptions(),
     staleTime: 1000 * 60 * 30, // 30 minutes
   });
 

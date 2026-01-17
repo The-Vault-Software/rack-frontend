@@ -1,13 +1,13 @@
 import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { 
-  productListOptions, 
-  providersListOptions,
-  accountsCreateMutation,
-  accountsListQueryKey,
-  exchangeRatesTodayRetrieveOptions,
-  measurementListOptions,
-  productRetrieveOptions
+  v1ProductListOptions, 
+  v1ProvidersListOptions,
+  v1AccountsCreateMutation,
+  v1AccountsListQueryKey,
+  v1ExchangeRatesTodayRetrieveOptions,
+  v1MeasurementListOptions,
+  v1ProductRetrieveOptions
 } from '../../../client/@tanstack/react-query.gen';
 import { useBranch } from '../../../context/BranchContext';
 import { ShoppingCart, Plus, Minus, Trash2, Search, Truck, Edit2, ArrowRight, Layers } from 'lucide-react';
@@ -47,20 +47,20 @@ export default function AccountBuilder() {
   const [createdAccount, setCreatedAccount] = useState<Account | null>(null);
   const [editingProduct, setEditingProduct] = useState<ProductMaster | null>(null);
 
-  const { data: products = [] } = useQuery(productListOptions());
-  const { data: providers = [], isLoading: loadingProviders } = useQuery(providersListOptions());
+  const { data: products = [] } = useQuery(v1ProductListOptions());
+  const { data: providers = [], isLoading: loadingProviders } = useQuery(v1ProvidersListOptions());
   const { data: ratesData } = useQuery({
-    ...exchangeRatesTodayRetrieveOptions(),
+    ...v1ExchangeRatesTodayRetrieveOptions(),
     staleTime: 1000 * 60 * 30, // 30 minutes
   });
   const rates = ratesData as { bcv_rate: string; parallel_rate: string } | undefined;
-  const { data: measurementUnits = [] } = useQuery(measurementListOptions());
+  const { data: measurementUnits = [] } = useQuery(v1MeasurementListOptions());
   const { branches, isLoading: loadingBranches } = useBranch();
 
   const createAccountMutation = useMutation({
-    ...accountsCreateMutation(),
+    ...v1AccountsCreateMutation(),
     onSuccess: (data: Account) => {
-      queryClient.invalidateQueries({ queryKey: accountsListQueryKey() });
+      queryClient.invalidateQueries({ queryKey: v1AccountsListQueryKey() });
       toast.success('Compra registrada con éxito');
       setCart([]);
       setSelectedProviderId('');
@@ -127,10 +127,9 @@ export default function AccountBuilder() {
     try {
       // Fetch full product detail to get selling_units and check decimals
       const fullProduct = await queryClient.fetchQuery(
-        productRetrieveOptions({ path: { id: product.id } })
+        v1ProductRetrieveOptions({ path: { id: product.id } })
       );
 
-      // @ts-expect-error - selling_units is not in the generated type yet
       const sellingUnits = (fullProduct.selling_units || []) as SellingUnit[];
       const unitDetail = measurementUnits.find((u: MeasurementUnit) => u.id === fullProduct.measurement_unit);
 

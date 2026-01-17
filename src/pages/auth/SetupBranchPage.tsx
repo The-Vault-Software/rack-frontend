@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { useNavigate } from 'react-router-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { branchCreateMutation, branchListQueryKey } from '../../client/@tanstack/react-query.gen';
+import { v1BranchCreateMutation, v1BranchListQueryKey } from '../../client/@tanstack/react-query.gen';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { Loader2, Store, MapPin, Phone, Mail } from 'lucide-react';
@@ -31,9 +31,9 @@ export default function SetupBranchPage() {
   });
 
   const createBranch = useMutation({
-    ...branchCreateMutation(),
+    ...v1BranchCreateMutation(),
     onSuccess: async () => {
-        await queryClient.invalidateQueries({ queryKey: branchListQueryKey() });
+        await queryClient.invalidateQueries({ queryKey: v1BranchListQueryKey() });
         toast.success('Sucursal creada exitosamente');
         navigate('/dashboard');
     },

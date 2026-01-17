@@ -5,7 +5,7 @@ import { z } from 'zod';
 import { Link, useNavigate } from 'react-router-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { registerCreateMutation, loginCreateMutation, userInfoRetrieveOptions, companyRetrieveOptions } from '../../client/@tanstack/react-query.gen';
+import { v1RegisterCreateMutation, v1LoginCreateMutation, v1UserInfoRetrieveOptions, v1CompanyRetrieveOptions } from '../../client/@tanstack/react-query.gen';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { Loader2, ArrowRight, Building2, User } from 'lucide-react';
@@ -65,11 +65,11 @@ export default function RegisterPage() {
 
   // Mutations
   const registerMutation = useMutation({
-    ...registerCreateMutation(),
+    ...v1RegisterCreateMutation(),
   });
 
   const loginMutation = useMutation({
-    ...loginCreateMutation(),
+    ...v1LoginCreateMutation(),
   });
 
   const processRegistration = async (data: RegistrationFormValues) => {
@@ -128,8 +128,8 @@ export default function RegisterPage() {
         });
 
         // 4. Invalidate and Navigate
-        await queryClient.invalidateQueries({ queryKey: userInfoRetrieveOptions({}).queryKey });
-        await queryClient.invalidateQueries({ queryKey: companyRetrieveOptions({}).queryKey });
+        await queryClient.invalidateQueries({ queryKey: v1UserInfoRetrieveOptions({}).queryKey });
+        await queryClient.invalidateQueries({ queryKey: v1CompanyRetrieveOptions({}).queryKey });
         toast.success('Cuenta y empresa creadas exitosamente');
         
         // Go to Setup Branch

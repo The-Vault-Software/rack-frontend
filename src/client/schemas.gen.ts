@@ -30,14 +30,13 @@ export const AccountSchema = {
         total_amount_usd: {
             type: 'string',
             format: 'decimal',
-            pattern: '^-?\\d{0,8}(?:\\.\\d{0,2})?$',
-            readOnly: true,
-            nullable: true
+            pattern: '^-?\\d{0,10}(?:\\.\\d{0,2})?$',
+            readOnly: true
         },
         payment_status: {
             allOf: [
                 {
-                    $ref: '#/components/schemas/PaymentStatus2d7Enum'
+                    $ref: '#/components/schemas/PaymentStatus0cfEnum'
                 }
             ],
             readOnly: true
@@ -101,13 +100,14 @@ export const AccountDetailSchema = {
             readOnly: true
         },
         quantity: {
-            type: 'number',
-            format: 'double'
+            type: 'string',
+            format: 'decimal',
+            pattern: '^-?\\d{0,8}(?:\\.\\d{0,2})?$'
         },
         unit_price: {
             type: 'string',
             format: 'decimal',
-            pattern: '^-?\\d{0,8}(?:\\.\\d{0,2})?$',
+            pattern: '^-?\\d{0,10}(?:\\.\\d{0,2})?$',
             readOnly: true
         }
     },
@@ -129,8 +129,9 @@ export const AccountDetailRequestSchema = {
             format: 'uuid'
         },
         quantity: {
-            type: 'number',
-            format: 'double'
+            type: 'string',
+            format: 'decimal',
+            pattern: '^-?\\d{0,8}(?:\\.\\d{0,2})?$'
         }
     },
     required: [
@@ -165,14 +166,13 @@ export const AccountListSchema = {
         total_amount_usd: {
             type: 'string',
             format: 'decimal',
-            pattern: '^-?\\d{0,8}(?:\\.\\d{0,2})?$',
-            readOnly: true,
-            nullable: true
+            pattern: '^-?\\d{0,10}(?:\\.\\d{0,2})?$',
+            readOnly: true
         },
         payment_status: {
             allOf: [
                 {
-                    $ref: '#/components/schemas/PaymentStatus2d7Enum'
+                    $ref: '#/components/schemas/PaymentStatus0cfEnum'
                 }
             ],
             readOnly: true
@@ -685,6 +685,70 @@ export const MeasurementUnitRequestSchema = {
     ]
 } as const;
 
+export const PaginatedAccountListListSchema = {
+    type: 'object',
+    required: [
+        'count',
+        'results'
+    ],
+    properties: {
+        count: {
+            type: 'integer',
+            example: 123
+        },
+        next: {
+            type: 'string',
+            nullable: true,
+            format: 'uri',
+            example: 'http://api.example.org/accounts/?page=4'
+        },
+        previous: {
+            type: 'string',
+            nullable: true,
+            format: 'uri',
+            example: 'http://api.example.org/accounts/?page=2'
+        },
+        results: {
+            type: 'array',
+            items: {
+                $ref: '#/components/schemas/AccountList'
+            }
+        }
+    }
+} as const;
+
+export const PaginatedSaleListListSchema = {
+    type: 'object',
+    required: [
+        'count',
+        'results'
+    ],
+    properties: {
+        count: {
+            type: 'integer',
+            example: 123
+        },
+        next: {
+            type: 'string',
+            nullable: true,
+            format: 'uri',
+            example: 'http://api.example.org/accounts/?page=4'
+        },
+        previous: {
+            type: 'string',
+            nullable: true,
+            format: 'uri',
+            example: 'http://api.example.org/accounts/?page=2'
+        },
+        results: {
+            type: 'array',
+            items: {
+                $ref: '#/components/schemas/SaleList'
+            }
+        }
+    }
+} as const;
+
 export const PatchedAccountRequestSchema = {
     type: 'object',
     description: 'Main serializer for creating and viewing accounts (purchases).\nSupports nested creation of account details.\nIncreases stock when account is created.',
@@ -841,8 +905,9 @@ export const PatchedMeasurementUnitRequestSchema = {
     }
 } as const;
 
-export const PatchedProductMasterRequestSchema = {
+export const PatchedProductWriteDetailRequestSchema = {
     type: 'object',
+    description: 'Serializador completo para Creación, Edición y Detalle',
     properties: {
         name: {
             type: 'string',
@@ -875,6 +940,12 @@ export const PatchedProductMasterRequestSchema = {
             type: 'string',
             format: 'uuid',
             nullable: true
+        },
+        selling_units: {
+            type: 'array',
+            items: {
+                $ref: '#/components/schemas/ProductSellingUnitRequest'
+            }
         }
     }
 } as const;
@@ -926,7 +997,7 @@ export const PatchedSaleRequestSchema = {
     }
 } as const;
 
-export const PaymentStatus2d7EnumSchema = {
+export const PaymentStatus0cfEnumSchema = {
     enum: [
         'PENDING',
         'PARTIALLY_PAID',
@@ -936,7 +1007,7 @@ export const PaymentStatus2d7EnumSchema = {
     description: '* `PENDING` - Pending\n* `PARTIALLY_PAID` - Partially Paid\n* `PAID` - Paid'
 } as const;
 
-export const PaymentStatusAb7EnumSchema = {
+export const PaymentStatusC54EnumSchema = {
     enum: [
         'PENDING',
         'PARTIALLY_PAID',
@@ -949,6 +1020,7 @@ export const PaymentStatusAb7EnumSchema = {
 
 export const ProductMasterSchema = {
     type: 'object',
+    description: 'Serializador ligero para listados generales',
     properties: {
         id: {
             type: 'string',
@@ -995,8 +1067,139 @@ export const ProductMasterSchema = {
     ]
 } as const;
 
-export const ProductMasterRequestSchema = {
+export const ProductSellingUnitSchema = {
     type: 'object',
+    properties: {
+        id: {
+            type: 'string'
+        },
+        name: {
+            type: 'string',
+            maxLength: 100
+        },
+        unit_conversion_factor: {
+            type: 'string',
+            format: 'decimal',
+            pattern: '^-?\\d{0,10}(?:\\.\\d{0,10})?$'
+        },
+        measurement_unit: {
+            type: 'string',
+            format: 'uuid'
+        }
+    },
+    required: [
+        'measurement_unit',
+        'name',
+        'unit_conversion_factor'
+    ]
+} as const;
+
+export const ProductSellingUnitRequestSchema = {
+    type: 'object',
+    properties: {
+        id: {
+            type: 'string',
+            minLength: 1
+        },
+        name: {
+            type: 'string',
+            minLength: 1,
+            maxLength: 100
+        },
+        unit_conversion_factor: {
+            type: 'string',
+            format: 'decimal',
+            pattern: '^-?\\d{0,10}(?:\\.\\d{0,10})?$'
+        },
+        measurement_unit: {
+            type: 'string',
+            format: 'uuid'
+        }
+    },
+    required: [
+        'measurement_unit',
+        'name',
+        'unit_conversion_factor'
+    ]
+} as const;
+
+export const ProductStockSaleSchema = {
+    type: 'object',
+    properties: {
+        product_id: {
+            type: 'string',
+            readOnly: true
+        },
+        stock: {
+            type: 'string',
+            format: 'decimal',
+            pattern: '^-?\\d{0,6}(?:\\.\\d{0,10})?$'
+        }
+    },
+    required: [
+        'product_id',
+        'stock'
+    ]
+} as const;
+
+export const ProductWriteDetailSchema = {
+    type: 'object',
+    description: 'Serializador completo para Creación, Edición y Detalle',
+    properties: {
+        id: {
+            type: 'string',
+            format: 'uuid',
+            readOnly: true
+        },
+        name: {
+            type: 'string',
+            maxLength: 200
+        },
+        description: {
+            type: 'string',
+            nullable: true
+        },
+        cost_price_usd: {
+            type: 'string',
+            format: 'decimal',
+            pattern: '^-?\\d{0,8}(?:\\.\\d{0,2})?$'
+        },
+        profit_margin: {
+            type: 'string',
+            format: 'decimal',
+            pattern: '^-?\\d{0,3}(?:\\.\\d{0,2})?$'
+        },
+        IVA: {
+            type: 'boolean'
+        },
+        category: {
+            type: 'string',
+            format: 'uuid',
+            nullable: true
+        },
+        measurement_unit: {
+            type: 'string',
+            format: 'uuid',
+            nullable: true
+        },
+        selling_units: {
+            type: 'array',
+            items: {
+                $ref: '#/components/schemas/ProductSellingUnit'
+            }
+        }
+    },
+    required: [
+        'cost_price_usd',
+        'id',
+        'name',
+        'profit_margin'
+    ]
+} as const;
+
+export const ProductWriteDetailRequestSchema = {
+    type: 'object',
+    description: 'Serializador completo para Creación, Edición y Detalle',
     properties: {
         name: {
             type: 'string',
@@ -1029,31 +1232,18 @@ export const ProductMasterRequestSchema = {
             type: 'string',
             format: 'uuid',
             nullable: true
+        },
+        selling_units: {
+            type: 'array',
+            items: {
+                $ref: '#/components/schemas/ProductSellingUnitRequest'
+            }
         }
     },
     required: [
         'cost_price_usd',
         'name',
         'profit_margin'
-    ]
-} as const;
-
-export const ProductStockSaleSchema = {
-    type: 'object',
-    properties: {
-        product_id: {
-            type: 'string',
-            readOnly: true
-        },
-        stock: {
-            type: 'string',
-            format: 'decimal',
-            pattern: '^-?\\d{0,6}(?:\\.\\d{0,4})?$'
-        }
-    },
-    required: [
-        'product_id',
-        'stock'
     ]
 } as const;
 
@@ -1235,14 +1425,13 @@ export const SaleSchema = {
         total_amount_usd: {
             type: 'string',
             format: 'decimal',
-            pattern: '^-?\\d{0,8}(?:\\.\\d{0,2})?$',
-            readOnly: true,
-            nullable: true
+            pattern: '^-?\\d{0,10}(?:\\.\\d{0,2})?$',
+            readOnly: true
         },
         payment_status: {
             allOf: [
                 {
-                    $ref: '#/components/schemas/PaymentStatusAb7Enum'
+                    $ref: '#/components/schemas/PaymentStatusC54Enum'
                 }
             ],
             readOnly: true
@@ -1306,13 +1495,14 @@ export const SaleDetailSchema = {
             readOnly: true
         },
         quantity: {
-            type: 'number',
-            format: 'double'
+            type: 'string',
+            format: 'decimal',
+            pattern: '^-?\\d{0,8}(?:\\.\\d{0,2})?$'
         },
         unit_price: {
             type: 'string',
             format: 'decimal',
-            pattern: '^-?\\d{0,8}(?:\\.\\d{0,2})?$',
+            pattern: '^-?\\d{0,10}(?:\\.\\d{0,2})?$',
             readOnly: true
         }
     },
@@ -1334,8 +1524,9 @@ export const SaleDetailRequestSchema = {
             format: 'uuid'
         },
         quantity: {
-            type: 'number',
-            format: 'double'
+            type: 'string',
+            format: 'decimal',
+            pattern: '^-?\\d{0,8}(?:\\.\\d{0,2})?$'
         }
     },
     required: [
@@ -1370,14 +1561,13 @@ export const SaleListSchema = {
         total_amount_usd: {
             type: 'string',
             format: 'decimal',
-            pattern: '^-?\\d{0,8}(?:\\.\\d{0,2})?$',
-            readOnly: true,
-            nullable: true
+            pattern: '^-?\\d{0,10}(?:\\.\\d{0,2})?$',
+            readOnly: true
         },
         payment_status: {
             allOf: [
                 {
-                    $ref: '#/components/schemas/PaymentStatusAb7Enum'
+                    $ref: '#/components/schemas/PaymentStatusC54Enum'
                 }
             ],
             readOnly: true
@@ -1451,13 +1641,13 @@ export const SalePaymentSchema = {
         total_amount_usd: {
             type: 'string',
             format: 'decimal',
-            pattern: '^-?\\d{0,8}(?:\\.\\d{0,2})?$',
+            pattern: '^-?\\d{0,10}(?:\\.\\d{0,2})?$',
             readOnly: true
         },
         total_amount_ves: {
             type: 'string',
             format: 'decimal',
-            pattern: '^-?\\d{0,8}(?:\\.\\d{0,2})?$',
+            pattern: '^-?\\d{0,10}(?:\\.\\d{0,2})?$',
             readOnly: true
         },
         exchange_rate: {
@@ -1475,7 +1665,6 @@ export const SalePaymentSchema = {
     required: [
         'created_at',
         'currency',
-        'discount',
         'exchange_rate',
         'id',
         'payment_date',
@@ -1506,7 +1695,6 @@ export const SalePaymentRequestSchema = {
     },
     required: [
         'currency',
-        'discount',
         'payment_method'
     ]
 } as const;
@@ -1585,8 +1773,9 @@ export const AccountDetailWritableSchema = {
             format: 'uuid'
         },
         quantity: {
-            type: 'number',
-            format: 'double'
+            type: 'string',
+            format: 'decimal',
+            pattern: '^-?\\d{0,8}(?:\\.\\d{0,2})?$'
         }
     },
     required: [
@@ -1801,6 +1990,64 @@ export const MeasurementUnitWritableSchema = {
     ]
 } as const;
 
+export const PaginatedAccountListListWritableSchema = {
+    type: 'object',
+    required: [
+        'count',
+        'results'
+    ],
+    properties: {
+        count: {
+            type: 'integer',
+            example: 123
+        },
+        next: {
+            type: 'string',
+            nullable: true,
+            format: 'uri',
+            example: 'http://api.example.org/accounts/?page=4'
+        },
+        previous: {
+            type: 'string',
+            nullable: true,
+            format: 'uri',
+            example: 'http://api.example.org/accounts/?page=2'
+        },
+        results: {
+            type: 'array'
+        }
+    }
+} as const;
+
+export const PaginatedSaleListListWritableSchema = {
+    type: 'object',
+    required: [
+        'count',
+        'results'
+    ],
+    properties: {
+        count: {
+            type: 'integer',
+            example: 123
+        },
+        next: {
+            type: 'string',
+            nullable: true,
+            format: 'uri',
+            example: 'http://api.example.org/accounts/?page=4'
+        },
+        previous: {
+            type: 'string',
+            nullable: true,
+            format: 'uri',
+            example: 'http://api.example.org/accounts/?page=2'
+        },
+        results: {
+            type: 'array'
+        }
+    }
+} as const;
+
 export const PatchedAccountRequestWritableSchema = {
     type: 'object',
     description: 'Main serializer for creating and viewing accounts (purchases).\nSupports nested creation of account details.\nIncreases stock when account is created.',
@@ -1853,6 +2100,7 @@ export const PatchedSaleRequestWritableSchema = {
 
 export const ProductMasterWritableSchema = {
     type: 'object',
+    description: 'Serializador ligero para listados generales',
     properties: {
         name: {
             type: 'string',
@@ -1899,11 +2147,60 @@ export const ProductStockSaleWritableSchema = {
         stock: {
             type: 'string',
             format: 'decimal',
-            pattern: '^-?\\d{0,6}(?:\\.\\d{0,4})?$'
+            pattern: '^-?\\d{0,6}(?:\\.\\d{0,10})?$'
         }
     },
     required: [
         'stock'
+    ]
+} as const;
+
+export const ProductWriteDetailWritableSchema = {
+    type: 'object',
+    description: 'Serializador completo para Creación, Edición y Detalle',
+    properties: {
+        name: {
+            type: 'string',
+            maxLength: 200
+        },
+        description: {
+            type: 'string',
+            nullable: true
+        },
+        cost_price_usd: {
+            type: 'string',
+            format: 'decimal',
+            pattern: '^-?\\d{0,8}(?:\\.\\d{0,2})?$'
+        },
+        profit_margin: {
+            type: 'string',
+            format: 'decimal',
+            pattern: '^-?\\d{0,3}(?:\\.\\d{0,2})?$'
+        },
+        IVA: {
+            type: 'boolean'
+        },
+        category: {
+            type: 'string',
+            format: 'uuid',
+            nullable: true
+        },
+        measurement_unit: {
+            type: 'string',
+            format: 'uuid',
+            nullable: true
+        },
+        selling_units: {
+            type: 'array',
+            items: {
+                $ref: '#/components/schemas/ProductSellingUnit'
+            }
+        }
+    },
+    required: [
+        'cost_price_usd',
+        'name',
+        'profit_margin'
     ]
 } as const;
 
@@ -2021,8 +2318,9 @@ export const SaleDetailWritableSchema = {
             format: 'uuid'
         },
         quantity: {
-            type: 'number',
-            format: 'double'
+            type: 'string',
+            format: 'decimal',
+            pattern: '^-?\\d{0,8}(?:\\.\\d{0,2})?$'
         }
     },
     required: [
@@ -2050,7 +2348,6 @@ export const SalePaymentWritableSchema = {
     },
     required: [
         'currency',
-        'discount',
         'payment_method'
     ]
 } as const;
@@ -2084,7 +2381,6 @@ export const SalePaymentRequestWritableSchema = {
     required: [
         'amount',
         'currency',
-        'discount',
         'payment_method'
     ]
 } as const;

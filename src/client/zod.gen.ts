@@ -10,8 +10,8 @@ export const zAccountDetail = z.object({
     id: z.string().uuid().readonly(),
     product: z.string().uuid(),
     product_name: z.string().readonly(),
-    quantity: z.number(),
-    unit_price: z.string().regex(/^-?\d{0,8}(?:\.\d{0,2})?$/).readonly()
+    quantity: z.string().regex(/^-?\d{0,8}(?:\.\d{0,2})?$/),
+    unit_price: z.string().regex(/^-?\d{0,10}(?:\.\d{0,2})?$/).readonly()
 });
 
 /**
@@ -20,7 +20,7 @@ export const zAccountDetail = z.object({
  */
 export const zAccountDetailRequest = z.object({
     product: z.string().uuid(),
-    quantity: z.number()
+    quantity: z.string().regex(/^-?\d{0,8}(?:\.\d{0,2})?$/)
 });
 
 /**
@@ -271,25 +271,6 @@ export const zPatchedMeasurementUnitRequest = z.object({
     decimals: z.boolean().optional()
 });
 
-export const zPatchedProductMasterRequest = z.object({
-    name: z.string().min(1).max(200).optional(),
-    description: z.union([
-        z.string(),
-        z.null()
-    ]).optional(),
-    cost_price_usd: z.string().regex(/^-?\d{0,8}(?:\.\d{0,2})?$/).optional(),
-    profit_margin: z.string().regex(/^-?\d{0,3}(?:\.\d{0,2})?$/).optional(),
-    IVA: z.boolean().optional(),
-    category: z.union([
-        z.string().uuid(),
-        z.null()
-    ]).optional(),
-    measurement_unit: z.union([
-        z.string().uuid(),
-        z.null()
-    ]).optional()
-});
-
 export const zPatchedProviderRequest = z.object({
     name: z.string().min(1).max(200).optional(),
     phone: z.union([
@@ -327,7 +308,7 @@ export const zPatchedSaleRequest = z.object({
  * * `PARTIALLY_PAID` - Partially Paid
  * * `PAID` - Paid
  */
-export const zPaymentStatus2D7Enum = z.enum([
+export const zPaymentStatus0CfEnum = z.enum([
     'PENDING',
     'PARTIALLY_PAID',
     'PAID'
@@ -347,11 +328,8 @@ export const zAccount = z.object({
         z.null()
     ]).optional(),
     provider_name: z.string().readonly().default('No Provider'),
-    total_amount_usd: z.union([
-        z.string().regex(/^-?\d{0,8}(?:\.\d{0,2})?$/).readonly(),
-        z.null()
-    ]).readonly(),
-    payment_status: zPaymentStatus2D7Enum,
+    total_amount_usd: z.string().regex(/^-?\d{0,10}(?:\.\d{0,2})?$/).readonly(),
+    payment_status: zPaymentStatus0CfEnum,
     seq_number: z.number().int().readonly(),
     account_details: z.array(zAccountDetail).readonly(),
     total_paid: z.string().readonly(),
@@ -368,11 +346,8 @@ export const zAccountList = z.object({
     seq_number: z.number().int().readonly(),
     created_at: z.string().datetime().readonly(),
     updated_at: z.string().datetime().readonly(),
-    total_amount_usd: z.union([
-        z.string().regex(/^-?\d{0,8}(?:\.\d{0,2})?$/).readonly(),
-        z.null()
-    ]).readonly(),
-    payment_status: zPaymentStatus2D7Enum,
+    total_amount_usd: z.string().regex(/^-?\d{0,10}(?:\.\d{0,2})?$/).readonly(),
+    payment_status: zPaymentStatus0CfEnum,
     branch: z.string().uuid().readonly(),
     branch_name: z.string().readonly(),
     provider: z.union([
@@ -383,19 +358,35 @@ export const zAccountList = z.object({
     total_paid: z.string().readonly()
 });
 
+export const zPaginatedAccountListList = z.object({
+    count: z.number().int(),
+    next: z.union([
+        z.string().url(),
+        z.null()
+    ]).optional(),
+    previous: z.union([
+        z.string().url(),
+        z.null()
+    ]).optional(),
+    results: z.array(zAccountList)
+});
+
 /**
  * * `PENDING` - Pending
  * * `PARTIALLY_PAID` - Partially Paid
  * * `PAID` - Paid
  * * `OVERPAID` - Overpaid
  */
-export const zPaymentStatusAb7Enum = z.enum([
+export const zPaymentStatusC54Enum = z.enum([
     'PENDING',
     'PARTIALLY_PAID',
     'PAID',
     'OVERPAID'
 ]);
 
+/**
+ * Serializador ligero para listados generales
+ */
 export const zProductMaster = z.object({
     id: z.string().uuid().readonly(),
     name: z.string().max(200),
@@ -416,7 +407,76 @@ export const zProductMaster = z.object({
     ]).optional()
 });
 
-export const zProductMasterRequest = z.object({
+export const zProductSellingUnit = z.object({
+    id: z.string().optional(),
+    name: z.string().max(100),
+    unit_conversion_factor: z.string().regex(/^-?\d{0,10}(?:\.\d{0,10})?$/),
+    measurement_unit: z.string().uuid()
+});
+
+export const zProductSellingUnitRequest = z.object({
+    id: z.string().min(1).optional(),
+    name: z.string().min(1).max(100),
+    unit_conversion_factor: z.string().regex(/^-?\d{0,10}(?:\.\d{0,10})?$/),
+    measurement_unit: z.string().uuid()
+});
+
+/**
+ * Serializador completo para Creación, Edición y Detalle
+ */
+export const zPatchedProductWriteDetailRequest = z.object({
+    name: z.string().min(1).max(200).optional(),
+    description: z.union([
+        z.string(),
+        z.null()
+    ]).optional(),
+    cost_price_usd: z.string().regex(/^-?\d{0,8}(?:\.\d{0,2})?$/).optional(),
+    profit_margin: z.string().regex(/^-?\d{0,3}(?:\.\d{0,2})?$/).optional(),
+    IVA: z.boolean().optional(),
+    category: z.union([
+        z.string().uuid(),
+        z.null()
+    ]).optional(),
+    measurement_unit: z.union([
+        z.string().uuid(),
+        z.null()
+    ]).optional(),
+    selling_units: z.array(zProductSellingUnitRequest).optional()
+});
+
+export const zProductStockSale = z.object({
+    product_id: z.string().readonly(),
+    stock: z.string().regex(/^-?\d{0,6}(?:\.\d{0,10})?$/)
+});
+
+/**
+ * Serializador completo para Creación, Edición y Detalle
+ */
+export const zProductWriteDetail = z.object({
+    id: z.string().uuid().readonly(),
+    name: z.string().max(200),
+    description: z.union([
+        z.string(),
+        z.null()
+    ]).optional(),
+    cost_price_usd: z.string().regex(/^-?\d{0,8}(?:\.\d{0,2})?$/),
+    profit_margin: z.string().regex(/^-?\d{0,3}(?:\.\d{0,2})?$/),
+    IVA: z.boolean().optional(),
+    category: z.union([
+        z.string().uuid(),
+        z.null()
+    ]).optional(),
+    measurement_unit: z.union([
+        z.string().uuid(),
+        z.null()
+    ]).optional(),
+    selling_units: z.array(zProductSellingUnit).optional()
+});
+
+/**
+ * Serializador completo para Creación, Edición y Detalle
+ */
+export const zProductWriteDetailRequest = z.object({
     name: z.string().min(1).max(200),
     description: z.union([
         z.string(),
@@ -432,12 +492,8 @@ export const zProductMasterRequest = z.object({
     measurement_unit: z.union([
         z.string().uuid(),
         z.null()
-    ]).optional()
-});
-
-export const zProductStockSale = z.object({
-    product_id: z.string().readonly(),
-    stock: z.string().regex(/^-?\d{0,6}(?:\.\d{0,4})?$/)
+    ]).optional(),
+    selling_units: z.array(zProductSellingUnitRequest).optional()
 });
 
 export const zProvider = z.object({
@@ -505,8 +561,8 @@ export const zSaleDetail = z.object({
     id: z.string().uuid().readonly(),
     product: z.string().uuid(),
     product_name: z.string().readonly(),
-    quantity: z.number(),
-    unit_price: z.string().regex(/^-?\d{0,8}(?:\.\d{0,2})?$/).readonly()
+    quantity: z.string().regex(/^-?\d{0,8}(?:\.\d{0,2})?$/),
+    unit_price: z.string().regex(/^-?\d{0,10}(?:\.\d{0,2})?$/).readonly()
 });
 
 /**
@@ -522,11 +578,8 @@ export const zSale = z.object({
         z.null()
     ]).optional(),
     customer_name: z.string().readonly().default('Walk-in Customer'),
-    total_amount_usd: z.union([
-        z.string().regex(/^-?\d{0,8}(?:\.\d{0,2})?$/).readonly(),
-        z.null()
-    ]).readonly(),
-    payment_status: zPaymentStatusAb7Enum,
+    total_amount_usd: z.string().regex(/^-?\d{0,10}(?:\.\d{0,2})?$/).readonly(),
+    payment_status: zPaymentStatusC54Enum,
     seq_number: z.number().int().readonly(),
     sale_details: z.array(zSaleDetail).readonly(),
     total_paid: z.string().readonly(),
@@ -540,7 +593,7 @@ export const zSale = z.object({
  */
 export const zSaleDetailRequest = z.object({
     product: z.string().uuid(),
-    quantity: z.number()
+    quantity: z.string().regex(/^-?\d{0,8}(?:\.\d{0,2})?$/)
 });
 
 /**
@@ -552,11 +605,8 @@ export const zSaleList = z.object({
     seq_number: z.number().int().readonly(),
     created_at: z.string().datetime().readonly(),
     updated_at: z.string().datetime().readonly(),
-    total_amount_usd: z.union([
-        z.string().regex(/^-?\d{0,8}(?:\.\d{0,2})?$/).readonly(),
-        z.null()
-    ]).readonly(),
-    payment_status: zPaymentStatusAb7Enum,
+    total_amount_usd: z.string().regex(/^-?\d{0,10}(?:\.\d{0,2})?$/).readonly(),
+    payment_status: zPaymentStatusC54Enum,
     branch: z.string().uuid().readonly(),
     branch_name: z.string().readonly(),
     customer: z.union([
@@ -565,6 +615,19 @@ export const zSaleList = z.object({
     ]).readonly(),
     customer_name: z.string().readonly().default('Walk-in Customer'),
     total_paid: z.string().readonly()
+});
+
+export const zPaginatedSaleListList = z.object({
+    count: z.number().int(),
+    next: z.union([
+        z.string().url(),
+        z.null()
+    ]).optional(),
+    previous: z.union([
+        z.string().url(),
+        z.null()
+    ]).optional(),
+    results: z.array(zSaleList)
 });
 
 /**
@@ -576,9 +639,9 @@ export const zSalePayment = z.object({
     currency: z.string().max(3),
     payment_method: z.string(),
     payment_date: z.string().datetime().readonly(),
-    discount: z.string().regex(/^-?\d{0,8}(?:\.\d{0,2})?$/),
-    total_amount_usd: z.string().regex(/^-?\d{0,8}(?:\.\d{0,2})?$/).readonly(),
-    total_amount_ves: z.string().regex(/^-?\d{0,8}(?:\.\d{0,2})?$/).readonly(),
+    discount: z.string().regex(/^-?\d{0,8}(?:\.\d{0,2})?$/).optional(),
+    total_amount_usd: z.string().regex(/^-?\d{0,10}(?:\.\d{0,2})?$/).readonly(),
+    total_amount_ves: z.string().regex(/^-?\d{0,10}(?:\.\d{0,2})?$/).readonly(),
     exchange_rate: z.union([
         z.string().uuid().readonly(),
         z.null()
@@ -593,7 +656,7 @@ export const zSalePayment = z.object({
 export const zSalePaymentRequest = z.object({
     currency: z.string().min(1).max(3),
     payment_method: z.string().min(1),
-    discount: z.string().regex(/^-?\d{0,8}(?:\.\d{0,2})?$/)
+    discount: z.string().regex(/^-?\d{0,8}(?:\.\d{0,2})?$/).optional()
 });
 
 /**
@@ -635,7 +698,7 @@ export const zAccountWritable = z.object({
  */
 export const zAccountDetailWritable = z.object({
     product: z.string().uuid(),
-    quantity: z.number()
+    quantity: z.string().regex(/^-?\d{0,8}(?:\.\d{0,2})?$/)
 });
 
 /**
@@ -731,6 +794,32 @@ export const zMeasurementUnitWritable = z.object({
     decimals: z.boolean().optional()
 });
 
+export const zPaginatedAccountListListWritable = z.object({
+    count: z.number().int(),
+    next: z.union([
+        z.string().url(),
+        z.null()
+    ]).optional(),
+    previous: z.union([
+        z.string().url(),
+        z.null()
+    ]).optional(),
+    results: z.array(z.unknown())
+});
+
+export const zPaginatedSaleListListWritable = z.object({
+    count: z.number().int(),
+    next: z.union([
+        z.string().url(),
+        z.null()
+    ]).optional(),
+    previous: z.union([
+        z.string().url(),
+        z.null()
+    ]).optional(),
+    results: z.array(z.unknown())
+});
+
 /**
  * Main serializer for creating and viewing accounts (purchases).
  * Supports nested creation of account details.
@@ -758,6 +847,9 @@ export const zPatchedSaleRequestWritable = z.object({
     details: z.array(z.record(z.unknown())).optional()
 });
 
+/**
+ * Serializador ligero para listados generales
+ */
 export const zProductMasterWritable = z.object({
     name: z.string().max(200),
     description: z.union([
@@ -778,7 +870,30 @@ export const zProductMasterWritable = z.object({
 });
 
 export const zProductStockSaleWritable = z.object({
-    stock: z.string().regex(/^-?\d{0,6}(?:\.\d{0,4})?$/)
+    stock: z.string().regex(/^-?\d{0,6}(?:\.\d{0,10})?$/)
+});
+
+/**
+ * Serializador completo para Creación, Edición y Detalle
+ */
+export const zProductWriteDetailWritable = z.object({
+    name: z.string().max(200),
+    description: z.union([
+        z.string(),
+        z.null()
+    ]).optional(),
+    cost_price_usd: z.string().regex(/^-?\d{0,8}(?:\.\d{0,2})?$/),
+    profit_margin: z.string().regex(/^-?\d{0,3}(?:\.\d{0,2})?$/),
+    IVA: z.boolean().optional(),
+    category: z.union([
+        z.string().uuid(),
+        z.null()
+    ]).optional(),
+    measurement_unit: z.union([
+        z.string().uuid(),
+        z.null()
+    ]).optional(),
+    selling_units: z.array(zProductSellingUnit).optional()
 });
 
 export const zProviderWritable = z.object({
@@ -829,7 +944,7 @@ export const zSaleWritable = z.object({
  */
 export const zSaleDetailWritable = z.object({
     product: z.string().uuid(),
-    quantity: z.number()
+    quantity: z.string().regex(/^-?\d{0,8}(?:\.\d{0,2})?$/)
 });
 
 /**
@@ -839,7 +954,7 @@ export const zSaleDetailWritable = z.object({
 export const zSalePaymentWritable = z.object({
     currency: z.string().max(3),
     payment_method: z.string(),
-    discount: z.string().regex(/^-?\d{0,8}(?:\.\d{0,2})?$/)
+    discount: z.string().regex(/^-?\d{0,8}(?:\.\d{0,2})?$/).optional()
 });
 
 /**
@@ -849,7 +964,7 @@ export const zSalePaymentWritable = z.object({
 export const zSalePaymentRequestWritable = z.object({
     currency: z.string().min(1).max(3),
     payment_method: z.string().min(1),
-    discount: z.string().regex(/^-?\d{0,8}(?:\.\d{0,2})?$/),
+    discount: z.string().regex(/^-?\d{0,8}(?:\.\d{0,2})?$/).optional(),
     amount: z.string().regex(/^-?\d{0,8}(?:\.\d{0,2})?$/)
 });
 
@@ -866,46 +981,49 @@ export const zSaleRequestWritable = z.object({
     details: z.array(z.record(z.unknown()))
 });
 
-export const zAccountsListData = z.object({
+export const zV1AccountsListData = z.object({
     body: z.never().optional(),
     path: z.never().optional(),
-    query: z.never().optional()
+    query: z.object({
+        page: z.number().int().optional(),
+        page_size: z.number().int().optional()
+    }).optional()
 });
 
-export const zAccountsListResponse = z.array(zAccountList);
+export const zV1AccountsListResponse = zPaginatedAccountListList;
 
-export const zAccountsCreateData = z.object({
+export const zV1AccountsCreateData = z.object({
     body: zAccountRequestWritable,
     path: z.never().optional(),
     query: z.never().optional()
 });
 
-export const zAccountsCreateResponse = zAccount;
+export const zV1AccountsCreateResponse = zAccount;
 
-export const zAccountsPaymentsListData = z.object({
+export const zV1AccountsPaymentsListData = z.object({
     body: z.never().optional(),
     path: z.object({
-        account_id: z.string().uuid()
+        account_id: z.string()
     }),
     query: z.never().optional()
 });
 
-export const zAccountsPaymentsListResponse = z.array(zAccountPayment);
+export const zV1AccountsPaymentsListResponse = z.array(zAccountPayment);
 
-export const zAccountsPaymentsCreateData = z.object({
+export const zV1AccountsPaymentsCreateData = z.object({
     body: zAccountPaymentRequestWritable,
     path: z.object({
-        account_id: z.string().uuid()
+        account_id: z.string()
     }),
     query: z.never().optional()
 });
 
-export const zAccountsPaymentsCreateResponse = zAccountPayment;
+export const zV1AccountsPaymentsCreateResponse = zAccountPayment;
 
-export const zAccountsDestroyData = z.object({
+export const zV1AccountsDestroyData = z.object({
     body: z.never().optional(),
     path: z.object({
-        id: z.string().uuid()
+        id: z.string()
     }),
     query: z.never().optional()
 });
@@ -913,55 +1031,55 @@ export const zAccountsDestroyData = z.object({
 /**
  * No response body
  */
-export const zAccountsDestroyResponse = z.void();
+export const zV1AccountsDestroyResponse = z.void();
 
-export const zAccountsRetrieveData = z.object({
+export const zV1AccountsRetrieveData = z.object({
     body: z.never().optional(),
     path: z.object({
-        id: z.string().uuid()
+        id: z.string()
     }),
     query: z.never().optional()
 });
 
-export const zAccountsRetrieveResponse = zAccount;
+export const zV1AccountsRetrieveResponse = zAccount;
 
-export const zAccountsPartialUpdateData = z.object({
+export const zV1AccountsPartialUpdateData = z.object({
     body: zPatchedAccountRequestWritable.optional(),
     path: z.object({
-        id: z.string().uuid()
+        id: z.string()
     }),
     query: z.never().optional()
 });
 
-export const zAccountsPartialUpdateResponse = zAccount;
+export const zV1AccountsPartialUpdateResponse = zAccount;
 
-export const zAccountsUpdateData = z.object({
+export const zV1AccountsUpdateData = z.object({
     body: zAccountRequestWritable,
     path: z.object({
-        id: z.string().uuid()
+        id: z.string()
     }),
     query: z.never().optional()
 });
 
-export const zAccountsUpdateResponse = zAccount;
+export const zV1AccountsUpdateResponse = zAccount;
 
-export const zBranchListData = z.object({
+export const zV1BranchListData = z.object({
     body: z.never().optional(),
     path: z.never().optional(),
     query: z.never().optional()
 });
 
-export const zBranchListResponse = z.array(zBranch);
+export const zV1BranchListResponse = z.array(zBranch);
 
-export const zBranchCreateData = z.object({
+export const zV1BranchCreateData = z.object({
     body: zBranchRequest,
     path: z.never().optional(),
     query: z.never().optional()
 });
 
-export const zBranchCreateResponse = zBranch;
+export const zV1BranchCreateResponse = zBranch;
 
-export const zBranchDestroyData = z.object({
+export const zV1BranchDestroyData = z.object({
     body: z.never().optional(),
     path: z.object({
         id: z.string()
@@ -972,9 +1090,9 @@ export const zBranchDestroyData = z.object({
 /**
  * No response body
  */
-export const zBranchDestroyResponse = z.void();
+export const zV1BranchDestroyResponse = z.void();
 
-export const zBranchRetrieveData = z.object({
+export const zV1BranchRetrieveData = z.object({
     body: z.never().optional(),
     path: z.object({
         id: z.string()
@@ -982,9 +1100,9 @@ export const zBranchRetrieveData = z.object({
     query: z.never().optional()
 });
 
-export const zBranchRetrieveResponse = zBranch;
+export const zV1BranchRetrieveResponse = zBranch;
 
-export const zBranchPartialUpdateData = z.object({
+export const zV1BranchPartialUpdateData = z.object({
     body: zPatchedBranchRequest.optional(),
     path: z.object({
         id: z.string()
@@ -992,9 +1110,9 @@ export const zBranchPartialUpdateData = z.object({
     query: z.never().optional()
 });
 
-export const zBranchPartialUpdateResponse = zBranch;
+export const zV1BranchPartialUpdateResponse = zBranch;
 
-export const zBranchUpdateData = z.object({
+export const zV1BranchUpdateData = z.object({
     body: zBranchRequest,
     path: z.object({
         id: z.string()
@@ -1002,25 +1120,25 @@ export const zBranchUpdateData = z.object({
     query: z.never().optional()
 });
 
-export const zBranchUpdateResponse = zBranch;
+export const zV1BranchUpdateResponse = zBranch;
 
-export const zCategoryListData = z.object({
+export const zV1CategoryListData = z.object({
     body: z.never().optional(),
     path: z.never().optional(),
     query: z.never().optional()
 });
 
-export const zCategoryListResponse = z.array(zCategory);
+export const zV1CategoryListResponse = z.array(zCategory);
 
-export const zCategoryCreateData = z.object({
+export const zV1CategoryCreateData = z.object({
     body: zCategoryRequest,
     path: z.never().optional(),
     query: z.never().optional()
 });
 
-export const zCategoryCreateResponse = zCategory;
+export const zV1CategoryCreateResponse = zCategory;
 
-export const zCategoryDestroyData = z.object({
+export const zV1CategoryDestroyData = z.object({
     body: z.never().optional(),
     path: z.object({
         id: z.string()
@@ -1031,9 +1149,9 @@ export const zCategoryDestroyData = z.object({
 /**
  * No response body
  */
-export const zCategoryDestroyResponse = z.void();
+export const zV1CategoryDestroyResponse = z.void();
 
-export const zCategoryRetrieveData = z.object({
+export const zV1CategoryRetrieveData = z.object({
     body: z.never().optional(),
     path: z.object({
         id: z.string()
@@ -1041,9 +1159,9 @@ export const zCategoryRetrieveData = z.object({
     query: z.never().optional()
 });
 
-export const zCategoryRetrieveResponse = zCategory;
+export const zV1CategoryRetrieveResponse = zCategory;
 
-export const zCategoryPartialUpdateData = z.object({
+export const zV1CategoryPartialUpdateData = z.object({
     body: zPatchedCategoryRequest.optional(),
     path: z.object({
         id: z.string()
@@ -1051,9 +1169,9 @@ export const zCategoryPartialUpdateData = z.object({
     query: z.never().optional()
 });
 
-export const zCategoryPartialUpdateResponse = zCategory;
+export const zV1CategoryPartialUpdateResponse = zCategory;
 
-export const zCategoryUpdateData = z.object({
+export const zV1CategoryUpdateData = z.object({
     body: zCategoryRequest,
     path: z.object({
         id: z.string()
@@ -1061,57 +1179,57 @@ export const zCategoryUpdateData = z.object({
     query: z.never().optional()
 });
 
-export const zCategoryUpdateResponse = zCategory;
+export const zV1CategoryUpdateResponse = zCategory;
 
-export const zCompanyRetrieveData = z.object({
+export const zV1CompanyRetrieveData = z.object({
     body: z.never().optional(),
     path: z.never().optional(),
     query: z.never().optional()
 });
 
-export const zCompanyRetrieveResponse = zCompany;
+export const zV1CompanyRetrieveResponse = zCompany;
 
-export const zCompanyPartialUpdateData = z.object({
+export const zV1CompanyPartialUpdateData = z.object({
     body: zPatchedCompanyRequest.optional(),
     path: z.never().optional(),
     query: z.never().optional()
 });
 
-export const zCompanyPartialUpdateResponse = zCompany;
+export const zV1CompanyPartialUpdateResponse = zCompany;
 
-export const zCompanyCreateData = z.object({
+export const zV1CompanyCreateData = z.object({
     body: zCompanyRequest,
     path: z.never().optional(),
     query: z.never().optional()
 });
 
-export const zCompanyCreateResponse = zCompany;
+export const zV1CompanyCreateResponse = zCompany;
 
-export const zCompanyUpdateData = z.object({
+export const zV1CompanyUpdateData = z.object({
     body: zCompanyRequest,
     path: z.never().optional(),
     query: z.never().optional()
 });
 
-export const zCompanyUpdateResponse = zCompany;
+export const zV1CompanyUpdateResponse = zCompany;
 
-export const zCustomersListData = z.object({
+export const zV1CustomersListData = z.object({
     body: z.never().optional(),
     path: z.never().optional(),
     query: z.never().optional()
 });
 
-export const zCustomersListResponse = z.array(zCustomer);
+export const zV1CustomersListResponse = z.array(zCustomer);
 
-export const zCustomersCreateData = z.object({
+export const zV1CustomersCreateData = z.object({
     body: zCustomerRequest,
     path: z.never().optional(),
     query: z.never().optional()
 });
 
-export const zCustomersCreateResponse = zCustomer;
+export const zV1CustomersCreateResponse = zCustomer;
 
-export const zCustomersDestroyData = z.object({
+export const zV1CustomersDestroyData = z.object({
     body: z.never().optional(),
     path: z.object({
         id: z.string()
@@ -1122,9 +1240,9 @@ export const zCustomersDestroyData = z.object({
 /**
  * No response body
  */
-export const zCustomersDestroyResponse = z.void();
+export const zV1CustomersDestroyResponse = z.void();
 
-export const zCustomersRetrieveData = z.object({
+export const zV1CustomersRetrieveData = z.object({
     body: z.never().optional(),
     path: z.object({
         id: z.string()
@@ -1132,9 +1250,9 @@ export const zCustomersRetrieveData = z.object({
     query: z.never().optional()
 });
 
-export const zCustomersRetrieveResponse = zCustomer;
+export const zV1CustomersRetrieveResponse = zCustomer;
 
-export const zCustomersPartialUpdateData = z.object({
+export const zV1CustomersPartialUpdateData = z.object({
     body: zPatchedCustomerRequest.optional(),
     path: z.object({
         id: z.string()
@@ -1142,9 +1260,9 @@ export const zCustomersPartialUpdateData = z.object({
     query: z.never().optional()
 });
 
-export const zCustomersPartialUpdateResponse = zCustomer;
+export const zV1CustomersPartialUpdateResponse = zCustomer;
 
-export const zCustomersUpdateData = z.object({
+export const zV1CustomersUpdateData = z.object({
     body: zCustomerRequest,
     path: z.object({
         id: z.string()
@@ -1152,49 +1270,57 @@ export const zCustomersUpdateData = z.object({
     query: z.never().optional()
 });
 
-export const zCustomersUpdateResponse = zCustomer;
+export const zV1CustomersUpdateResponse = zCustomer;
 
-export const zExchangeRatesHistoryRetrieveData = z.object({
+export const zV1ExchangeRatesRetrieveData = z.object({
+    body: z.never().optional(),
+    path: z.object({
+        id: z.string()
+    }),
+    query: z.never().optional()
+});
+
+export const zV1ExchangeRatesHistoryRetrieveData = z.object({
     body: z.never().optional(),
     path: z.never().optional(),
     query: z.never().optional()
 });
 
-export const zExchangeRatesTodayRetrieveData = z.object({
+export const zV1ExchangeRatesTodayRetrieveData = z.object({
     body: z.never().optional(),
     path: z.never().optional(),
     query: z.never().optional()
 });
 
-export const zLoginCreateData = z.object({
+export const zV1LoginCreateData = z.object({
     body: z.never().optional(),
     path: z.never().optional(),
     query: z.never().optional()
 });
 
-export const zLogoutCreateData = z.object({
+export const zV1LogoutCreateData = z.object({
     body: z.never().optional(),
     path: z.never().optional(),
     query: z.never().optional()
 });
 
-export const zMeasurementListData = z.object({
+export const zV1MeasurementListData = z.object({
     body: z.never().optional(),
     path: z.never().optional(),
     query: z.never().optional()
 });
 
-export const zMeasurementListResponse = z.array(zMeasurementUnit);
+export const zV1MeasurementListResponse = z.array(zMeasurementUnit);
 
-export const zMeasurementCreateData = z.object({
+export const zV1MeasurementCreateData = z.object({
     body: zMeasurementUnitRequest,
     path: z.never().optional(),
     query: z.never().optional()
 });
 
-export const zMeasurementCreateResponse = zMeasurementUnit;
+export const zV1MeasurementCreateResponse = zMeasurementUnit;
 
-export const zMeasurementDestroyData = z.object({
+export const zV1MeasurementDestroyData = z.object({
     body: z.never().optional(),
     path: z.object({
         id: z.string()
@@ -1205,9 +1331,9 @@ export const zMeasurementDestroyData = z.object({
 /**
  * No response body
  */
-export const zMeasurementDestroyResponse = z.void();
+export const zV1MeasurementDestroyResponse = z.void();
 
-export const zMeasurementRetrieveData = z.object({
+export const zV1MeasurementRetrieveData = z.object({
     body: z.never().optional(),
     path: z.object({
         id: z.string()
@@ -1215,9 +1341,9 @@ export const zMeasurementRetrieveData = z.object({
     query: z.never().optional()
 });
 
-export const zMeasurementRetrieveResponse = zMeasurementUnit;
+export const zV1MeasurementRetrieveResponse = zMeasurementUnit;
 
-export const zMeasurementPartialUpdateData = z.object({
+export const zV1MeasurementPartialUpdateData = z.object({
     body: zPatchedMeasurementUnitRequest.optional(),
     path: z.object({
         id: z.string()
@@ -1225,9 +1351,9 @@ export const zMeasurementPartialUpdateData = z.object({
     query: z.never().optional()
 });
 
-export const zMeasurementPartialUpdateResponse = zMeasurementUnit;
+export const zV1MeasurementPartialUpdateResponse = zMeasurementUnit;
 
-export const zMeasurementUpdateData = z.object({
+export const zV1MeasurementUpdateData = z.object({
     body: zMeasurementUnitRequest,
     path: z.object({
         id: z.string()
@@ -1235,33 +1361,33 @@ export const zMeasurementUpdateData = z.object({
     query: z.never().optional()
 });
 
-export const zMeasurementUpdateResponse = zMeasurementUnit;
+export const zV1MeasurementUpdateResponse = zMeasurementUnit;
 
-export const zProductListData = z.object({
+export const zV1ProductListData = z.object({
     body: z.never().optional(),
     path: z.never().optional(),
     query: z.never().optional()
 });
 
-export const zProductListResponse = z.array(zProductMaster);
+export const zV1ProductListResponse = z.array(zProductMaster);
 
-export const zProductCreateData = z.object({
-    body: zProductMasterRequest,
+export const zV1ProductCreateData = z.object({
+    body: zProductWriteDetailRequest,
     path: z.never().optional(),
     query: z.never().optional()
 });
 
-export const zProductCreateResponse = zProductMaster;
+export const zV1ProductCreateResponse = zProductWriteDetail;
 
-export const zProductBranchStockListData = z.object({
+export const zV1ProductBranchStockListData = z.object({
     body: z.never().optional(),
     path: z.never().optional(),
     query: z.never().optional()
 });
 
-export const zProductBranchStockListResponse = z.array(zProductStockSale);
+export const zV1ProductBranchStockListResponse = z.array(zProductStockSale);
 
-export const zProductDestroyData = z.object({
+export const zV1ProductDestroyData = z.object({
     body: z.never().optional(),
     path: z.object({
         id: z.string()
@@ -1272,9 +1398,9 @@ export const zProductDestroyData = z.object({
 /**
  * No response body
  */
-export const zProductDestroyResponse = z.void();
+export const zV1ProductDestroyResponse = z.void();
 
-export const zProductRetrieveData = z.object({
+export const zV1ProductRetrieveData = z.object({
     body: z.never().optional(),
     path: z.object({
         id: z.string()
@@ -1282,45 +1408,45 @@ export const zProductRetrieveData = z.object({
     query: z.never().optional()
 });
 
-export const zProductRetrieveResponse = zProductMaster;
+export const zV1ProductRetrieveResponse = zProductWriteDetail;
 
-export const zProductPartialUpdateData = z.object({
-    body: zPatchedProductMasterRequest.optional(),
+export const zV1ProductPartialUpdateData = z.object({
+    body: zPatchedProductWriteDetailRequest.optional(),
     path: z.object({
         id: z.string()
     }),
     query: z.never().optional()
 });
 
-export const zProductPartialUpdateResponse = zProductMaster;
+export const zV1ProductPartialUpdateResponse = zProductWriteDetail;
 
-export const zProductUpdateData = z.object({
-    body: zProductMasterRequest,
+export const zV1ProductUpdateData = z.object({
+    body: zProductWriteDetailRequest,
     path: z.object({
         id: z.string()
     }),
     query: z.never().optional()
 });
 
-export const zProductUpdateResponse = zProductMaster;
+export const zV1ProductUpdateResponse = zProductWriteDetail;
 
-export const zProvidersListData = z.object({
+export const zV1ProvidersListData = z.object({
     body: z.never().optional(),
     path: z.never().optional(),
     query: z.never().optional()
 });
 
-export const zProvidersListResponse = z.array(zProvider);
+export const zV1ProvidersListResponse = z.array(zProvider);
 
-export const zProvidersCreateData = z.object({
+export const zV1ProvidersCreateData = z.object({
     body: zProviderRequest,
     path: z.never().optional(),
     query: z.never().optional()
 });
 
-export const zProvidersCreateResponse = zProvider;
+export const zV1ProvidersCreateResponse = zProvider;
 
-export const zProvidersDestroyData = z.object({
+export const zV1ProvidersDestroyData = z.object({
     body: z.never().optional(),
     path: z.object({
         id: z.string()
@@ -1331,9 +1457,9 @@ export const zProvidersDestroyData = z.object({
 /**
  * No response body
  */
-export const zProvidersDestroyResponse = z.void();
+export const zV1ProvidersDestroyResponse = z.void();
 
-export const zProvidersRetrieveData = z.object({
+export const zV1ProvidersRetrieveData = z.object({
     body: z.never().optional(),
     path: z.object({
         id: z.string()
@@ -1341,9 +1467,9 @@ export const zProvidersRetrieveData = z.object({
     query: z.never().optional()
 });
 
-export const zProvidersRetrieveResponse = zProvider;
+export const zV1ProvidersRetrieveResponse = zProvider;
 
-export const zProvidersPartialUpdateData = z.object({
+export const zV1ProvidersPartialUpdateData = z.object({
     body: zPatchedProviderRequest.optional(),
     path: z.object({
         id: z.string()
@@ -1351,9 +1477,9 @@ export const zProvidersPartialUpdateData = z.object({
     query: z.never().optional()
 });
 
-export const zProvidersPartialUpdateResponse = zProvider;
+export const zV1ProvidersPartialUpdateResponse = zProvider;
 
-export const zProvidersUpdateData = z.object({
+export const zV1ProvidersUpdateData = z.object({
     body: zProviderRequest,
     path: z.object({
         id: z.string()
@@ -1361,41 +1487,44 @@ export const zProvidersUpdateData = z.object({
     query: z.never().optional()
 });
 
-export const zProvidersUpdateResponse = zProvider;
+export const zV1ProvidersUpdateResponse = zProvider;
 
-export const zRefreshCreateData = z.object({
+export const zV1RefreshCreateData = z.object({
     body: zTokenRefreshRequest,
     path: z.never().optional(),
     query: z.never().optional()
 });
 
-export const zRefreshCreateResponse = zTokenRefresh;
+export const zV1RefreshCreateResponse = zTokenRefresh;
 
-export const zRegisterCreateData = z.object({
+export const zV1RegisterCreateData = z.object({
     body: zRegisterUserRequestWritable,
     path: z.never().optional(),
     query: z.never().optional()
 });
 
-export const zRegisterCreateResponse = zRegisterUser;
+export const zV1RegisterCreateResponse = zRegisterUser;
 
-export const zSalesListData = z.object({
+export const zV1SalesListData = z.object({
     body: z.never().optional(),
     path: z.never().optional(),
-    query: z.never().optional()
+    query: z.object({
+        page: z.number().int().optional(),
+        page_size: z.number().int().optional()
+    }).optional()
 });
 
-export const zSalesListResponse = z.array(zSaleList);
+export const zV1SalesListResponse = zPaginatedSaleListList;
 
-export const zSalesCreateData = z.object({
+export const zV1SalesCreateData = z.object({
     body: zSaleRequestWritable,
     path: z.never().optional(),
     query: z.never().optional()
 });
 
-export const zSalesCreateResponse = zSale;
+export const zV1SalesCreateResponse = zSale;
 
-export const zSalesDestroyData = z.object({
+export const zV1SalesDestroyData = z.object({
     body: z.never().optional(),
     path: z.object({
         id: z.string()
@@ -1406,9 +1535,9 @@ export const zSalesDestroyData = z.object({
 /**
  * No response body
  */
-export const zSalesDestroyResponse = z.void();
+export const zV1SalesDestroyResponse = z.void();
 
-export const zSalesRetrieveData = z.object({
+export const zV1SalesRetrieveData = z.object({
     body: z.never().optional(),
     path: z.object({
         id: z.string()
@@ -1416,9 +1545,9 @@ export const zSalesRetrieveData = z.object({
     query: z.never().optional()
 });
 
-export const zSalesRetrieveResponse = zSale;
+export const zV1SalesRetrieveResponse = zSale;
 
-export const zSalesPartialUpdateData = z.object({
+export const zV1SalesPartialUpdateData = z.object({
     body: zPatchedSaleRequestWritable.optional(),
     path: z.object({
         id: z.string()
@@ -1426,9 +1555,9 @@ export const zSalesPartialUpdateData = z.object({
     query: z.never().optional()
 });
 
-export const zSalesPartialUpdateResponse = zSale;
+export const zV1SalesPartialUpdateResponse = zSale;
 
-export const zSalesUpdateData = z.object({
+export const zV1SalesUpdateData = z.object({
     body: zSaleRequestWritable,
     path: z.object({
         id: z.string()
@@ -1436,9 +1565,9 @@ export const zSalesUpdateData = z.object({
     query: z.never().optional()
 });
 
-export const zSalesUpdateResponse = zSale;
+export const zV1SalesUpdateResponse = zSale;
 
-export const zSalesPaymentsListData = z.object({
+export const zV1SalesPaymentsListData = z.object({
     body: z.never().optional(),
     path: z.object({
         sale_id: z.string()
@@ -1446,9 +1575,9 @@ export const zSalesPaymentsListData = z.object({
     query: z.never().optional()
 });
 
-export const zSalesPaymentsListResponse = z.array(zSalePayment);
+export const zV1SalesPaymentsListResponse = z.array(zSalePayment);
 
-export const zSalesPaymentsCreateData = z.object({
+export const zV1SalesPaymentsCreateData = z.object({
     body: zSalePaymentRequestWritable,
     path: z.object({
         sale_id: z.string()
@@ -1456,40 +1585,40 @@ export const zSalesPaymentsCreateData = z.object({
     query: z.never().optional()
 });
 
-export const zSalesPaymentsCreateResponse = zSalePayment;
+export const zV1SalesPaymentsCreateResponse = zSalePayment;
 
-export const zUserBranchesRetrieveData = z.object({
+export const zV1UserBranchesRetrieveData = z.object({
     body: z.never().optional(),
     path: z.never().optional(),
     query: z.never().optional()
 });
 
-export const zUserBranchesUpdateData = z.object({
+export const zV1UserBranchesUpdateData = z.object({
     body: z.never().optional(),
     path: z.never().optional(),
     query: z.never().optional()
 });
 
-export const zUserInfoRetrieveData = z.object({
+export const zV1UserInfoRetrieveData = z.object({
     body: z.never().optional(),
     path: z.never().optional(),
     query: z.never().optional()
 });
 
-export const zUserInfoRetrieveResponse = zCustomUser;
+export const zV1UserInfoRetrieveResponse = zCustomUser;
 
-export const zUserInfoPartialUpdateData = z.object({
+export const zV1UserInfoPartialUpdateData = z.object({
     body: zPatchedCustomUserRequest.optional(),
     path: z.never().optional(),
     query: z.never().optional()
 });
 
-export const zUserInfoPartialUpdateResponse = zCustomUser;
+export const zV1UserInfoPartialUpdateResponse = zCustomUser;
 
-export const zUserInfoUpdateData = z.object({
+export const zV1UserInfoUpdateData = z.object({
     body: zCustomUserRequest,
     path: z.never().optional(),
     query: z.never().optional()
 });
 
-export const zUserInfoUpdateResponse = zCustomUser;
+export const zV1UserInfoUpdateResponse = zCustomUser;

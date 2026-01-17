@@ -15,8 +15,8 @@ export type Account = {
     readonly branch_name: string;
     provider?: string | null;
     readonly provider_name: string;
-    readonly total_amount_usd: string | null;
-    payment_status: PaymentStatus2D7Enum;
+    readonly total_amount_usd: string;
+    payment_status: PaymentStatus0CfEnum;
     readonly seq_number: number;
     readonly account_details: Array<AccountDetail>;
     readonly total_paid: string;
@@ -32,7 +32,7 @@ export type AccountDetail = {
     readonly id: string;
     product: string;
     readonly product_name: string;
-    quantity: number;
+    quantity: string;
     readonly unit_price: string;
 };
 
@@ -42,7 +42,7 @@ export type AccountDetail = {
  */
 export type AccountDetailRequest = {
     product: string;
-    quantity: number;
+    quantity: string;
 };
 
 /**
@@ -54,8 +54,8 @@ export type AccountList = {
     readonly seq_number: number;
     readonly created_at: string;
     readonly updated_at: string;
-    readonly total_amount_usd: string | null;
-    payment_status: PaymentStatus2D7Enum;
+    readonly total_amount_usd: string;
+    payment_status: PaymentStatus0CfEnum;
     readonly branch: string;
     readonly branch_name: string;
     readonly provider: string | null;
@@ -184,6 +184,20 @@ export type MeasurementUnitRequest = {
     decimals?: boolean;
 };
 
+export type PaginatedAccountListList = {
+    count: number;
+    next?: string | null;
+    previous?: string | null;
+    results: Array<AccountList>;
+};
+
+export type PaginatedSaleListList = {
+    count: number;
+    next?: string | null;
+    previous?: string | null;
+    results: Array<SaleList>;
+};
+
 /**
  * Main serializer for creating and viewing accounts (purchases).
  * Supports nested creation of account details.
@@ -233,7 +247,10 @@ export type PatchedMeasurementUnitRequest = {
     decimals?: boolean;
 };
 
-export type PatchedProductMasterRequest = {
+/**
+ * Serializador completo para Creación, Edición y Detalle
+ */
+export type PatchedProductWriteDetailRequest = {
     name?: string;
     description?: string | null;
     cost_price_usd?: string;
@@ -241,6 +258,7 @@ export type PatchedProductMasterRequest = {
     IVA?: boolean;
     category?: string | null;
     measurement_unit?: string | null;
+    selling_units?: Array<ProductSellingUnitRequest>;
 };
 
 export type PatchedProviderRequest = {
@@ -265,7 +283,7 @@ export type PatchedSaleRequest = {
  * * `PARTIALLY_PAID` - Partially Paid
  * * `PAID` - Paid
  */
-export type PaymentStatus2D7Enum = 'PENDING' | 'PARTIALLY_PAID' | 'PAID';
+export type PaymentStatus0CfEnum = 'PENDING' | 'PARTIALLY_PAID' | 'PAID';
 
 /**
  * * `PENDING` - Pending
@@ -273,8 +291,11 @@ export type PaymentStatus2D7Enum = 'PENDING' | 'PARTIALLY_PAID' | 'PAID';
  * * `PAID` - Paid
  * * `OVERPAID` - Overpaid
  */
-export type PaymentStatusAb7Enum = 'PENDING' | 'PARTIALLY_PAID' | 'PAID' | 'OVERPAID';
+export type PaymentStatusC54Enum = 'PENDING' | 'PARTIALLY_PAID' | 'PAID' | 'OVERPAID';
 
+/**
+ * Serializador ligero para listados generales
+ */
 export type ProductMaster = {
     readonly id: string;
     name: string;
@@ -286,7 +307,30 @@ export type ProductMaster = {
     measurement_unit?: string | null;
 };
 
-export type ProductMasterRequest = {
+export type ProductSellingUnit = {
+    id?: string;
+    name: string;
+    unit_conversion_factor: string;
+    measurement_unit: string;
+};
+
+export type ProductSellingUnitRequest = {
+    id?: string;
+    name: string;
+    unit_conversion_factor: string;
+    measurement_unit: string;
+};
+
+export type ProductStockSale = {
+    readonly product_id: string;
+    stock: string;
+};
+
+/**
+ * Serializador completo para Creación, Edición y Detalle
+ */
+export type ProductWriteDetail = {
+    readonly id: string;
     name: string;
     description?: string | null;
     cost_price_usd: string;
@@ -294,11 +338,21 @@ export type ProductMasterRequest = {
     IVA?: boolean;
     category?: string | null;
     measurement_unit?: string | null;
+    selling_units?: Array<ProductSellingUnit>;
 };
 
-export type ProductStockSale = {
-    readonly product_id: string;
-    stock: string;
+/**
+ * Serializador completo para Creación, Edición y Detalle
+ */
+export type ProductWriteDetailRequest = {
+    name: string;
+    description?: string | null;
+    cost_price_usd: string;
+    profit_margin: string;
+    IVA?: boolean;
+    category?: string | null;
+    measurement_unit?: string | null;
+    selling_units?: Array<ProductSellingUnitRequest>;
 };
 
 export type Provider = {
@@ -350,8 +404,8 @@ export type Sale = {
     readonly branch_name: string;
     customer?: string | null;
     readonly customer_name: string;
-    readonly total_amount_usd: string | null;
-    payment_status: PaymentStatusAb7Enum;
+    readonly total_amount_usd: string;
+    payment_status: PaymentStatusC54Enum;
     readonly seq_number: number;
     readonly sale_details: Array<SaleDetail>;
     readonly total_paid: string;
@@ -367,7 +421,7 @@ export type SaleDetail = {
     readonly id: string;
     product: string;
     readonly product_name: string;
-    quantity: number;
+    quantity: string;
     readonly unit_price: string;
 };
 
@@ -377,7 +431,7 @@ export type SaleDetail = {
  */
 export type SaleDetailRequest = {
     product: string;
-    quantity: number;
+    quantity: string;
 };
 
 /**
@@ -389,8 +443,8 @@ export type SaleList = {
     readonly seq_number: number;
     readonly created_at: string;
     readonly updated_at: string;
-    readonly total_amount_usd: string | null;
-    payment_status: PaymentStatusAb7Enum;
+    readonly total_amount_usd: string;
+    payment_status: PaymentStatusC54Enum;
     readonly branch: string;
     readonly branch_name: string;
     readonly customer: string | null;
@@ -407,7 +461,7 @@ export type SalePayment = {
     currency: string;
     payment_method: string;
     readonly payment_date: string;
-    discount: string;
+    discount?: string;
     readonly total_amount_usd: string;
     readonly total_amount_ves: string;
     readonly exchange_rate: string | null;
@@ -421,7 +475,7 @@ export type SalePayment = {
 export type SalePaymentRequest = {
     currency: string;
     payment_method: string;
-    discount: string;
+    discount?: string;
 };
 
 /**
@@ -457,7 +511,7 @@ export type AccountWritable = {
  */
 export type AccountDetailWritable = {
     product: string;
-    quantity: number;
+    quantity: string;
 };
 
 /**
@@ -531,6 +585,20 @@ export type MeasurementUnitWritable = {
     decimals?: boolean;
 };
 
+export type PaginatedAccountListListWritable = {
+    count: number;
+    next?: string | null;
+    previous?: string | null;
+    results: Array<unknown>;
+};
+
+export type PaginatedSaleListListWritable = {
+    count: number;
+    next?: string | null;
+    previous?: string | null;
+    results: Array<unknown>;
+};
+
 /**
  * Main serializer for creating and viewing accounts (purchases).
  * Supports nested creation of account details.
@@ -562,6 +630,9 @@ export type PatchedSaleRequestWritable = {
     }>;
 };
 
+/**
+ * Serializador ligero para listados generales
+ */
 export type ProductMasterWritable = {
     name: string;
     description?: string | null;
@@ -574,6 +645,20 @@ export type ProductMasterWritable = {
 
 export type ProductStockSaleWritable = {
     stock: string;
+};
+
+/**
+ * Serializador completo para Creación, Edición y Detalle
+ */
+export type ProductWriteDetailWritable = {
+    name: string;
+    description?: string | null;
+    cost_price_usd: string;
+    profit_margin: string;
+    IVA?: boolean;
+    category?: string | null;
+    measurement_unit?: string | null;
+    selling_units?: Array<ProductSellingUnit>;
 };
 
 export type ProviderWritable = {
@@ -612,7 +697,7 @@ export type SaleWritable = {
  */
 export type SaleDetailWritable = {
     product: string;
-    quantity: number;
+    quantity: string;
 };
 
 /**
@@ -622,7 +707,7 @@ export type SaleDetailWritable = {
 export type SalePaymentWritable = {
     currency: string;
     payment_method: string;
-    discount: string;
+    discount?: string;
 };
 
 /**
@@ -632,7 +717,7 @@ export type SalePaymentWritable = {
 export type SalePaymentRequestWritable = {
     currency: string;
     payment_method: string;
-    discount: string;
+    discount?: string;
     /**
      * Payment amount in the specified currency
      */
@@ -654,33 +739,42 @@ export type SaleRequestWritable = {
     }>;
 };
 
-export type AccountsListData = {
+export type V1AccountsListData = {
     body?: never;
     path?: never;
-    query?: never;
+    query?: {
+        /**
+         * A page number within the paginated result set.
+         */
+        page?: number;
+        /**
+         * Number of results to return per page.
+         */
+        page_size?: number;
+    };
     url: '/v1/accounts/';
 };
 
-export type AccountsListResponses = {
-    200: Array<AccountList>;
+export type V1AccountsListResponses = {
+    200: PaginatedAccountListList;
 };
 
-export type AccountsListResponse = AccountsListResponses[keyof AccountsListResponses];
+export type V1AccountsListResponse = V1AccountsListResponses[keyof V1AccountsListResponses];
 
-export type AccountsCreateData = {
+export type V1AccountsCreateData = {
     body: AccountRequestWritable;
     path?: never;
     query?: never;
     url: '/v1/accounts/';
 };
 
-export type AccountsCreateResponses = {
+export type V1AccountsCreateResponses = {
     201: Account;
 };
 
-export type AccountsCreateResponse = AccountsCreateResponses[keyof AccountsCreateResponses];
+export type V1AccountsCreateResponse = V1AccountsCreateResponses[keyof V1AccountsCreateResponses];
 
-export type AccountsPaymentsListData = {
+export type V1AccountsPaymentsListData = {
     body?: never;
     path: {
         account_id: string;
@@ -689,13 +783,13 @@ export type AccountsPaymentsListData = {
     url: '/v1/accounts/{account_id}/payments/';
 };
 
-export type AccountsPaymentsListResponses = {
+export type V1AccountsPaymentsListResponses = {
     200: Array<AccountPayment>;
 };
 
-export type AccountsPaymentsListResponse = AccountsPaymentsListResponses[keyof AccountsPaymentsListResponses];
+export type V1AccountsPaymentsListResponse = V1AccountsPaymentsListResponses[keyof V1AccountsPaymentsListResponses];
 
-export type AccountsPaymentsCreateData = {
+export type V1AccountsPaymentsCreateData = {
     body: AccountPaymentRequestWritable;
     path: {
         account_id: string;
@@ -704,13 +798,13 @@ export type AccountsPaymentsCreateData = {
     url: '/v1/accounts/{account_id}/payments/';
 };
 
-export type AccountsPaymentsCreateResponses = {
+export type V1AccountsPaymentsCreateResponses = {
     201: AccountPayment;
 };
 
-export type AccountsPaymentsCreateResponse = AccountsPaymentsCreateResponses[keyof AccountsPaymentsCreateResponses];
+export type V1AccountsPaymentsCreateResponse = V1AccountsPaymentsCreateResponses[keyof V1AccountsPaymentsCreateResponses];
 
-export type AccountsDestroyData = {
+export type V1AccountsDestroyData = {
     body?: never;
     path: {
         id: string;
@@ -719,16 +813,16 @@ export type AccountsDestroyData = {
     url: '/v1/accounts/{id}/';
 };
 
-export type AccountsDestroyResponses = {
+export type V1AccountsDestroyResponses = {
     /**
      * No response body
      */
     204: void;
 };
 
-export type AccountsDestroyResponse = AccountsDestroyResponses[keyof AccountsDestroyResponses];
+export type V1AccountsDestroyResponse = V1AccountsDestroyResponses[keyof V1AccountsDestroyResponses];
 
-export type AccountsRetrieveData = {
+export type V1AccountsRetrieveData = {
     body?: never;
     path: {
         id: string;
@@ -737,13 +831,13 @@ export type AccountsRetrieveData = {
     url: '/v1/accounts/{id}/';
 };
 
-export type AccountsRetrieveResponses = {
+export type V1AccountsRetrieveResponses = {
     200: Account;
 };
 
-export type AccountsRetrieveResponse = AccountsRetrieveResponses[keyof AccountsRetrieveResponses];
+export type V1AccountsRetrieveResponse = V1AccountsRetrieveResponses[keyof V1AccountsRetrieveResponses];
 
-export type AccountsPartialUpdateData = {
+export type V1AccountsPartialUpdateData = {
     body?: PatchedAccountRequestWritable;
     path: {
         id: string;
@@ -752,13 +846,13 @@ export type AccountsPartialUpdateData = {
     url: '/v1/accounts/{id}/';
 };
 
-export type AccountsPartialUpdateResponses = {
+export type V1AccountsPartialUpdateResponses = {
     200: Account;
 };
 
-export type AccountsPartialUpdateResponse = AccountsPartialUpdateResponses[keyof AccountsPartialUpdateResponses];
+export type V1AccountsPartialUpdateResponse = V1AccountsPartialUpdateResponses[keyof V1AccountsPartialUpdateResponses];
 
-export type AccountsUpdateData = {
+export type V1AccountsUpdateData = {
     body: AccountRequestWritable;
     path: {
         id: string;
@@ -767,39 +861,39 @@ export type AccountsUpdateData = {
     url: '/v1/accounts/{id}/';
 };
 
-export type AccountsUpdateResponses = {
+export type V1AccountsUpdateResponses = {
     200: Account;
 };
 
-export type AccountsUpdateResponse = AccountsUpdateResponses[keyof AccountsUpdateResponses];
+export type V1AccountsUpdateResponse = V1AccountsUpdateResponses[keyof V1AccountsUpdateResponses];
 
-export type BranchListData = {
+export type V1BranchListData = {
     body?: never;
     path?: never;
     query?: never;
     url: '/v1/branch/';
 };
 
-export type BranchListResponses = {
+export type V1BranchListResponses = {
     200: Array<Branch>;
 };
 
-export type BranchListResponse = BranchListResponses[keyof BranchListResponses];
+export type V1BranchListResponse = V1BranchListResponses[keyof V1BranchListResponses];
 
-export type BranchCreateData = {
+export type V1BranchCreateData = {
     body: BranchRequest;
     path?: never;
     query?: never;
     url: '/v1/branch/';
 };
 
-export type BranchCreateResponses = {
+export type V1BranchCreateResponses = {
     201: Branch;
 };
 
-export type BranchCreateResponse = BranchCreateResponses[keyof BranchCreateResponses];
+export type V1BranchCreateResponse = V1BranchCreateResponses[keyof V1BranchCreateResponses];
 
-export type BranchDestroyData = {
+export type V1BranchDestroyData = {
     body?: never;
     path: {
         id: string;
@@ -808,16 +902,16 @@ export type BranchDestroyData = {
     url: '/v1/branch/{id}/';
 };
 
-export type BranchDestroyResponses = {
+export type V1BranchDestroyResponses = {
     /**
      * No response body
      */
     204: void;
 };
 
-export type BranchDestroyResponse = BranchDestroyResponses[keyof BranchDestroyResponses];
+export type V1BranchDestroyResponse = V1BranchDestroyResponses[keyof V1BranchDestroyResponses];
 
-export type BranchRetrieveData = {
+export type V1BranchRetrieveData = {
     body?: never;
     path: {
         id: string;
@@ -826,13 +920,13 @@ export type BranchRetrieveData = {
     url: '/v1/branch/{id}/';
 };
 
-export type BranchRetrieveResponses = {
+export type V1BranchRetrieveResponses = {
     200: Branch;
 };
 
-export type BranchRetrieveResponse = BranchRetrieveResponses[keyof BranchRetrieveResponses];
+export type V1BranchRetrieveResponse = V1BranchRetrieveResponses[keyof V1BranchRetrieveResponses];
 
-export type BranchPartialUpdateData = {
+export type V1BranchPartialUpdateData = {
     body?: PatchedBranchRequest;
     path: {
         id: string;
@@ -841,13 +935,13 @@ export type BranchPartialUpdateData = {
     url: '/v1/branch/{id}/';
 };
 
-export type BranchPartialUpdateResponses = {
+export type V1BranchPartialUpdateResponses = {
     200: Branch;
 };
 
-export type BranchPartialUpdateResponse = BranchPartialUpdateResponses[keyof BranchPartialUpdateResponses];
+export type V1BranchPartialUpdateResponse = V1BranchPartialUpdateResponses[keyof V1BranchPartialUpdateResponses];
 
-export type BranchUpdateData = {
+export type V1BranchUpdateData = {
     body: BranchRequest;
     path: {
         id: string;
@@ -856,39 +950,39 @@ export type BranchUpdateData = {
     url: '/v1/branch/{id}/';
 };
 
-export type BranchUpdateResponses = {
+export type V1BranchUpdateResponses = {
     200: Branch;
 };
 
-export type BranchUpdateResponse = BranchUpdateResponses[keyof BranchUpdateResponses];
+export type V1BranchUpdateResponse = V1BranchUpdateResponses[keyof V1BranchUpdateResponses];
 
-export type CategoryListData = {
+export type V1CategoryListData = {
     body?: never;
     path?: never;
     query?: never;
     url: '/v1/category/';
 };
 
-export type CategoryListResponses = {
+export type V1CategoryListResponses = {
     200: Array<Category>;
 };
 
-export type CategoryListResponse = CategoryListResponses[keyof CategoryListResponses];
+export type V1CategoryListResponse = V1CategoryListResponses[keyof V1CategoryListResponses];
 
-export type CategoryCreateData = {
+export type V1CategoryCreateData = {
     body: CategoryRequest;
     path?: never;
     query?: never;
     url: '/v1/category/';
 };
 
-export type CategoryCreateResponses = {
+export type V1CategoryCreateResponses = {
     201: Category;
 };
 
-export type CategoryCreateResponse = CategoryCreateResponses[keyof CategoryCreateResponses];
+export type V1CategoryCreateResponse = V1CategoryCreateResponses[keyof V1CategoryCreateResponses];
 
-export type CategoryDestroyData = {
+export type V1CategoryDestroyData = {
     body?: never;
     path: {
         id: string;
@@ -897,16 +991,16 @@ export type CategoryDestroyData = {
     url: '/v1/category/{id}/';
 };
 
-export type CategoryDestroyResponses = {
+export type V1CategoryDestroyResponses = {
     /**
      * No response body
      */
     204: void;
 };
 
-export type CategoryDestroyResponse = CategoryDestroyResponses[keyof CategoryDestroyResponses];
+export type V1CategoryDestroyResponse = V1CategoryDestroyResponses[keyof V1CategoryDestroyResponses];
 
-export type CategoryRetrieveData = {
+export type V1CategoryRetrieveData = {
     body?: never;
     path: {
         id: string;
@@ -915,13 +1009,13 @@ export type CategoryRetrieveData = {
     url: '/v1/category/{id}/';
 };
 
-export type CategoryRetrieveResponses = {
+export type V1CategoryRetrieveResponses = {
     200: Category;
 };
 
-export type CategoryRetrieveResponse = CategoryRetrieveResponses[keyof CategoryRetrieveResponses];
+export type V1CategoryRetrieveResponse = V1CategoryRetrieveResponses[keyof V1CategoryRetrieveResponses];
 
-export type CategoryPartialUpdateData = {
+export type V1CategoryPartialUpdateData = {
     body?: PatchedCategoryRequest;
     path: {
         id: string;
@@ -930,13 +1024,13 @@ export type CategoryPartialUpdateData = {
     url: '/v1/category/{id}/';
 };
 
-export type CategoryPartialUpdateResponses = {
+export type V1CategoryPartialUpdateResponses = {
     200: Category;
 };
 
-export type CategoryPartialUpdateResponse = CategoryPartialUpdateResponses[keyof CategoryPartialUpdateResponses];
+export type V1CategoryPartialUpdateResponse = V1CategoryPartialUpdateResponses[keyof V1CategoryPartialUpdateResponses];
 
-export type CategoryUpdateData = {
+export type V1CategoryUpdateData = {
     body: CategoryRequest;
     path: {
         id: string;
@@ -945,91 +1039,91 @@ export type CategoryUpdateData = {
     url: '/v1/category/{id}/';
 };
 
-export type CategoryUpdateResponses = {
+export type V1CategoryUpdateResponses = {
     200: Category;
 };
 
-export type CategoryUpdateResponse = CategoryUpdateResponses[keyof CategoryUpdateResponses];
+export type V1CategoryUpdateResponse = V1CategoryUpdateResponses[keyof V1CategoryUpdateResponses];
 
-export type CompanyRetrieveData = {
+export type V1CompanyRetrieveData = {
     body?: never;
     path?: never;
     query?: never;
     url: '/v1/company/';
 };
 
-export type CompanyRetrieveResponses = {
+export type V1CompanyRetrieveResponses = {
     200: Company;
 };
 
-export type CompanyRetrieveResponse = CompanyRetrieveResponses[keyof CompanyRetrieveResponses];
+export type V1CompanyRetrieveResponse = V1CompanyRetrieveResponses[keyof V1CompanyRetrieveResponses];
 
-export type CompanyPartialUpdateData = {
+export type V1CompanyPartialUpdateData = {
     body?: PatchedCompanyRequest;
     path?: never;
     query?: never;
     url: '/v1/company/';
 };
 
-export type CompanyPartialUpdateResponses = {
+export type V1CompanyPartialUpdateResponses = {
     200: Company;
 };
 
-export type CompanyPartialUpdateResponse = CompanyPartialUpdateResponses[keyof CompanyPartialUpdateResponses];
+export type V1CompanyPartialUpdateResponse = V1CompanyPartialUpdateResponses[keyof V1CompanyPartialUpdateResponses];
 
-export type CompanyCreateData = {
+export type V1CompanyCreateData = {
     body: CompanyRequest;
     path?: never;
     query?: never;
     url: '/v1/company/';
 };
 
-export type CompanyCreateResponses = {
+export type V1CompanyCreateResponses = {
     201: Company;
 };
 
-export type CompanyCreateResponse = CompanyCreateResponses[keyof CompanyCreateResponses];
+export type V1CompanyCreateResponse = V1CompanyCreateResponses[keyof V1CompanyCreateResponses];
 
-export type CompanyUpdateData = {
+export type V1CompanyUpdateData = {
     body: CompanyRequest;
     path?: never;
     query?: never;
     url: '/v1/company/';
 };
 
-export type CompanyUpdateResponses = {
+export type V1CompanyUpdateResponses = {
     200: Company;
 };
 
-export type CompanyUpdateResponse = CompanyUpdateResponses[keyof CompanyUpdateResponses];
+export type V1CompanyUpdateResponse = V1CompanyUpdateResponses[keyof V1CompanyUpdateResponses];
 
-export type CustomersListData = {
+export type V1CustomersListData = {
     body?: never;
     path?: never;
     query?: never;
     url: '/v1/customers/';
 };
 
-export type CustomersListResponses = {
+export type V1CustomersListResponses = {
     200: Array<Customer>;
 };
 
-export type CustomersListResponse = CustomersListResponses[keyof CustomersListResponses];
+export type V1CustomersListResponse = V1CustomersListResponses[keyof V1CustomersListResponses];
 
-export type CustomersCreateData = {
+export type V1CustomersCreateData = {
     body: CustomerRequest;
     path?: never;
     query?: never;
     url: '/v1/customers/';
 };
 
-export type CustomersCreateResponses = {
+export type V1CustomersCreateResponses = {
     201: Customer;
 };
 
-export type CustomersCreateResponse = CustomersCreateResponses[keyof CustomersCreateResponses];
+export type V1CustomersCreateResponse = V1CustomersCreateResponses[keyof V1CustomersCreateResponses];
 
-export type CustomersDestroyData = {
+export type V1CustomersDestroyData = {
     body?: never;
     path: {
         id: string;
@@ -1038,16 +1132,16 @@ export type CustomersDestroyData = {
     url: '/v1/customers/{id}/';
 };
 
-export type CustomersDestroyResponses = {
+export type V1CustomersDestroyResponses = {
     /**
      * No response body
      */
     204: void;
 };
 
-export type CustomersDestroyResponse = CustomersDestroyResponses[keyof CustomersDestroyResponses];
+export type V1CustomersDestroyResponse = V1CustomersDestroyResponses[keyof V1CustomersDestroyResponses];
 
-export type CustomersRetrieveData = {
+export type V1CustomersRetrieveData = {
     body?: never;
     path: {
         id: string;
@@ -1056,13 +1150,13 @@ export type CustomersRetrieveData = {
     url: '/v1/customers/{id}/';
 };
 
-export type CustomersRetrieveResponses = {
+export type V1CustomersRetrieveResponses = {
     200: Customer;
 };
 
-export type CustomersRetrieveResponse = CustomersRetrieveResponses[keyof CustomersRetrieveResponses];
+export type V1CustomersRetrieveResponse = V1CustomersRetrieveResponses[keyof V1CustomersRetrieveResponses];
 
-export type CustomersPartialUpdateData = {
+export type V1CustomersPartialUpdateData = {
     body?: PatchedCustomerRequest;
     path: {
         id: string;
@@ -1071,13 +1165,13 @@ export type CustomersPartialUpdateData = {
     url: '/v1/customers/{id}/';
 };
 
-export type CustomersPartialUpdateResponses = {
+export type V1CustomersPartialUpdateResponses = {
     200: Customer;
 };
 
-export type CustomersPartialUpdateResponse = CustomersPartialUpdateResponses[keyof CustomersPartialUpdateResponses];
+export type V1CustomersPartialUpdateResponse = V1CustomersPartialUpdateResponses[keyof V1CustomersPartialUpdateResponses];
 
-export type CustomersUpdateData = {
+export type V1CustomersUpdateData = {
     body: CustomerRequest;
     path: {
         id: string;
@@ -1086,48 +1180,13 @@ export type CustomersUpdateData = {
     url: '/v1/customers/{id}/';
 };
 
-export type CustomersUpdateResponses = {
+export type V1CustomersUpdateResponses = {
     200: Customer;
 };
 
-export type CustomersUpdateResponse = CustomersUpdateResponses[keyof CustomersUpdateResponses];
+export type V1CustomersUpdateResponse = V1CustomersUpdateResponses[keyof V1CustomersUpdateResponses];
 
-export type ExchangeRate = {
-    readonly id: string;
-    bcv_rate: string;
-    parallel_rate: string;
-    readonly created_at: string;
-};
-
-export type ExchangeRatesHistoryRetrieveData = {
-    body?: never;
-    path?: never;
-    query?: never;
-    url: '/v1/exchange-rates/history/';
-};
-
-export type ExchangeRatesHistoryRetrieveResponses = {
-    /**
-     * No response body
-     */
-    200: unknown;
-};
-
-export type ExchangeRatesTodayRetrieveData = {
-    body?: never;
-    path?: never;
-    query?: never;
-    url: '/v1/exchange-rates/today/';
-};
-
-export type ExchangeRatesTodayRetrieveResponses = {
-    /**
-     * No response body
-     */
-    200: unknown;
-};
-
-export type ExchangeRatesRetrieveData = {
+export type V1ExchangeRatesRetrieveData = {
     body?: never;
     path: {
         id: string;
@@ -1136,67 +1195,96 @@ export type ExchangeRatesRetrieveData = {
     url: '/v1/exchange-rates/{id}/';
 };
 
-export type ExchangeRatesRetrieveResponses = {
-    200: ExchangeRate;
+export type V1ExchangeRatesRetrieveResponses = {
+    /**
+     * No response body
+     */
+    200: unknown;
 };
 
-export type ExchangeRatesRetrieveResponse = ExchangeRatesRetrieveResponses[keyof ExchangeRatesRetrieveResponses];
+export type V1ExchangeRatesHistoryRetrieveData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/v1/exchange-rates/history/';
+};
 
-export type LoginCreateData = {
+export type V1ExchangeRatesHistoryRetrieveResponses = {
+    /**
+     * No response body
+     */
+    200: unknown;
+};
+
+export type V1ExchangeRatesTodayRetrieveData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/v1/exchange-rates/today/';
+};
+
+export type V1ExchangeRatesTodayRetrieveResponses = {
+    /**
+     * No response body
+     */
+    200: unknown;
+};
+
+export type V1LoginCreateData = {
     body?: never;
     path?: never;
     query?: never;
     url: '/v1/login/';
 };
 
-export type LoginCreateResponses = {
+export type V1LoginCreateResponses = {
     /**
      * No response body
      */
     200: unknown;
 };
 
-export type LogoutCreateData = {
+export type V1LogoutCreateData = {
     body?: never;
     path?: never;
     query?: never;
     url: '/v1/logout/';
 };
 
-export type LogoutCreateResponses = {
+export type V1LogoutCreateResponses = {
     /**
      * No response body
      */
     200: unknown;
 };
 
-export type MeasurementListData = {
+export type V1MeasurementListData = {
     body?: never;
     path?: never;
     query?: never;
     url: '/v1/measurement/';
 };
 
-export type MeasurementListResponses = {
+export type V1MeasurementListResponses = {
     200: Array<MeasurementUnit>;
 };
 
-export type MeasurementListResponse = MeasurementListResponses[keyof MeasurementListResponses];
+export type V1MeasurementListResponse = V1MeasurementListResponses[keyof V1MeasurementListResponses];
 
-export type MeasurementCreateData = {
+export type V1MeasurementCreateData = {
     body: MeasurementUnitRequest;
     path?: never;
     query?: never;
     url: '/v1/measurement/';
 };
 
-export type MeasurementCreateResponses = {
+export type V1MeasurementCreateResponses = {
     201: MeasurementUnit;
 };
 
-export type MeasurementCreateResponse = MeasurementCreateResponses[keyof MeasurementCreateResponses];
+export type V1MeasurementCreateResponse = V1MeasurementCreateResponses[keyof V1MeasurementCreateResponses];
 
-export type MeasurementDestroyData = {
+export type V1MeasurementDestroyData = {
     body?: never;
     path: {
         id: string;
@@ -1205,16 +1293,16 @@ export type MeasurementDestroyData = {
     url: '/v1/measurement/{id}/';
 };
 
-export type MeasurementDestroyResponses = {
+export type V1MeasurementDestroyResponses = {
     /**
      * No response body
      */
     204: void;
 };
 
-export type MeasurementDestroyResponse = MeasurementDestroyResponses[keyof MeasurementDestroyResponses];
+export type V1MeasurementDestroyResponse = V1MeasurementDestroyResponses[keyof V1MeasurementDestroyResponses];
 
-export type MeasurementRetrieveData = {
+export type V1MeasurementRetrieveData = {
     body?: never;
     path: {
         id: string;
@@ -1223,13 +1311,13 @@ export type MeasurementRetrieveData = {
     url: '/v1/measurement/{id}/';
 };
 
-export type MeasurementRetrieveResponses = {
+export type V1MeasurementRetrieveResponses = {
     200: MeasurementUnit;
 };
 
-export type MeasurementRetrieveResponse = MeasurementRetrieveResponses[keyof MeasurementRetrieveResponses];
+export type V1MeasurementRetrieveResponse = V1MeasurementRetrieveResponses[keyof V1MeasurementRetrieveResponses];
 
-export type MeasurementPartialUpdateData = {
+export type V1MeasurementPartialUpdateData = {
     body?: PatchedMeasurementUnitRequest;
     path: {
         id: string;
@@ -1238,13 +1326,13 @@ export type MeasurementPartialUpdateData = {
     url: '/v1/measurement/{id}/';
 };
 
-export type MeasurementPartialUpdateResponses = {
+export type V1MeasurementPartialUpdateResponses = {
     200: MeasurementUnit;
 };
 
-export type MeasurementPartialUpdateResponse = MeasurementPartialUpdateResponses[keyof MeasurementPartialUpdateResponses];
+export type V1MeasurementPartialUpdateResponse = V1MeasurementPartialUpdateResponses[keyof V1MeasurementPartialUpdateResponses];
 
-export type MeasurementUpdateData = {
+export type V1MeasurementUpdateData = {
     body: MeasurementUnitRequest;
     path: {
         id: string;
@@ -1253,52 +1341,52 @@ export type MeasurementUpdateData = {
     url: '/v1/measurement/{id}/';
 };
 
-export type MeasurementUpdateResponses = {
+export type V1MeasurementUpdateResponses = {
     200: MeasurementUnit;
 };
 
-export type MeasurementUpdateResponse = MeasurementUpdateResponses[keyof MeasurementUpdateResponses];
+export type V1MeasurementUpdateResponse = V1MeasurementUpdateResponses[keyof V1MeasurementUpdateResponses];
 
-export type ProductListData = {
+export type V1ProductListData = {
     body?: never;
     path?: never;
     query?: never;
     url: '/v1/product/';
 };
 
-export type ProductListResponses = {
+export type V1ProductListResponses = {
     200: Array<ProductMaster>;
 };
 
-export type ProductListResponse = ProductListResponses[keyof ProductListResponses];
+export type V1ProductListResponse = V1ProductListResponses[keyof V1ProductListResponses];
 
-export type ProductCreateData = {
-    body: ProductMasterRequest;
+export type V1ProductCreateData = {
+    body: ProductWriteDetailRequest;
     path?: never;
     query?: never;
     url: '/v1/product/';
 };
 
-export type ProductCreateResponses = {
-    201: ProductMaster;
+export type V1ProductCreateResponses = {
+    201: ProductWriteDetail;
 };
 
-export type ProductCreateResponse = ProductCreateResponses[keyof ProductCreateResponses];
+export type V1ProductCreateResponse = V1ProductCreateResponses[keyof V1ProductCreateResponses];
 
-export type ProductBranchStockListData = {
+export type V1ProductBranchStockListData = {
     body?: never;
     path?: never;
     query?: never;
     url: '/v1/product-branch-stock/';
 };
 
-export type ProductBranchStockListResponses = {
+export type V1ProductBranchStockListResponses = {
     200: Array<ProductStockSale>;
 };
 
-export type ProductBranchStockListResponse = ProductBranchStockListResponses[keyof ProductBranchStockListResponses];
+export type V1ProductBranchStockListResponse = V1ProductBranchStockListResponses[keyof V1ProductBranchStockListResponses];
 
-export type ProductDestroyData = {
+export type V1ProductDestroyData = {
     body?: never;
     path: {
         id: string;
@@ -1307,16 +1395,16 @@ export type ProductDestroyData = {
     url: '/v1/product/{id}/';
 };
 
-export type ProductDestroyResponses = {
+export type V1ProductDestroyResponses = {
     /**
      * No response body
      */
     204: void;
 };
 
-export type ProductDestroyResponse = ProductDestroyResponses[keyof ProductDestroyResponses];
+export type V1ProductDestroyResponse = V1ProductDestroyResponses[keyof V1ProductDestroyResponses];
 
-export type ProductRetrieveData = {
+export type V1ProductRetrieveData = {
     body?: never;
     path: {
         id: string;
@@ -1325,14 +1413,14 @@ export type ProductRetrieveData = {
     url: '/v1/product/{id}/';
 };
 
-export type ProductRetrieveResponses = {
-    200: ProductMaster;
+export type V1ProductRetrieveResponses = {
+    200: ProductWriteDetail;
 };
 
-export type ProductRetrieveResponse = ProductRetrieveResponses[keyof ProductRetrieveResponses];
+export type V1ProductRetrieveResponse = V1ProductRetrieveResponses[keyof V1ProductRetrieveResponses];
 
-export type ProductPartialUpdateData = {
-    body?: PatchedProductMasterRequest;
+export type V1ProductPartialUpdateData = {
+    body?: PatchedProductWriteDetailRequest;
     path: {
         id: string;
     };
@@ -1340,14 +1428,14 @@ export type ProductPartialUpdateData = {
     url: '/v1/product/{id}/';
 };
 
-export type ProductPartialUpdateResponses = {
-    200: ProductMaster;
+export type V1ProductPartialUpdateResponses = {
+    200: ProductWriteDetail;
 };
 
-export type ProductPartialUpdateResponse = ProductPartialUpdateResponses[keyof ProductPartialUpdateResponses];
+export type V1ProductPartialUpdateResponse = V1ProductPartialUpdateResponses[keyof V1ProductPartialUpdateResponses];
 
-export type ProductUpdateData = {
-    body: ProductMasterRequest;
+export type V1ProductUpdateData = {
+    body: ProductWriteDetailRequest;
     path: {
         id: string;
     };
@@ -1355,39 +1443,39 @@ export type ProductUpdateData = {
     url: '/v1/product/{id}/';
 };
 
-export type ProductUpdateResponses = {
-    200: ProductMaster;
+export type V1ProductUpdateResponses = {
+    200: ProductWriteDetail;
 };
 
-export type ProductUpdateResponse = ProductUpdateResponses[keyof ProductUpdateResponses];
+export type V1ProductUpdateResponse = V1ProductUpdateResponses[keyof V1ProductUpdateResponses];
 
-export type ProvidersListData = {
+export type V1ProvidersListData = {
     body?: never;
     path?: never;
     query?: never;
     url: '/v1/providers/';
 };
 
-export type ProvidersListResponses = {
+export type V1ProvidersListResponses = {
     200: Array<Provider>;
 };
 
-export type ProvidersListResponse = ProvidersListResponses[keyof ProvidersListResponses];
+export type V1ProvidersListResponse = V1ProvidersListResponses[keyof V1ProvidersListResponses];
 
-export type ProvidersCreateData = {
+export type V1ProvidersCreateData = {
     body: ProviderRequest;
     path?: never;
     query?: never;
     url: '/v1/providers/';
 };
 
-export type ProvidersCreateResponses = {
+export type V1ProvidersCreateResponses = {
     201: Provider;
 };
 
-export type ProvidersCreateResponse = ProvidersCreateResponses[keyof ProvidersCreateResponses];
+export type V1ProvidersCreateResponse = V1ProvidersCreateResponses[keyof V1ProvidersCreateResponses];
 
-export type ProvidersDestroyData = {
+export type V1ProvidersDestroyData = {
     body?: never;
     path: {
         id: string;
@@ -1396,16 +1484,16 @@ export type ProvidersDestroyData = {
     url: '/v1/providers/{id}/';
 };
 
-export type ProvidersDestroyResponses = {
+export type V1ProvidersDestroyResponses = {
     /**
      * No response body
      */
     204: void;
 };
 
-export type ProvidersDestroyResponse = ProvidersDestroyResponses[keyof ProvidersDestroyResponses];
+export type V1ProvidersDestroyResponse = V1ProvidersDestroyResponses[keyof V1ProvidersDestroyResponses];
 
-export type ProvidersRetrieveData = {
+export type V1ProvidersRetrieveData = {
     body?: never;
     path: {
         id: string;
@@ -1414,13 +1502,13 @@ export type ProvidersRetrieveData = {
     url: '/v1/providers/{id}/';
 };
 
-export type ProvidersRetrieveResponses = {
+export type V1ProvidersRetrieveResponses = {
     200: Provider;
 };
 
-export type ProvidersRetrieveResponse = ProvidersRetrieveResponses[keyof ProvidersRetrieveResponses];
+export type V1ProvidersRetrieveResponse = V1ProvidersRetrieveResponses[keyof V1ProvidersRetrieveResponses];
 
-export type ProvidersPartialUpdateData = {
+export type V1ProvidersPartialUpdateData = {
     body?: PatchedProviderRequest;
     path: {
         id: string;
@@ -1429,13 +1517,13 @@ export type ProvidersPartialUpdateData = {
     url: '/v1/providers/{id}/';
 };
 
-export type ProvidersPartialUpdateResponses = {
+export type V1ProvidersPartialUpdateResponses = {
     200: Provider;
 };
 
-export type ProvidersPartialUpdateResponse = ProvidersPartialUpdateResponses[keyof ProvidersPartialUpdateResponses];
+export type V1ProvidersPartialUpdateResponse = V1ProvidersPartialUpdateResponses[keyof V1ProvidersPartialUpdateResponses];
 
-export type ProvidersUpdateData = {
+export type V1ProvidersUpdateData = {
     body: ProviderRequest;
     path: {
         id: string;
@@ -1444,65 +1532,74 @@ export type ProvidersUpdateData = {
     url: '/v1/providers/{id}/';
 };
 
-export type ProvidersUpdateResponses = {
+export type V1ProvidersUpdateResponses = {
     200: Provider;
 };
 
-export type ProvidersUpdateResponse = ProvidersUpdateResponses[keyof ProvidersUpdateResponses];
+export type V1ProvidersUpdateResponse = V1ProvidersUpdateResponses[keyof V1ProvidersUpdateResponses];
 
-export type RefreshCreateData = {
+export type V1RefreshCreateData = {
     body: TokenRefreshRequest;
     path?: never;
     query?: never;
     url: '/v1/refresh/';
 };
 
-export type RefreshCreateResponses = {
+export type V1RefreshCreateResponses = {
     200: TokenRefresh;
 };
 
-export type RefreshCreateResponse = RefreshCreateResponses[keyof RefreshCreateResponses];
+export type V1RefreshCreateResponse = V1RefreshCreateResponses[keyof V1RefreshCreateResponses];
 
-export type RegisterCreateData = {
+export type V1RegisterCreateData = {
     body: RegisterUserRequestWritable;
     path?: never;
     query?: never;
     url: '/v1/register/';
 };
 
-export type RegisterCreateResponses = {
+export type V1RegisterCreateResponses = {
     201: RegisterUser;
 };
 
-export type RegisterCreateResponse = RegisterCreateResponses[keyof RegisterCreateResponses];
+export type V1RegisterCreateResponse = V1RegisterCreateResponses[keyof V1RegisterCreateResponses];
 
-export type SalesListData = {
+export type V1SalesListData = {
     body?: never;
     path?: never;
-    query?: never;
+    query?: {
+        /**
+         * A page number within the paginated result set.
+         */
+        page?: number;
+        /**
+         * Number of results to return per page.
+         */
+        page_size?: number;
+    };
     url: '/v1/sales/';
 };
 
-export type SalesListResponses = {
-    200: Array<SaleList>;
+export type V1SalesListResponses = {
+    200: PaginatedSaleListList;
 };
 
-export type SalesListResponse = SalesListResponses[keyof SalesListResponses];
+export type V1SalesListResponse = V1SalesListResponses[keyof V1SalesListResponses];
 
-export type SalesCreateData = {
+export type V1SalesCreateData = {
     body: SaleRequestWritable;
     path?: never;
     query?: never;
     url: '/v1/sales/';
 };
 
-export type SalesCreateResponses = {
+export type V1SalesCreateResponses = {
     201: Sale;
 };
 
-export type SalesCreateResponse = SalesCreateResponses[keyof SalesCreateResponses];
+export type V1SalesCreateResponse = V1SalesCreateResponses[keyof V1SalesCreateResponses];
 
-export type SalesDestroyData = {
+export type V1SalesDestroyData = {
     body?: never;
     path: {
         id: string;
@@ -1511,16 +1608,16 @@ export type SalesDestroyData = {
     url: '/v1/sales/{id}/';
 };
 
-export type SalesDestroyResponses = {
+export type V1SalesDestroyResponses = {
     /**
      * No response body
      */
     204: void;
 };
 
-export type SalesDestroyResponse = SalesDestroyResponses[keyof SalesDestroyResponses];
+export type V1SalesDestroyResponse = V1SalesDestroyResponses[keyof V1SalesDestroyResponses];
 
-export type SalesRetrieveData = {
+export type V1SalesRetrieveData = {
     body?: never;
     path: {
         id: string;
@@ -1529,13 +1626,13 @@ export type SalesRetrieveData = {
     url: '/v1/sales/{id}/';
 };
 
-export type SalesRetrieveResponses = {
+export type V1SalesRetrieveResponses = {
     200: Sale;
 };
 
-export type SalesRetrieveResponse = SalesRetrieveResponses[keyof SalesRetrieveResponses];
+export type V1SalesRetrieveResponse = V1SalesRetrieveResponses[keyof V1SalesRetrieveResponses];
 
-export type SalesPartialUpdateData = {
+export type V1SalesPartialUpdateData = {
     body?: PatchedSaleRequestWritable;
     path: {
         id: string;
@@ -1544,13 +1641,13 @@ export type SalesPartialUpdateData = {
     url: '/v1/sales/{id}/';
 };
 
-export type SalesPartialUpdateResponses = {
+export type V1SalesPartialUpdateResponses = {
     200: Sale;
 };
 
-export type SalesPartialUpdateResponse = SalesPartialUpdateResponses[keyof SalesPartialUpdateResponses];
+export type V1SalesPartialUpdateResponse = V1SalesPartialUpdateResponses[keyof V1SalesPartialUpdateResponses];
 
-export type SalesUpdateData = {
+export type V1SalesUpdateData = {
     body: SaleRequestWritable;
     path: {
         id: string;
@@ -1559,13 +1656,13 @@ export type SalesUpdateData = {
     url: '/v1/sales/{id}/';
 };
 
-export type SalesUpdateResponses = {
+export type V1SalesUpdateResponses = {
     200: Sale;
 };
 
-export type SalesUpdateResponse = SalesUpdateResponses[keyof SalesUpdateResponses];
+export type V1SalesUpdateResponse = V1SalesUpdateResponses[keyof V1SalesUpdateResponses];
 
-export type SalesPaymentsListData = {
+export type V1SalesPaymentsListData = {
     body?: never;
     path: {
         sale_id: string;
@@ -1574,13 +1671,13 @@ export type SalesPaymentsListData = {
     url: '/v1/sales/{sale_id}/payments/';
 };
 
-export type SalesPaymentsListResponses = {
+export type V1SalesPaymentsListResponses = {
     200: Array<SalePayment>;
 };
 
-export type SalesPaymentsListResponse = SalesPaymentsListResponses[keyof SalesPaymentsListResponses];
+export type V1SalesPaymentsListResponse = V1SalesPaymentsListResponses[keyof V1SalesPaymentsListResponses];
 
-export type SalesPaymentsCreateData = {
+export type V1SalesPaymentsCreateData = {
     body: SalePaymentRequestWritable;
     path: {
         sale_id: string;
@@ -1589,75 +1686,75 @@ export type SalesPaymentsCreateData = {
     url: '/v1/sales/{sale_id}/payments/';
 };
 
-export type SalesPaymentsCreateResponses = {
+export type V1SalesPaymentsCreateResponses = {
     201: SalePayment;
 };
 
-export type SalesPaymentsCreateResponse = SalesPaymentsCreateResponses[keyof SalesPaymentsCreateResponses];
+export type V1SalesPaymentsCreateResponse = V1SalesPaymentsCreateResponses[keyof V1SalesPaymentsCreateResponses];
 
-export type UserBranchesRetrieveData = {
+export type V1UserBranchesRetrieveData = {
     body?: never;
     path?: never;
     query?: never;
     url: '/v1/user-branches/';
 };
 
-export type UserBranchesRetrieveResponses = {
+export type V1UserBranchesRetrieveResponses = {
     /**
      * No response body
      */
     200: unknown;
 };
 
-export type UserBranchesUpdateData = {
+export type V1UserBranchesUpdateData = {
     body?: never;
     path?: never;
     query?: never;
     url: '/v1/user-branches/';
 };
 
-export type UserBranchesUpdateResponses = {
+export type V1UserBranchesUpdateResponses = {
     /**
      * No response body
      */
     200: unknown;
 };
 
-export type UserInfoRetrieveData = {
+export type V1UserInfoRetrieveData = {
     body?: never;
     path?: never;
     query?: never;
     url: '/v1/user-info/';
 };
 
-export type UserInfoRetrieveResponses = {
+export type V1UserInfoRetrieveResponses = {
     200: CustomUser;
 };
 
-export type UserInfoRetrieveResponse = UserInfoRetrieveResponses[keyof UserInfoRetrieveResponses];
+export type V1UserInfoRetrieveResponse = V1UserInfoRetrieveResponses[keyof V1UserInfoRetrieveResponses];
 
-export type UserInfoPartialUpdateData = {
+export type V1UserInfoPartialUpdateData = {
     body?: PatchedCustomUserRequest;
     path?: never;
     query?: never;
     url: '/v1/user-info/';
 };
 
-export type UserInfoPartialUpdateResponses = {
+export type V1UserInfoPartialUpdateResponses = {
     200: CustomUser;
 };
 
-export type UserInfoPartialUpdateResponse = UserInfoPartialUpdateResponses[keyof UserInfoPartialUpdateResponses];
+export type V1UserInfoPartialUpdateResponse = V1UserInfoPartialUpdateResponses[keyof V1UserInfoPartialUpdateResponses];
 
-export type UserInfoUpdateData = {
+export type V1UserInfoUpdateData = {
     body: CustomUserRequest;
     path?: never;
     query?: never;
     url: '/v1/user-info/';
 };
 
-export type UserInfoUpdateResponses = {
+export type V1UserInfoUpdateResponses = {
     200: CustomUser;
 };
 
-export type UserInfoUpdateResponse = UserInfoUpdateResponses[keyof UserInfoUpdateResponses];
+export type V1UserInfoUpdateResponse = V1UserInfoUpdateResponses[keyof V1UserInfoUpdateResponses];

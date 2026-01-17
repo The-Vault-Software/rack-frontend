@@ -1,15 +1,15 @@
 import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { 
-  productListOptions, 
-  productBranchStockListOptions,
-  salesCreateMutation,
-  salesListQueryKey,
-  productBranchStockListQueryKey,
-  customersListOptions,
-  exchangeRatesTodayRetrieveOptions,
-  measurementListOptions,
-  productRetrieveOptions
+  v1ProductListOptions, 
+  v1ProductBranchStockListOptions,
+  v1SalesCreateMutation,
+  v1SalesListQueryKey,
+  v1ProductBranchStockListQueryKey,
+  v1CustomersListOptions,
+  v1ExchangeRatesTodayRetrieveOptions,
+  v1MeasurementListOptions,
+  v1ProductRetrieveOptions
 } from '../../../client/@tanstack/react-query.gen';
 import { useBranch } from '../../../context/BranchContext';
 import { ShoppingCart, Plus, Minus, Trash2, Search, User, ArrowRight, Edit2, Layers } from 'lucide-react';
@@ -48,32 +48,32 @@ export default function SaleBuilder() {
   const [editingProduct, setEditingProduct] = useState<ProductMaster | null>(null);
   const [isConfirmCloseOpen, setIsConfirmCloseOpen] = useState(false);
 
-  const { data: products = [] } = useQuery(productListOptions());
-  const { data: customers = [] } = useQuery(customersListOptions());
+  const { data: products = [] } = useQuery(v1ProductListOptions());
+  const { data: customers = [] } = useQuery(v1CustomersListOptions());
   
   const { data: stockData = [] } = useQuery({
-    ...productBranchStockListOptions({
+    ...v1ProductBranchStockListOptions({
       // @ts-expect-error - Query params might not be fully typed
-      query: { branch: selectedBranch?.id }
+      query: { branch_id: selectedBranch?.id }
     }),
     enabled: !!selectedBranch?.id
   });
 
   const { data: ratesData } = useQuery({
-    ...exchangeRatesTodayRetrieveOptions(),
+    ...v1ExchangeRatesTodayRetrieveOptions(),
     staleTime: 1000 * 60 * 30, // 30 minutes
   });
 
   const rates = ratesData as { bcv_rate: string; parallel_rate: string } | undefined;
 
-  const { data: measurementUnits = [] } = useQuery(measurementListOptions());
+  const { data: measurementUnits = [] } = useQuery(v1MeasurementListOptions());
   const { branches, isLoading: loadingBranches } = useBranch();
 
   const createSaleMutation = useMutation({
-    ...salesCreateMutation(),
+    ...v1SalesCreateMutation(),
     onSuccess: (data: Sale) => {
-      queryClient.invalidateQueries({ queryKey: salesListQueryKey() });
-      queryClient.invalidateQueries({ queryKey: productBranchStockListQueryKey() });
+      queryClient.invalidateQueries({ queryKey: v1SalesListQueryKey() });
+      queryClient.invalidateQueries({ queryKey: v1ProductBranchStockListQueryKey() });
       toast.success('Venta realizada con éxito');
       setCart([]);
       setSelectedCustomerId('');
@@ -152,10 +152,9 @@ export default function SaleBuilder() {
 
     try {
       const fullProduct = await queryClient.fetchQuery(
-        productRetrieveOptions({ path: { id: product.id } })
+        v1ProductRetrieveOptions({ path: { id: product.id } })
       );
 
-      // @ts-expect-error - selling_units not in types
       const sellingUnits = (fullProduct.selling_units || []) as SellingUnit[];
       const unitDetail = measurementUnits.find((u: MeasurementUnit) => u.id === fullProduct.measurement_unit);
 

@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { accountsListOptions } from '../../../client/@tanstack/react-query.gen';
+import { v1AccountsListOptions } from '../../../client/@tanstack/react-query.gen';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { CreditCard, AlertCircle } from 'lucide-react';
@@ -16,14 +16,15 @@ export default function AccountsPayable() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isConfirmCloseOpen, setIsConfirmCloseOpen] = useState(false);
   const { data: accountsData, isLoading } = useQuery({
-    ...accountsListOptions({
+    ...v1AccountsListOptions({
       // @ts-expect-error - Query params might not be fully typed
       query: { branch: selectedBranch?.id }
     }),
     enabled: !!selectedBranch?.id
   });
 
-  const pendingAccounts = (Array.isArray(accountsData) ? accountsData : []).filter(
+  const accounts = accountsData?.results || [];
+  const pendingAccounts = accounts.filter(
     (acc) => acc.payment_status !== 'PAID'
   );
 

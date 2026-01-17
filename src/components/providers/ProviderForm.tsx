@@ -4,9 +4,9 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { z } from 'zod';
 import { 
-  providersCreateMutation, 
-  providersUpdateMutation,
-  providersListQueryKey 
+  v1ProvidersCreateMutation, 
+  v1ProvidersUpdateMutation,
+  v1ProvidersListQueryKey 
 } from '../../client/@tanstack/react-query.gen';
 import type { Provider, ProviderRequest } from '../../client/types.gen';
 
@@ -39,9 +39,9 @@ export default function ProviderForm({ initialData, onSuccess }: ProviderFormPro
   });
 
   const createMutation = useMutation({
-    ...providersCreateMutation(),
+    ...v1ProvidersCreateMutation(),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: providersListQueryKey() });
+      queryClient.invalidateQueries({ queryKey: v1ProvidersListQueryKey() });
       toast.success('Proveedor creado correctamente');
       reset();
       onSuccess();
@@ -50,9 +50,9 @@ export default function ProviderForm({ initialData, onSuccess }: ProviderFormPro
   });
 
   const updateMutation = useMutation({
-    ...providersUpdateMutation(),
+    ...v1ProvidersUpdateMutation(),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: providersListQueryKey() });
+      queryClient.invalidateQueries({ queryKey: v1ProvidersListQueryKey() });
       toast.success('Proveedor actualizado correctamente');
       onSuccess();
     },

@@ -2,17 +2,17 @@ import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { 
-  productListOptions, 
-  productListQueryKey,
-  categoryListOptions, 
-  categoryListQueryKey,
-  measurementListOptions,
-  measurementListQueryKey,
-  categoryDestroyMutation,
-  measurementDestroyMutation,
-  productDestroyMutation,
-  productBranchStockListOptions,
-  exchangeRatesTodayRetrieveOptions
+  v1ProductListOptions, 
+  v1ProductListQueryKey,
+  v1CategoryListOptions, 
+  v1CategoryListQueryKey,
+  v1MeasurementListOptions,
+  v1MeasurementListQueryKey,
+  v1CategoryDestroyMutation,
+  v1MeasurementDestroyMutation,
+  v1ProductDestroyMutation,
+  v1ProductBranchStockListOptions,
+  v1ExchangeRatesTodayRetrieveOptions
 } from '../../client/@tanstack/react-query.gen';
 import { useBranch } from '../../context/BranchContext';
 import type { Category, MeasurementUnit, ProductMaster } from '../../client/types.gen';
@@ -49,12 +49,12 @@ export default function InventoryPage() {
   const queryClient = useQueryClient();
   const { selectedBranch } = useBranch();
 
-  const { data: productsData, isLoading: isProductsLoading } = useQuery(productListOptions());
-  const { data: categoriesData, isLoading: isCategoriesLoading } = useQuery(categoryListOptions());
-  const { data: unitsData, isLoading: isUnitsLoading } = useQuery(measurementListOptions());
+  const { data: productsData, isLoading: isProductsLoading } = useQuery(v1ProductListOptions());
+  const { data: categoriesData, isLoading: isCategoriesLoading } = useQuery(v1CategoryListOptions());
+  const { data: unitsData, isLoading: isUnitsLoading } = useQuery(v1MeasurementListOptions());
   
   const { data: stockData } = useQuery({
-    ...productBranchStockListOptions({
+    ...v1ProductBranchStockListOptions({
       // @ts-expect-error - The API generator might not have picked up the query params
       query: { branch: selectedBranch?.id }
     }),
@@ -62,16 +62,16 @@ export default function InventoryPage() {
   });
 
   const { data: ratesData } = useQuery({
-    ...exchangeRatesTodayRetrieveOptions(),
+    ...v1ExchangeRatesTodayRetrieveOptions(),
     staleTime: 1000 * 60 * 30, // 30 minutes
   });
 
   const rates = ratesData as { bcv_rate: string; parallel_rate: string } | undefined;
 
   const deleteProduct = useMutation({
-    ...productDestroyMutation(),
+    ...v1ProductDestroyMutation(),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: productListQueryKey() });
+      queryClient.invalidateQueries({ queryKey: v1ProductListQueryKey() });
       toast.success('Producto eliminado correctamente');
     },
     onError: () => {
@@ -80,9 +80,9 @@ export default function InventoryPage() {
   });
 
   const deleteCategory = useMutation({
-    ...categoryDestroyMutation(),
+    ...v1CategoryDestroyMutation(),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: categoryListQueryKey() });
+      queryClient.invalidateQueries({ queryKey: v1CategoryListQueryKey() });
       toast.success('Categoría eliminada correctamente');
     },
     onError: () => {
@@ -91,9 +91,9 @@ export default function InventoryPage() {
   });
 
   const deleteUnit = useMutation({
-    ...measurementDestroyMutation(),
+    ...v1MeasurementDestroyMutation(),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: measurementListQueryKey() });
+      queryClient.invalidateQueries({ queryKey: v1MeasurementListQueryKey() });
       toast.success('Unidad eliminada correctamente');
     },
     onError: () => {

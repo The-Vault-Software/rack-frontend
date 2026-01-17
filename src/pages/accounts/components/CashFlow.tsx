@@ -1,5 +1,6 @@
-import { useQuery } from '@tanstack/react-query';
-import { salesListOptions, accountsListOptions } from '../../../client/@tanstack/react-query.gen';
+import { useInfiniteQuery } from '@tanstack/react-query';
+import { v1SalesListInfiniteOptions, v1AccountsListInfiniteOptions } from '../../../client/@tanstack/react-query.gen';
+import { useInView } from 'react-intersection-observer';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { TrendingUp, TrendingDown, Clock, AlertCircle, Wallet } from 'lucide-react';
@@ -8,23 +9,69 @@ import { useBranch } from '../../../context/BranchContext';
 
 export default function CashFlow() {
   const { selectedBranch } = useBranch();
-  const { data: salesData, isLoading: isSalesLoading } = useQuery({
-    ...salesListOptions({
+  const { ref, inView } = useInView();
+
+  const { 
+    data: salesData, 
+    isLoading: isSalesLoading,
+    fetchNextPage: fetchNextSalesPage,
+    hasNextPage: hasNextSalesPage,
+    isFetchingNextPage: isFetchingNextSalesPage
+  } = useInfiniteQuery({
+    ...v1SalesListInfiniteOptions({
       // @ts-expect-error - Query params might not be fully typed
       query: { branch: selectedBranch?.id }
     }),
-    enabled: !!selectedBranch?.id
-  });
-  const { data: accountsData, isLoading: isAccountsLoading } = useQuery({
-    ...accountsListOptions({
-      // @ts-expect-error - Query params might not be fully typed
-      query: { branch: selectedBranch?.id }
-    }),
-    enabled: !!selectedBranch?.id
+    enabled: !!selectedBranch?.id,
+    getNextPageParam: (lastPage) => {
+      // @ts-expect-error - links.next exists in response
+      if (lastPage.links?.next) {
+        // @ts-expect-error - current_page exists in response
+        return lastPage.current_page + 1;
+      }
+      return undefined;
+    },
+    initialPageParam: 1,
   });
 
+  const { 
+    data: accountsData, 
+    isLoading: isAccountsLoading,
+    fetchNextPage: fetchNextAccountsPage,
+    hasNextPage: hasNextAccountsPage,
+    isFetchingNextPage: isFetchingNextAccountsPage
+  } = useInfiniteQuery({
+    ...v1AccountsListInfiniteOptions({
+      // @ts-expect-error - Query params might not be fully typed
+      query: { branch: selectedBranch?.id }
+    }),
+    enabled: !!selectedBranch?.id,
+    getNextPageParam: (lastPage) => {
+      // @ts-expect-error - links.next exists in response
+      if (lastPage.links?.next) {
+        // @ts-expect-error - current_page exists in response
+        return lastPage.current_page + 1;
+      }
+      return undefined;
+    },
+    initialPageParam: 1,
+  });
+
+  // Fetch next pages when scrolled to bottom
+  if (inView) {
+    if (hasNextSalesPage && !isFetchingNextSalesPage) {
+      fetchNextSalesPage();
+    }
+    if (hasNextAccountsPage && !isFetchingNextAccountsPage) {
+      fetchNextAccountsPage();
+    }
+  }
+
   const movements = useMemo(() => {
-    const sales = (Array.isArray(salesData) ? salesData : []).map(sale => ({
+    const allSales = salesData?.pages.flatMap(page => page.results) || [];
+    const allAccounts = accountsData?.pages.flatMap(page => page.results) || [];
+
+    const sales = allSales.map(sale => ({
       id: sale.id,
       date: new Date(sale.created_at),
       type: 'IN' as const,
@@ -34,7 +81,7 @@ export default function CashFlow() {
       status: sale.payment_status
     }));
 
-    const accounts = (Array.isArray(accountsData) ? accountsData : []).map(acc => ({
+    const accounts = allAccounts.map(acc => ({
       id: acc.id,
       date: new Date(acc.created_at),
       type: 'OUT' as const,
@@ -152,6 +199,20 @@ export default function CashFlow() {
             )}
           </tbody>
         </table>
+      </div>
+
+      {/* Infinite Scroll Trigger */}
+      <div ref={ref} className="py-4 flex justify-center">
+        {(isFetchingNextSalesPage || isFetchingNextAccountsPage) ? (
+          <div className="text-gray-500 text-sm animate-pulse flex items-center space-x-2">
+            <div className="w-4 h-4 border-2 border-gray-300 border-t-blue-500 rounded-full animate-spin"></div>
+            <span>Cargando más movimientos...</span>
+          </div>
+        ) : (hasNextSalesPage || hasNextAccountsPage) ? (
+          <span className="text-transparent">Cargar más</span>
+        ) : movements.length > 0 ? (
+          <span className="text-gray-400 text-sm italic">No hay más movimientos para mostrar.</span>
+        ) : null}
       </div>
     </div>
   );

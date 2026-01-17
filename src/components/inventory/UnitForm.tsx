@@ -3,7 +3,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { z } from 'zod';
-import { measurementCreateMutation, measurementUpdateMutation, measurementListQueryKey } from '../../client/@tanstack/react-query.gen';
+import { v1MeasurementCreateMutation, v1MeasurementUpdateMutation, v1MeasurementListQueryKey } from '../../client/@tanstack/react-query.gen';
 import type { MeasurementUnitRequest, MeasurementUnit } from '../../client/types.gen';
 
 const unitSchema = z.object({
@@ -31,9 +31,9 @@ export default function UnitForm({ initialData, onSuccess }: UnitFormProps) {
   });
 
   const createMutation = useMutation({
-    ...measurementCreateMutation(),
+    ...v1MeasurementCreateMutation(),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: measurementListQueryKey() });
+      queryClient.invalidateQueries({ queryKey: v1MeasurementListQueryKey() });
       toast.success('Unidad de medida creada exitosamente');
       reset();
       onSuccess();
@@ -45,9 +45,9 @@ export default function UnitForm({ initialData, onSuccess }: UnitFormProps) {
   });
 
   const updateMutation = useMutation({
-    ...measurementUpdateMutation(),
+    ...v1MeasurementUpdateMutation(),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: measurementListQueryKey() });
+      queryClient.invalidateQueries({ queryKey: v1MeasurementListQueryKey() });
       toast.success('Unidad de medida actualizada exitosamente');
       onSuccess();
     },

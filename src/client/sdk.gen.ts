@@ -2,7 +2,7 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { AccountsCreateData, AccountsCreateResponses, AccountsDestroyData, AccountsDestroyResponses, AccountsListData, AccountsListResponses, AccountsPartialUpdateData, AccountsPartialUpdateResponses, AccountsPaymentsCreateData, AccountsPaymentsCreateResponses, AccountsPaymentsListData, AccountsPaymentsListResponses, AccountsRetrieveData, AccountsRetrieveResponses, AccountsUpdateData, AccountsUpdateResponses, BranchCreateData, BranchCreateResponses, BranchDestroyData, BranchDestroyResponses, BranchListData, BranchListResponses, BranchPartialUpdateData, BranchPartialUpdateResponses, BranchRetrieveData, BranchRetrieveResponses, BranchUpdateData, BranchUpdateResponses, CategoryCreateData, CategoryCreateResponses, CategoryDestroyData, CategoryDestroyResponses, CategoryListData, CategoryListResponses, CategoryPartialUpdateData, CategoryPartialUpdateResponses, CategoryRetrieveData, CategoryRetrieveResponses, CategoryUpdateData, CategoryUpdateResponses, CompanyCreateData, CompanyCreateResponses, CompanyPartialUpdateData, CompanyPartialUpdateResponses, CompanyRetrieveData, CompanyRetrieveResponses, CompanyUpdateData, CompanyUpdateResponses, CustomersCreateData, CustomersCreateResponses, CustomersDestroyData, CustomersDestroyResponses, CustomersListData, CustomersListResponses, CustomersPartialUpdateData, CustomersPartialUpdateResponses, CustomersRetrieveData, CustomersRetrieveResponses, CustomersUpdateData, CustomersUpdateResponses, ExchangeRatesHistoryRetrieveData, ExchangeRatesHistoryRetrieveResponses, ExchangeRatesTodayRetrieveData, ExchangeRatesTodayRetrieveResponses, ExchangeRatesRetrieveData, ExchangeRatesRetrieveResponses, LoginCreateData, LoginCreateResponses, LogoutCreateData, LogoutCreateResponses, MeasurementCreateData, MeasurementCreateResponses, MeasurementDestroyData, MeasurementDestroyResponses, MeasurementListData, MeasurementListResponses, MeasurementPartialUpdateData, MeasurementPartialUpdateResponses, MeasurementRetrieveData, MeasurementRetrieveResponses, MeasurementUpdateData, MeasurementUpdateResponses, ProductBranchStockListData, ProductBranchStockListResponses, ProductCreateData, ProductCreateResponses, ProductDestroyData, ProductDestroyResponses, ProductListData, ProductListResponses, ProductPartialUpdateData, ProductPartialUpdateResponses, ProductRetrieveData, ProductRetrieveResponses, ProductUpdateData, ProductUpdateResponses, ProvidersCreateData, ProvidersCreateResponses, ProvidersDestroyData, ProvidersDestroyResponses, ProvidersListData, ProvidersListResponses, ProvidersPartialUpdateData, ProvidersPartialUpdateResponses, ProvidersRetrieveData, ProvidersRetrieveResponses, ProvidersUpdateData, ProvidersUpdateResponses, RefreshCreateData, RefreshCreateResponses, RegisterCreateData, RegisterCreateResponses, SalesCreateData, SalesCreateResponses, SalesDestroyData, SalesDestroyResponses, SalesListData, SalesListResponses, SalesPartialUpdateData, SalesPartialUpdateResponses, SalesPaymentsCreateData, SalesPaymentsCreateResponses, SalesPaymentsListData, SalesPaymentsListResponses, SalesRetrieveData, SalesRetrieveResponses, SalesUpdateData, SalesUpdateResponses, UserBranchesRetrieveData, UserBranchesRetrieveResponses, UserBranchesUpdateData, UserBranchesUpdateResponses, UserInfoPartialUpdateData, UserInfoPartialUpdateResponses, UserInfoRetrieveData, UserInfoRetrieveResponses, UserInfoUpdateData, UserInfoUpdateResponses } from './types.gen';
+import type { V1AccountsCreateData, V1AccountsCreateResponses, V1AccountsDestroyData, V1AccountsDestroyResponses, V1AccountsListData, V1AccountsListResponses, V1AccountsPartialUpdateData, V1AccountsPartialUpdateResponses, V1AccountsPaymentsCreateData, V1AccountsPaymentsCreateResponses, V1AccountsPaymentsListData, V1AccountsPaymentsListResponses, V1AccountsRetrieveData, V1AccountsRetrieveResponses, V1AccountsUpdateData, V1AccountsUpdateResponses, V1BranchCreateData, V1BranchCreateResponses, V1BranchDestroyData, V1BranchDestroyResponses, V1BranchListData, V1BranchListResponses, V1BranchPartialUpdateData, V1BranchPartialUpdateResponses, V1BranchRetrieveData, V1BranchRetrieveResponses, V1BranchUpdateData, V1BranchUpdateResponses, V1CategoryCreateData, V1CategoryCreateResponses, V1CategoryDestroyData, V1CategoryDestroyResponses, V1CategoryListData, V1CategoryListResponses, V1CategoryPartialUpdateData, V1CategoryPartialUpdateResponses, V1CategoryRetrieveData, V1CategoryRetrieveResponses, V1CategoryUpdateData, V1CategoryUpdateResponses, V1CompanyCreateData, V1CompanyCreateResponses, V1CompanyPartialUpdateData, V1CompanyPartialUpdateResponses, V1CompanyRetrieveData, V1CompanyRetrieveResponses, V1CompanyUpdateData, V1CompanyUpdateResponses, V1CustomersCreateData, V1CustomersCreateResponses, V1CustomersDestroyData, V1CustomersDestroyResponses, V1CustomersListData, V1CustomersListResponses, V1CustomersPartialUpdateData, V1CustomersPartialUpdateResponses, V1CustomersRetrieveData, V1CustomersRetrieveResponses, V1CustomersUpdateData, V1CustomersUpdateResponses, V1ExchangeRatesHistoryRetrieveData, V1ExchangeRatesHistoryRetrieveResponses, V1ExchangeRatesRetrieveData, V1ExchangeRatesRetrieveResponses, V1ExchangeRatesTodayRetrieveData, V1ExchangeRatesTodayRetrieveResponses, V1LoginCreateData, V1LoginCreateResponses, V1LogoutCreateData, V1LogoutCreateResponses, V1MeasurementCreateData, V1MeasurementCreateResponses, V1MeasurementDestroyData, V1MeasurementDestroyResponses, V1MeasurementListData, V1MeasurementListResponses, V1MeasurementPartialUpdateData, V1MeasurementPartialUpdateResponses, V1MeasurementRetrieveData, V1MeasurementRetrieveResponses, V1MeasurementUpdateData, V1MeasurementUpdateResponses, V1ProductBranchStockListData, V1ProductBranchStockListResponses, V1ProductCreateData, V1ProductCreateResponses, V1ProductDestroyData, V1ProductDestroyResponses, V1ProductListData, V1ProductListResponses, V1ProductPartialUpdateData, V1ProductPartialUpdateResponses, V1ProductRetrieveData, V1ProductRetrieveResponses, V1ProductUpdateData, V1ProductUpdateResponses, V1ProvidersCreateData, V1ProvidersCreateResponses, V1ProvidersDestroyData, V1ProvidersDestroyResponses, V1ProvidersListData, V1ProvidersListResponses, V1ProvidersPartialUpdateData, V1ProvidersPartialUpdateResponses, V1ProvidersRetrieveData, V1ProvidersRetrieveResponses, V1ProvidersUpdateData, V1ProvidersUpdateResponses, V1RefreshCreateData, V1RefreshCreateResponses, V1RegisterCreateData, V1RegisterCreateResponses, V1SalesCreateData, V1SalesCreateResponses, V1SalesDestroyData, V1SalesDestroyResponses, V1SalesListData, V1SalesListResponses, V1SalesPartialUpdateData, V1SalesPartialUpdateResponses, V1SalesPaymentsCreateData, V1SalesPaymentsCreateResponses, V1SalesPaymentsListData, V1SalesPaymentsListResponses, V1SalesRetrieveData, V1SalesRetrieveResponses, V1SalesUpdateData, V1SalesUpdateResponses, V1UserBranchesRetrieveData, V1UserBranchesRetrieveResponses, V1UserBranchesUpdateData, V1UserBranchesUpdateResponses, V1UserInfoPartialUpdateData, V1UserInfoPartialUpdateResponses, V1UserInfoRetrieveData, V1UserInfoRetrieveResponses, V1UserInfoUpdateData, V1UserInfoUpdateResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -22,13 +22,13 @@ export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends 
  * List all accounts (purchases) or create a new account.
  * Supports nested creation of account details.
  */
-export const accountsList = <ThrowOnError extends boolean = false>(options?: Options<AccountsListData, ThrowOnError>) => (options?.client ?? client).get<AccountsListResponses, unknown, ThrowOnError>({ url: '/v1/accounts/', ...options });
+export const v1AccountsList = <ThrowOnError extends boolean = false>(options?: Options<V1AccountsListData, ThrowOnError>) => (options?.client ?? client).get<V1AccountsListResponses, unknown, ThrowOnError>({ url: '/v1/accounts/', ...options });
 
 /**
  * List all accounts (purchases) or create a new account.
  * Supports nested creation of account details.
  */
-export const accountsCreate = <ThrowOnError extends boolean = false>(options: Options<AccountsCreateData, ThrowOnError>) => (options.client ?? client).post<AccountsCreateResponses, unknown, ThrowOnError>({
+export const v1AccountsCreate = <ThrowOnError extends boolean = false>(options: Options<V1AccountsCreateData, ThrowOnError>) => (options.client ?? client).post<V1AccountsCreateResponses, unknown, ThrowOnError>({
     url: '/v1/accounts/',
     ...options,
     headers: {
@@ -41,13 +41,13 @@ export const accountsCreate = <ThrowOnError extends boolean = false>(options: Op
  * List payments for an account or create a new payment.
  * Nested under /accounts/<account_id>/payments/
  */
-export const accountsPaymentsList = <ThrowOnError extends boolean = false>(options: Options<AccountsPaymentsListData, ThrowOnError>) => (options.client ?? client).get<AccountsPaymentsListResponses, unknown, ThrowOnError>({ url: '/v1/accounts/{account_id}/payments/', ...options });
+export const v1AccountsPaymentsList = <ThrowOnError extends boolean = false>(options: Options<V1AccountsPaymentsListData, ThrowOnError>) => (options.client ?? client).get<V1AccountsPaymentsListResponses, unknown, ThrowOnError>({ url: '/v1/accounts/{account_id}/payments/', ...options });
 
 /**
  * List payments for an account or create a new payment.
  * Nested under /accounts/<account_id>/payments/
  */
-export const accountsPaymentsCreate = <ThrowOnError extends boolean = false>(options: Options<AccountsPaymentsCreateData, ThrowOnError>) => (options.client ?? client).post<AccountsPaymentsCreateResponses, unknown, ThrowOnError>({
+export const v1AccountsPaymentsCreate = <ThrowOnError extends boolean = false>(options: Options<V1AccountsPaymentsCreateData, ThrowOnError>) => (options.client ?? client).post<V1AccountsPaymentsCreateResponses, unknown, ThrowOnError>({
     url: '/v1/accounts/{account_id}/payments/',
     ...options,
     headers: {
@@ -64,7 +64,7 @@ export const accountsPaymentsCreate = <ThrowOnError extends boolean = false>(opt
  * complex stock adjustments. Consider implementing specific
  * update logic if needed.
  */
-export const accountsDestroy = <ThrowOnError extends boolean = false>(options: Options<AccountsDestroyData, ThrowOnError>) => (options.client ?? client).delete<AccountsDestroyResponses, unknown, ThrowOnError>({ url: '/v1/accounts/{id}/', ...options });
+export const v1AccountsDestroy = <ThrowOnError extends boolean = false>(options: Options<V1AccountsDestroyData, ThrowOnError>) => (options.client ?? client).delete<V1AccountsDestroyResponses, unknown, ThrowOnError>({ url: '/v1/accounts/{id}/', ...options });
 
 /**
  * Retrieve, update, or delete an account (purchase).
@@ -74,7 +74,7 @@ export const accountsDestroy = <ThrowOnError extends boolean = false>(options: O
  * complex stock adjustments. Consider implementing specific
  * update logic if needed.
  */
-export const accountsRetrieve = <ThrowOnError extends boolean = false>(options: Options<AccountsRetrieveData, ThrowOnError>) => (options.client ?? client).get<AccountsRetrieveResponses, unknown, ThrowOnError>({ url: '/v1/accounts/{id}/', ...options });
+export const v1AccountsRetrieve = <ThrowOnError extends boolean = false>(options: Options<V1AccountsRetrieveData, ThrowOnError>) => (options.client ?? client).get<V1AccountsRetrieveResponses, unknown, ThrowOnError>({ url: '/v1/accounts/{id}/', ...options });
 
 /**
  * Retrieve, update, or delete an account (purchase).
@@ -84,7 +84,7 @@ export const accountsRetrieve = <ThrowOnError extends boolean = false>(options: 
  * complex stock adjustments. Consider implementing specific
  * update logic if needed.
  */
-export const accountsPartialUpdate = <ThrowOnError extends boolean = false>(options: Options<AccountsPartialUpdateData, ThrowOnError>) => (options.client ?? client).patch<AccountsPartialUpdateResponses, unknown, ThrowOnError>({
+export const v1AccountsPartialUpdate = <ThrowOnError extends boolean = false>(options: Options<V1AccountsPartialUpdateData, ThrowOnError>) => (options.client ?? client).patch<V1AccountsPartialUpdateResponses, unknown, ThrowOnError>({
     url: '/v1/accounts/{id}/',
     ...options,
     headers: {
@@ -101,7 +101,7 @@ export const accountsPartialUpdate = <ThrowOnError extends boolean = false>(opti
  * complex stock adjustments. Consider implementing specific
  * update logic if needed.
  */
-export const accountsUpdate = <ThrowOnError extends boolean = false>(options: Options<AccountsUpdateData, ThrowOnError>) => (options.client ?? client).put<AccountsUpdateResponses, unknown, ThrowOnError>({
+export const v1AccountsUpdate = <ThrowOnError extends boolean = false>(options: Options<V1AccountsUpdateData, ThrowOnError>) => (options.client ?? client).put<V1AccountsUpdateResponses, unknown, ThrowOnError>({
     url: '/v1/accounts/{id}/',
     ...options,
     headers: {
@@ -110,9 +110,9 @@ export const accountsUpdate = <ThrowOnError extends boolean = false>(options: Op
     }
 });
 
-export const branchList = <ThrowOnError extends boolean = false>(options?: Options<BranchListData, ThrowOnError>) => (options?.client ?? client).get<BranchListResponses, unknown, ThrowOnError>({ url: '/v1/branch/', ...options });
+export const v1BranchList = <ThrowOnError extends boolean = false>(options?: Options<V1BranchListData, ThrowOnError>) => (options?.client ?? client).get<V1BranchListResponses, unknown, ThrowOnError>({ url: '/v1/branch/', ...options });
 
-export const branchCreate = <ThrowOnError extends boolean = false>(options: Options<BranchCreateData, ThrowOnError>) => (options.client ?? client).post<BranchCreateResponses, unknown, ThrowOnError>({
+export const v1BranchCreate = <ThrowOnError extends boolean = false>(options: Options<V1BranchCreateData, ThrowOnError>) => (options.client ?? client).post<V1BranchCreateResponses, unknown, ThrowOnError>({
     url: '/v1/branch/',
     ...options,
     headers: {
@@ -121,11 +121,11 @@ export const branchCreate = <ThrowOnError extends boolean = false>(options: Opti
     }
 });
 
-export const branchDestroy = <ThrowOnError extends boolean = false>(options: Options<BranchDestroyData, ThrowOnError>) => (options.client ?? client).delete<BranchDestroyResponses, unknown, ThrowOnError>({ url: '/v1/branch/{id}/', ...options });
+export const v1BranchDestroy = <ThrowOnError extends boolean = false>(options: Options<V1BranchDestroyData, ThrowOnError>) => (options.client ?? client).delete<V1BranchDestroyResponses, unknown, ThrowOnError>({ url: '/v1/branch/{id}/', ...options });
 
-export const branchRetrieve = <ThrowOnError extends boolean = false>(options: Options<BranchRetrieveData, ThrowOnError>) => (options.client ?? client).get<BranchRetrieveResponses, unknown, ThrowOnError>({ url: '/v1/branch/{id}/', ...options });
+export const v1BranchRetrieve = <ThrowOnError extends boolean = false>(options: Options<V1BranchRetrieveData, ThrowOnError>) => (options.client ?? client).get<V1BranchRetrieveResponses, unknown, ThrowOnError>({ url: '/v1/branch/{id}/', ...options });
 
-export const branchPartialUpdate = <ThrowOnError extends boolean = false>(options: Options<BranchPartialUpdateData, ThrowOnError>) => (options.client ?? client).patch<BranchPartialUpdateResponses, unknown, ThrowOnError>({
+export const v1BranchPartialUpdate = <ThrowOnError extends boolean = false>(options: Options<V1BranchPartialUpdateData, ThrowOnError>) => (options.client ?? client).patch<V1BranchPartialUpdateResponses, unknown, ThrowOnError>({
     url: '/v1/branch/{id}/',
     ...options,
     headers: {
@@ -134,7 +134,7 @@ export const branchPartialUpdate = <ThrowOnError extends boolean = false>(option
     }
 });
 
-export const branchUpdate = <ThrowOnError extends boolean = false>(options: Options<BranchUpdateData, ThrowOnError>) => (options.client ?? client).put<BranchUpdateResponses, unknown, ThrowOnError>({
+export const v1BranchUpdate = <ThrowOnError extends boolean = false>(options: Options<V1BranchUpdateData, ThrowOnError>) => (options.client ?? client).put<V1BranchUpdateResponses, unknown, ThrowOnError>({
     url: '/v1/branch/{id}/',
     ...options,
     headers: {
@@ -143,9 +143,9 @@ export const branchUpdate = <ThrowOnError extends boolean = false>(options: Opti
     }
 });
 
-export const categoryList = <ThrowOnError extends boolean = false>(options?: Options<CategoryListData, ThrowOnError>) => (options?.client ?? client).get<CategoryListResponses, unknown, ThrowOnError>({ url: '/v1/category/', ...options });
+export const v1CategoryList = <ThrowOnError extends boolean = false>(options?: Options<V1CategoryListData, ThrowOnError>) => (options?.client ?? client).get<V1CategoryListResponses, unknown, ThrowOnError>({ url: '/v1/category/', ...options });
 
-export const categoryCreate = <ThrowOnError extends boolean = false>(options: Options<CategoryCreateData, ThrowOnError>) => (options.client ?? client).post<CategoryCreateResponses, unknown, ThrowOnError>({
+export const v1CategoryCreate = <ThrowOnError extends boolean = false>(options: Options<V1CategoryCreateData, ThrowOnError>) => (options.client ?? client).post<V1CategoryCreateResponses, unknown, ThrowOnError>({
     url: '/v1/category/',
     ...options,
     headers: {
@@ -154,11 +154,11 @@ export const categoryCreate = <ThrowOnError extends boolean = false>(options: Op
     }
 });
 
-export const categoryDestroy = <ThrowOnError extends boolean = false>(options: Options<CategoryDestroyData, ThrowOnError>) => (options.client ?? client).delete<CategoryDestroyResponses, unknown, ThrowOnError>({ url: '/v1/category/{id}/', ...options });
+export const v1CategoryDestroy = <ThrowOnError extends boolean = false>(options: Options<V1CategoryDestroyData, ThrowOnError>) => (options.client ?? client).delete<V1CategoryDestroyResponses, unknown, ThrowOnError>({ url: '/v1/category/{id}/', ...options });
 
-export const categoryRetrieve = <ThrowOnError extends boolean = false>(options: Options<CategoryRetrieveData, ThrowOnError>) => (options.client ?? client).get<CategoryRetrieveResponses, unknown, ThrowOnError>({ url: '/v1/category/{id}/', ...options });
+export const v1CategoryRetrieve = <ThrowOnError extends boolean = false>(options: Options<V1CategoryRetrieveData, ThrowOnError>) => (options.client ?? client).get<V1CategoryRetrieveResponses, unknown, ThrowOnError>({ url: '/v1/category/{id}/', ...options });
 
-export const categoryPartialUpdate = <ThrowOnError extends boolean = false>(options: Options<CategoryPartialUpdateData, ThrowOnError>) => (options.client ?? client).patch<CategoryPartialUpdateResponses, unknown, ThrowOnError>({
+export const v1CategoryPartialUpdate = <ThrowOnError extends boolean = false>(options: Options<V1CategoryPartialUpdateData, ThrowOnError>) => (options.client ?? client).patch<V1CategoryPartialUpdateResponses, unknown, ThrowOnError>({
     url: '/v1/category/{id}/',
     ...options,
     headers: {
@@ -167,7 +167,7 @@ export const categoryPartialUpdate = <ThrowOnError extends boolean = false>(opti
     }
 });
 
-export const categoryUpdate = <ThrowOnError extends boolean = false>(options: Options<CategoryUpdateData, ThrowOnError>) => (options.client ?? client).put<CategoryUpdateResponses, unknown, ThrowOnError>({
+export const v1CategoryUpdate = <ThrowOnError extends boolean = false>(options: Options<V1CategoryUpdateData, ThrowOnError>) => (options.client ?? client).put<V1CategoryUpdateResponses, unknown, ThrowOnError>({
     url: '/v1/category/{id}/',
     ...options,
     headers: {
@@ -176,9 +176,9 @@ export const categoryUpdate = <ThrowOnError extends boolean = false>(options: Op
     }
 });
 
-export const companyRetrieve = <ThrowOnError extends boolean = false>(options?: Options<CompanyRetrieveData, ThrowOnError>) => (options?.client ?? client).get<CompanyRetrieveResponses, unknown, ThrowOnError>({ url: '/v1/company/', ...options });
+export const v1CompanyRetrieve = <ThrowOnError extends boolean = false>(options?: Options<V1CompanyRetrieveData, ThrowOnError>) => (options?.client ?? client).get<V1CompanyRetrieveResponses, unknown, ThrowOnError>({ url: '/v1/company/', ...options });
 
-export const companyPartialUpdate = <ThrowOnError extends boolean = false>(options?: Options<CompanyPartialUpdateData, ThrowOnError>) => (options?.client ?? client).patch<CompanyPartialUpdateResponses, unknown, ThrowOnError>({
+export const v1CompanyPartialUpdate = <ThrowOnError extends boolean = false>(options?: Options<V1CompanyPartialUpdateData, ThrowOnError>) => (options?.client ?? client).patch<V1CompanyPartialUpdateResponses, unknown, ThrowOnError>({
     url: '/v1/company/',
     ...options,
     headers: {
@@ -187,7 +187,7 @@ export const companyPartialUpdate = <ThrowOnError extends boolean = false>(optio
     }
 });
 
-export const companyCreate = <ThrowOnError extends boolean = false>(options: Options<CompanyCreateData, ThrowOnError>) => (options.client ?? client).post<CompanyCreateResponses, unknown, ThrowOnError>({
+export const v1CompanyCreate = <ThrowOnError extends boolean = false>(options: Options<V1CompanyCreateData, ThrowOnError>) => (options.client ?? client).post<V1CompanyCreateResponses, unknown, ThrowOnError>({
     url: '/v1/company/',
     ...options,
     headers: {
@@ -196,7 +196,7 @@ export const companyCreate = <ThrowOnError extends boolean = false>(options: Opt
     }
 });
 
-export const companyUpdate = <ThrowOnError extends boolean = false>(options: Options<CompanyUpdateData, ThrowOnError>) => (options.client ?? client).put<CompanyUpdateResponses, unknown, ThrowOnError>({
+export const v1CompanyUpdate = <ThrowOnError extends boolean = false>(options: Options<V1CompanyUpdateData, ThrowOnError>) => (options.client ?? client).put<V1CompanyUpdateResponses, unknown, ThrowOnError>({
     url: '/v1/company/',
     ...options,
     headers: {
@@ -205,9 +205,9 @@ export const companyUpdate = <ThrowOnError extends boolean = false>(options: Opt
     }
 });
 
-export const customersList = <ThrowOnError extends boolean = false>(options?: Options<CustomersListData, ThrowOnError>) => (options?.client ?? client).get<CustomersListResponses, unknown, ThrowOnError>({ url: '/v1/customers/', ...options });
+export const v1CustomersList = <ThrowOnError extends boolean = false>(options?: Options<V1CustomersListData, ThrowOnError>) => (options?.client ?? client).get<V1CustomersListResponses, unknown, ThrowOnError>({ url: '/v1/customers/', ...options });
 
-export const customersCreate = <ThrowOnError extends boolean = false>(options: Options<CustomersCreateData, ThrowOnError>) => (options.client ?? client).post<CustomersCreateResponses, unknown, ThrowOnError>({
+export const v1CustomersCreate = <ThrowOnError extends boolean = false>(options: Options<V1CustomersCreateData, ThrowOnError>) => (options.client ?? client).post<V1CustomersCreateResponses, unknown, ThrowOnError>({
     url: '/v1/customers/',
     ...options,
     headers: {
@@ -216,11 +216,11 @@ export const customersCreate = <ThrowOnError extends boolean = false>(options: O
     }
 });
 
-export const customersDestroy = <ThrowOnError extends boolean = false>(options: Options<CustomersDestroyData, ThrowOnError>) => (options.client ?? client).delete<CustomersDestroyResponses, unknown, ThrowOnError>({ url: '/v1/customers/{id}/', ...options });
+export const v1CustomersDestroy = <ThrowOnError extends boolean = false>(options: Options<V1CustomersDestroyData, ThrowOnError>) => (options.client ?? client).delete<V1CustomersDestroyResponses, unknown, ThrowOnError>({ url: '/v1/customers/{id}/', ...options });
 
-export const customersRetrieve = <ThrowOnError extends boolean = false>(options: Options<CustomersRetrieveData, ThrowOnError>) => (options.client ?? client).get<CustomersRetrieveResponses, unknown, ThrowOnError>({ url: '/v1/customers/{id}/', ...options });
+export const v1CustomersRetrieve = <ThrowOnError extends boolean = false>(options: Options<V1CustomersRetrieveData, ThrowOnError>) => (options.client ?? client).get<V1CustomersRetrieveResponses, unknown, ThrowOnError>({ url: '/v1/customers/{id}/', ...options });
 
-export const customersPartialUpdate = <ThrowOnError extends boolean = false>(options: Options<CustomersPartialUpdateData, ThrowOnError>) => (options.client ?? client).patch<CustomersPartialUpdateResponses, unknown, ThrowOnError>({
+export const v1CustomersPartialUpdate = <ThrowOnError extends boolean = false>(options: Options<V1CustomersPartialUpdateData, ThrowOnError>) => (options.client ?? client).patch<V1CustomersPartialUpdateResponses, unknown, ThrowOnError>({
     url: '/v1/customers/{id}/',
     ...options,
     headers: {
@@ -229,7 +229,7 @@ export const customersPartialUpdate = <ThrowOnError extends boolean = false>(opt
     }
 });
 
-export const customersUpdate = <ThrowOnError extends boolean = false>(options: Options<CustomersUpdateData, ThrowOnError>) => (options.client ?? client).put<CustomersUpdateResponses, unknown, ThrowOnError>({
+export const v1CustomersUpdate = <ThrowOnError extends boolean = false>(options: Options<V1CustomersUpdateData, ThrowOnError>) => (options.client ?? client).put<V1CustomersUpdateResponses, unknown, ThrowOnError>({
     url: '/v1/customers/{id}/',
     ...options,
     headers: {
@@ -238,19 +238,19 @@ export const customersUpdate = <ThrowOnError extends boolean = false>(options: O
     }
 });
 
-export const exchangeRatesHistoryRetrieve = <ThrowOnError extends boolean = false>(options?: Options<ExchangeRatesHistoryRetrieveData, ThrowOnError>) => (options?.client ?? client).get<ExchangeRatesHistoryRetrieveResponses, unknown, ThrowOnError>({ url: '/v1/exchange-rates/history/', ...options });
+export const v1ExchangeRatesRetrieve = <ThrowOnError extends boolean = false>(options: Options<V1ExchangeRatesRetrieveData, ThrowOnError>) => (options.client ?? client).get<V1ExchangeRatesRetrieveResponses, unknown, ThrowOnError>({ url: '/v1/exchange-rates/{id}/', ...options });
 
-export const exchangeRatesTodayRetrieve = <ThrowOnError extends boolean = false>(options?: Options<ExchangeRatesTodayRetrieveData, ThrowOnError>) => (options?.client ?? client).get<ExchangeRatesTodayRetrieveResponses, unknown, ThrowOnError>({ url: '/v1/exchange-rates/today/', ...options });
+export const v1ExchangeRatesHistoryRetrieve = <ThrowOnError extends boolean = false>(options?: Options<V1ExchangeRatesHistoryRetrieveData, ThrowOnError>) => (options?.client ?? client).get<V1ExchangeRatesHistoryRetrieveResponses, unknown, ThrowOnError>({ url: '/v1/exchange-rates/history/', ...options });
 
-export const exchangeRatesRetrieve = <ThrowOnError extends boolean = false>(options: Options<ExchangeRatesRetrieveData, ThrowOnError>) => (options.client ?? client).get<ExchangeRatesRetrieveResponses, unknown, ThrowOnError>({ url: '/v1/exchange-rates/{id}/', ...options });
+export const v1ExchangeRatesTodayRetrieve = <ThrowOnError extends boolean = false>(options?: Options<V1ExchangeRatesTodayRetrieveData, ThrowOnError>) => (options?.client ?? client).get<V1ExchangeRatesTodayRetrieveResponses, unknown, ThrowOnError>({ url: '/v1/exchange-rates/today/', ...options });
 
-export const loginCreate = <ThrowOnError extends boolean = false>(options?: Options<LoginCreateData, ThrowOnError>) => (options?.client ?? client).post<LoginCreateResponses, unknown, ThrowOnError>({ url: '/v1/login/', ...options });
+export const v1LoginCreate = <ThrowOnError extends boolean = false>(options?: Options<V1LoginCreateData, ThrowOnError>) => (options?.client ?? client).post<V1LoginCreateResponses, unknown, ThrowOnError>({ url: '/v1/login/', ...options });
 
-export const logoutCreate = <ThrowOnError extends boolean = false>(options?: Options<LogoutCreateData, ThrowOnError>) => (options?.client ?? client).post<LogoutCreateResponses, unknown, ThrowOnError>({ url: '/v1/logout/', ...options });
+export const v1LogoutCreate = <ThrowOnError extends boolean = false>(options?: Options<V1LogoutCreateData, ThrowOnError>) => (options?.client ?? client).post<V1LogoutCreateResponses, unknown, ThrowOnError>({ url: '/v1/logout/', ...options });
 
-export const measurementList = <ThrowOnError extends boolean = false>(options?: Options<MeasurementListData, ThrowOnError>) => (options?.client ?? client).get<MeasurementListResponses, unknown, ThrowOnError>({ url: '/v1/measurement/', ...options });
+export const v1MeasurementList = <ThrowOnError extends boolean = false>(options?: Options<V1MeasurementListData, ThrowOnError>) => (options?.client ?? client).get<V1MeasurementListResponses, unknown, ThrowOnError>({ url: '/v1/measurement/', ...options });
 
-export const measurementCreate = <ThrowOnError extends boolean = false>(options: Options<MeasurementCreateData, ThrowOnError>) => (options.client ?? client).post<MeasurementCreateResponses, unknown, ThrowOnError>({
+export const v1MeasurementCreate = <ThrowOnError extends boolean = false>(options: Options<V1MeasurementCreateData, ThrowOnError>) => (options.client ?? client).post<V1MeasurementCreateResponses, unknown, ThrowOnError>({
     url: '/v1/measurement/',
     ...options,
     headers: {
@@ -259,11 +259,11 @@ export const measurementCreate = <ThrowOnError extends boolean = false>(options:
     }
 });
 
-export const measurementDestroy = <ThrowOnError extends boolean = false>(options: Options<MeasurementDestroyData, ThrowOnError>) => (options.client ?? client).delete<MeasurementDestroyResponses, unknown, ThrowOnError>({ url: '/v1/measurement/{id}/', ...options });
+export const v1MeasurementDestroy = <ThrowOnError extends boolean = false>(options: Options<V1MeasurementDestroyData, ThrowOnError>) => (options.client ?? client).delete<V1MeasurementDestroyResponses, unknown, ThrowOnError>({ url: '/v1/measurement/{id}/', ...options });
 
-export const measurementRetrieve = <ThrowOnError extends boolean = false>(options: Options<MeasurementRetrieveData, ThrowOnError>) => (options.client ?? client).get<MeasurementRetrieveResponses, unknown, ThrowOnError>({ url: '/v1/measurement/{id}/', ...options });
+export const v1MeasurementRetrieve = <ThrowOnError extends boolean = false>(options: Options<V1MeasurementRetrieveData, ThrowOnError>) => (options.client ?? client).get<V1MeasurementRetrieveResponses, unknown, ThrowOnError>({ url: '/v1/measurement/{id}/', ...options });
 
-export const measurementPartialUpdate = <ThrowOnError extends boolean = false>(options: Options<MeasurementPartialUpdateData, ThrowOnError>) => (options.client ?? client).patch<MeasurementPartialUpdateResponses, unknown, ThrowOnError>({
+export const v1MeasurementPartialUpdate = <ThrowOnError extends boolean = false>(options: Options<V1MeasurementPartialUpdateData, ThrowOnError>) => (options.client ?? client).patch<V1MeasurementPartialUpdateResponses, unknown, ThrowOnError>({
     url: '/v1/measurement/{id}/',
     ...options,
     headers: {
@@ -272,7 +272,7 @@ export const measurementPartialUpdate = <ThrowOnError extends boolean = false>(o
     }
 });
 
-export const measurementUpdate = <ThrowOnError extends boolean = false>(options: Options<MeasurementUpdateData, ThrowOnError>) => (options.client ?? client).put<MeasurementUpdateResponses, unknown, ThrowOnError>({
+export const v1MeasurementUpdate = <ThrowOnError extends boolean = false>(options: Options<V1MeasurementUpdateData, ThrowOnError>) => (options.client ?? client).put<V1MeasurementUpdateResponses, unknown, ThrowOnError>({
     url: '/v1/measurement/{id}/',
     ...options,
     headers: {
@@ -281,9 +281,9 @@ export const measurementUpdate = <ThrowOnError extends boolean = false>(options:
     }
 });
 
-export const productList = <ThrowOnError extends boolean = false>(options?: Options<ProductListData, ThrowOnError>) => (options?.client ?? client).get<ProductListResponses, unknown, ThrowOnError>({ url: '/v1/product/', ...options });
+export const v1ProductList = <ThrowOnError extends boolean = false>(options?: Options<V1ProductListData, ThrowOnError>) => (options?.client ?? client).get<V1ProductListResponses, unknown, ThrowOnError>({ url: '/v1/product/', ...options });
 
-export const productCreate = <ThrowOnError extends boolean = false>(options: Options<ProductCreateData, ThrowOnError>) => (options.client ?? client).post<ProductCreateResponses, unknown, ThrowOnError>({
+export const v1ProductCreate = <ThrowOnError extends boolean = false>(options: Options<V1ProductCreateData, ThrowOnError>) => (options.client ?? client).post<V1ProductCreateResponses, unknown, ThrowOnError>({
     url: '/v1/product/',
     ...options,
     headers: {
@@ -292,13 +292,13 @@ export const productCreate = <ThrowOnError extends boolean = false>(options: Opt
     }
 });
 
-export const productBranchStockList = <ThrowOnError extends boolean = false>(options?: Options<ProductBranchStockListData, ThrowOnError>) => (options?.client ?? client).get<ProductBranchStockListResponses, unknown, ThrowOnError>({ url: '/v1/product-branch-stock/', ...options });
+export const v1ProductBranchStockList = <ThrowOnError extends boolean = false>(options?: Options<V1ProductBranchStockListData, ThrowOnError>) => (options?.client ?? client).get<V1ProductBranchStockListResponses, unknown, ThrowOnError>({ url: '/v1/product-branch-stock/', ...options });
 
-export const productDestroy = <ThrowOnError extends boolean = false>(options: Options<ProductDestroyData, ThrowOnError>) => (options.client ?? client).delete<ProductDestroyResponses, unknown, ThrowOnError>({ url: '/v1/product/{id}/', ...options });
+export const v1ProductDestroy = <ThrowOnError extends boolean = false>(options: Options<V1ProductDestroyData, ThrowOnError>) => (options.client ?? client).delete<V1ProductDestroyResponses, unknown, ThrowOnError>({ url: '/v1/product/{id}/', ...options });
 
-export const productRetrieve = <ThrowOnError extends boolean = false>(options: Options<ProductRetrieveData, ThrowOnError>) => (options.client ?? client).get<ProductRetrieveResponses, unknown, ThrowOnError>({ url: '/v1/product/{id}/', ...options });
+export const v1ProductRetrieve = <ThrowOnError extends boolean = false>(options: Options<V1ProductRetrieveData, ThrowOnError>) => (options.client ?? client).get<V1ProductRetrieveResponses, unknown, ThrowOnError>({ url: '/v1/product/{id}/', ...options });
 
-export const productPartialUpdate = <ThrowOnError extends boolean = false>(options: Options<ProductPartialUpdateData, ThrowOnError>) => (options.client ?? client).patch<ProductPartialUpdateResponses, unknown, ThrowOnError>({
+export const v1ProductPartialUpdate = <ThrowOnError extends boolean = false>(options: Options<V1ProductPartialUpdateData, ThrowOnError>) => (options.client ?? client).patch<V1ProductPartialUpdateResponses, unknown, ThrowOnError>({
     url: '/v1/product/{id}/',
     ...options,
     headers: {
@@ -307,7 +307,7 @@ export const productPartialUpdate = <ThrowOnError extends boolean = false>(optio
     }
 });
 
-export const productUpdate = <ThrowOnError extends boolean = false>(options: Options<ProductUpdateData, ThrowOnError>) => (options.client ?? client).put<ProductUpdateResponses, unknown, ThrowOnError>({
+export const v1ProductUpdate = <ThrowOnError extends boolean = false>(options: Options<V1ProductUpdateData, ThrowOnError>) => (options.client ?? client).put<V1ProductUpdateResponses, unknown, ThrowOnError>({
     url: '/v1/product/{id}/',
     ...options,
     headers: {
@@ -316,9 +316,9 @@ export const productUpdate = <ThrowOnError extends boolean = false>(options: Opt
     }
 });
 
-export const providersList = <ThrowOnError extends boolean = false>(options?: Options<ProvidersListData, ThrowOnError>) => (options?.client ?? client).get<ProvidersListResponses, unknown, ThrowOnError>({ url: '/v1/providers/', ...options });
+export const v1ProvidersList = <ThrowOnError extends boolean = false>(options?: Options<V1ProvidersListData, ThrowOnError>) => (options?.client ?? client).get<V1ProvidersListResponses, unknown, ThrowOnError>({ url: '/v1/providers/', ...options });
 
-export const providersCreate = <ThrowOnError extends boolean = false>(options: Options<ProvidersCreateData, ThrowOnError>) => (options.client ?? client).post<ProvidersCreateResponses, unknown, ThrowOnError>({
+export const v1ProvidersCreate = <ThrowOnError extends boolean = false>(options: Options<V1ProvidersCreateData, ThrowOnError>) => (options.client ?? client).post<V1ProvidersCreateResponses, unknown, ThrowOnError>({
     url: '/v1/providers/',
     ...options,
     headers: {
@@ -327,11 +327,11 @@ export const providersCreate = <ThrowOnError extends boolean = false>(options: O
     }
 });
 
-export const providersDestroy = <ThrowOnError extends boolean = false>(options: Options<ProvidersDestroyData, ThrowOnError>) => (options.client ?? client).delete<ProvidersDestroyResponses, unknown, ThrowOnError>({ url: '/v1/providers/{id}/', ...options });
+export const v1ProvidersDestroy = <ThrowOnError extends boolean = false>(options: Options<V1ProvidersDestroyData, ThrowOnError>) => (options.client ?? client).delete<V1ProvidersDestroyResponses, unknown, ThrowOnError>({ url: '/v1/providers/{id}/', ...options });
 
-export const providersRetrieve = <ThrowOnError extends boolean = false>(options: Options<ProvidersRetrieveData, ThrowOnError>) => (options.client ?? client).get<ProvidersRetrieveResponses, unknown, ThrowOnError>({ url: '/v1/providers/{id}/', ...options });
+export const v1ProvidersRetrieve = <ThrowOnError extends boolean = false>(options: Options<V1ProvidersRetrieveData, ThrowOnError>) => (options.client ?? client).get<V1ProvidersRetrieveResponses, unknown, ThrowOnError>({ url: '/v1/providers/{id}/', ...options });
 
-export const providersPartialUpdate = <ThrowOnError extends boolean = false>(options: Options<ProvidersPartialUpdateData, ThrowOnError>) => (options.client ?? client).patch<ProvidersPartialUpdateResponses, unknown, ThrowOnError>({
+export const v1ProvidersPartialUpdate = <ThrowOnError extends boolean = false>(options: Options<V1ProvidersPartialUpdateData, ThrowOnError>) => (options.client ?? client).patch<V1ProvidersPartialUpdateResponses, unknown, ThrowOnError>({
     url: '/v1/providers/{id}/',
     ...options,
     headers: {
@@ -340,7 +340,7 @@ export const providersPartialUpdate = <ThrowOnError extends boolean = false>(opt
     }
 });
 
-export const providersUpdate = <ThrowOnError extends boolean = false>(options: Options<ProvidersUpdateData, ThrowOnError>) => (options.client ?? client).put<ProvidersUpdateResponses, unknown, ThrowOnError>({
+export const v1ProvidersUpdate = <ThrowOnError extends boolean = false>(options: Options<V1ProvidersUpdateData, ThrowOnError>) => (options.client ?? client).put<V1ProvidersUpdateResponses, unknown, ThrowOnError>({
     url: '/v1/providers/{id}/',
     ...options,
     headers: {
@@ -353,7 +353,7 @@ export const providersUpdate = <ThrowOnError extends boolean = false>(options: O
  * Takes a refresh type JSON web token and returns an access type JSON web
  * token if the refresh token is valid.
  */
-export const refreshCreate = <ThrowOnError extends boolean = false>(options: Options<RefreshCreateData, ThrowOnError>) => (options.client ?? client).post<RefreshCreateResponses, unknown, ThrowOnError>({
+export const v1RefreshCreate = <ThrowOnError extends boolean = false>(options: Options<V1RefreshCreateData, ThrowOnError>) => (options.client ?? client).post<V1RefreshCreateResponses, unknown, ThrowOnError>({
     url: '/v1/refresh/',
     ...options,
     headers: {
@@ -362,7 +362,7 @@ export const refreshCreate = <ThrowOnError extends boolean = false>(options: Opt
     }
 });
 
-export const registerCreate = <ThrowOnError extends boolean = false>(options: Options<RegisterCreateData, ThrowOnError>) => (options.client ?? client).post<RegisterCreateResponses, unknown, ThrowOnError>({
+export const v1RegisterCreate = <ThrowOnError extends boolean = false>(options: Options<V1RegisterCreateData, ThrowOnError>) => (options.client ?? client).post<V1RegisterCreateResponses, unknown, ThrowOnError>({
     url: '/v1/register/',
     ...options,
     headers: {
@@ -375,13 +375,13 @@ export const registerCreate = <ThrowOnError extends boolean = false>(options: Op
  * List all sales or create a new sale.
  * Supports nested creation of sale details.
  */
-export const salesList = <ThrowOnError extends boolean = false>(options?: Options<SalesListData, ThrowOnError>) => (options?.client ?? client).get<SalesListResponses, unknown, ThrowOnError>({ url: '/v1/sales/', ...options });
+export const v1SalesList = <ThrowOnError extends boolean = false>(options?: Options<V1SalesListData, ThrowOnError>) => (options?.client ?? client).get<V1SalesListResponses, unknown, ThrowOnError>({ url: '/v1/sales/', ...options });
 
 /**
  * List all sales or create a new sale.
  * Supports nested creation of sale details.
  */
-export const salesCreate = <ThrowOnError extends boolean = false>(options: Options<SalesCreateData, ThrowOnError>) => (options.client ?? client).post<SalesCreateResponses, unknown, ThrowOnError>({
+export const v1SalesCreate = <ThrowOnError extends boolean = false>(options: Options<V1SalesCreateData, ThrowOnError>) => (options.client ?? client).post<V1SalesCreateResponses, unknown, ThrowOnError>({
     url: '/v1/sales/',
     ...options,
     headers: {
@@ -394,19 +394,19 @@ export const salesCreate = <ThrowOnError extends boolean = false>(options: Optio
  * Retrieve, update, or delete a sale.
  * Delete operation is soft delete (sets state=False).
  */
-export const salesDestroy = <ThrowOnError extends boolean = false>(options: Options<SalesDestroyData, ThrowOnError>) => (options.client ?? client).delete<SalesDestroyResponses, unknown, ThrowOnError>({ url: '/v1/sales/{id}/', ...options });
+export const v1SalesDestroy = <ThrowOnError extends boolean = false>(options: Options<V1SalesDestroyData, ThrowOnError>) => (options.client ?? client).delete<V1SalesDestroyResponses, unknown, ThrowOnError>({ url: '/v1/sales/{id}/', ...options });
 
 /**
  * Retrieve, update, or delete a sale.
  * Delete operation is soft delete (sets state=False).
  */
-export const salesRetrieve = <ThrowOnError extends boolean = false>(options: Options<SalesRetrieveData, ThrowOnError>) => (options.client ?? client).get<SalesRetrieveResponses, unknown, ThrowOnError>({ url: '/v1/sales/{id}/', ...options });
+export const v1SalesRetrieve = <ThrowOnError extends boolean = false>(options: Options<V1SalesRetrieveData, ThrowOnError>) => (options.client ?? client).get<V1SalesRetrieveResponses, unknown, ThrowOnError>({ url: '/v1/sales/{id}/', ...options });
 
 /**
  * Retrieve, update, or delete a sale.
  * Delete operation is soft delete (sets state=False).
  */
-export const salesPartialUpdate = <ThrowOnError extends boolean = false>(options: Options<SalesPartialUpdateData, ThrowOnError>) => (options.client ?? client).patch<SalesPartialUpdateResponses, unknown, ThrowOnError>({
+export const v1SalesPartialUpdate = <ThrowOnError extends boolean = false>(options: Options<V1SalesPartialUpdateData, ThrowOnError>) => (options.client ?? client).patch<V1SalesPartialUpdateResponses, unknown, ThrowOnError>({
     url: '/v1/sales/{id}/',
     ...options,
     headers: {
@@ -419,7 +419,7 @@ export const salesPartialUpdate = <ThrowOnError extends boolean = false>(options
  * Retrieve, update, or delete a sale.
  * Delete operation is soft delete (sets state=False).
  */
-export const salesUpdate = <ThrowOnError extends boolean = false>(options: Options<SalesUpdateData, ThrowOnError>) => (options.client ?? client).put<SalesUpdateResponses, unknown, ThrowOnError>({
+export const v1SalesUpdate = <ThrowOnError extends boolean = false>(options: Options<V1SalesUpdateData, ThrowOnError>) => (options.client ?? client).put<V1SalesUpdateResponses, unknown, ThrowOnError>({
     url: '/v1/sales/{id}/',
     ...options,
     headers: {
@@ -432,13 +432,13 @@ export const salesUpdate = <ThrowOnError extends boolean = false>(options: Optio
  * List payments for a sale or create a new payment.
  * Nested under /sales/<sale_id>/payments/
  */
-export const salesPaymentsList = <ThrowOnError extends boolean = false>(options: Options<SalesPaymentsListData, ThrowOnError>) => (options.client ?? client).get<SalesPaymentsListResponses, unknown, ThrowOnError>({ url: '/v1/sales/{sale_id}/payments/', ...options });
+export const v1SalesPaymentsList = <ThrowOnError extends boolean = false>(options: Options<V1SalesPaymentsListData, ThrowOnError>) => (options.client ?? client).get<V1SalesPaymentsListResponses, unknown, ThrowOnError>({ url: '/v1/sales/{sale_id}/payments/', ...options });
 
 /**
  * List payments for a sale or create a new payment.
  * Nested under /sales/<sale_id>/payments/
  */
-export const salesPaymentsCreate = <ThrowOnError extends boolean = false>(options: Options<SalesPaymentsCreateData, ThrowOnError>) => (options.client ?? client).post<SalesPaymentsCreateResponses, unknown, ThrowOnError>({
+export const v1SalesPaymentsCreate = <ThrowOnError extends boolean = false>(options: Options<V1SalesPaymentsCreateData, ThrowOnError>) => (options.client ?? client).post<V1SalesPaymentsCreateResponses, unknown, ThrowOnError>({
     url: '/v1/sales/{sale_id}/payments/',
     ...options,
     headers: {
@@ -447,13 +447,13 @@ export const salesPaymentsCreate = <ThrowOnError extends boolean = false>(option
     }
 });
 
-export const userBranchesRetrieve = <ThrowOnError extends boolean = false>(options?: Options<UserBranchesRetrieveData, ThrowOnError>) => (options?.client ?? client).get<UserBranchesRetrieveResponses, unknown, ThrowOnError>({ url: '/v1/user-branches/', ...options });
+export const v1UserBranchesRetrieve = <ThrowOnError extends boolean = false>(options?: Options<V1UserBranchesRetrieveData, ThrowOnError>) => (options?.client ?? client).get<V1UserBranchesRetrieveResponses, unknown, ThrowOnError>({ url: '/v1/user-branches/', ...options });
 
-export const userBranchesUpdate = <ThrowOnError extends boolean = false>(options?: Options<UserBranchesUpdateData, ThrowOnError>) => (options?.client ?? client).put<UserBranchesUpdateResponses, unknown, ThrowOnError>({ url: '/v1/user-branches/', ...options });
+export const v1UserBranchesUpdate = <ThrowOnError extends boolean = false>(options?: Options<V1UserBranchesUpdateData, ThrowOnError>) => (options?.client ?? client).put<V1UserBranchesUpdateResponses, unknown, ThrowOnError>({ url: '/v1/user-branches/', ...options });
 
-export const userInfoRetrieve = <ThrowOnError extends boolean = false>(options?: Options<UserInfoRetrieveData, ThrowOnError>) => (options?.client ?? client).get<UserInfoRetrieveResponses, unknown, ThrowOnError>({ url: '/v1/user-info/', ...options });
+export const v1UserInfoRetrieve = <ThrowOnError extends boolean = false>(options?: Options<V1UserInfoRetrieveData, ThrowOnError>) => (options?.client ?? client).get<V1UserInfoRetrieveResponses, unknown, ThrowOnError>({ url: '/v1/user-info/', ...options });
 
-export const userInfoPartialUpdate = <ThrowOnError extends boolean = false>(options?: Options<UserInfoPartialUpdateData, ThrowOnError>) => (options?.client ?? client).patch<UserInfoPartialUpdateResponses, unknown, ThrowOnError>({
+export const v1UserInfoPartialUpdate = <ThrowOnError extends boolean = false>(options?: Options<V1UserInfoPartialUpdateData, ThrowOnError>) => (options?.client ?? client).patch<V1UserInfoPartialUpdateResponses, unknown, ThrowOnError>({
     url: '/v1/user-info/',
     ...options,
     headers: {
@@ -462,7 +462,7 @@ export const userInfoPartialUpdate = <ThrowOnError extends boolean = false>(opti
     }
 });
 
-export const userInfoUpdate = <ThrowOnError extends boolean = false>(options: Options<UserInfoUpdateData, ThrowOnError>) => (options.client ?? client).put<UserInfoUpdateResponses, unknown, ThrowOnError>({
+export const v1UserInfoUpdate = <ThrowOnError extends boolean = false>(options: Options<V1UserInfoUpdateData, ThrowOnError>) => (options.client ?? client).put<V1UserInfoUpdateResponses, unknown, ThrowOnError>({
     url: '/v1/user-info/',
     ...options,
     headers: {

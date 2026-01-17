@@ -3,7 +3,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { z } from 'zod';
-import { categoryCreateMutation, categoryUpdateMutation, categoryListQueryKey } from '../../client/@tanstack/react-query.gen';
+import { v1CategoryCreateMutation, v1CategoryUpdateMutation, v1CategoryListQueryKey } from '../../client/@tanstack/react-query.gen';
 import type { CategoryRequest, Category } from '../../client/types.gen';
 
 const categorySchema = z.object({
@@ -29,9 +29,9 @@ export default function CategoryForm({ initialData, onSuccess }: CategoryFormPro
   });
 
   const createMutation = useMutation({
-    ...categoryCreateMutation(),
+    ...v1CategoryCreateMutation(),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: categoryListQueryKey() });
+      queryClient.invalidateQueries({ queryKey: v1CategoryListQueryKey() });
       toast.success('Categoría creada exitosamente');
       reset();
       onSuccess();
@@ -43,9 +43,9 @@ export default function CategoryForm({ initialData, onSuccess }: CategoryFormPro
   });
 
   const updateMutation = useMutation({
-    ...categoryUpdateMutation(),
+    ...v1CategoryUpdateMutation(),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: categoryListQueryKey() });
+      queryClient.invalidateQueries({ queryKey: v1CategoryListQueryKey() });
       toast.success('Categoría actualizada exitosamente');
       onSuccess();
     },

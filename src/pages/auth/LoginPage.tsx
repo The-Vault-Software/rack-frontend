@@ -6,7 +6,7 @@ import { useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { loginCreateMutation, userInfoRetrieveOptions } from '../../client/@tanstack/react-query.gen';
+import { v1LoginCreateMutation, v1UserInfoRetrieveOptions } from '../../client/@tanstack/react-query.gen';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { Loader2 } from 'lucide-react';
@@ -44,10 +44,10 @@ export default function LoginPage() {
   });
 
   const loginMutation = useMutation({
-    ...loginCreateMutation(),
+    ...v1LoginCreateMutation(),
     onSuccess: async () => {
       // Invalidate user info to fetch the new session
-      await queryClient.invalidateQueries({ queryKey: userInfoRetrieveOptions({}).queryKey });
+      await queryClient.invalidateQueries({ queryKey: v1UserInfoRetrieveOptions({}).queryKey });
       toast.success('Sesión iniciada correctamente');
       navigate('/dashboard');
     },

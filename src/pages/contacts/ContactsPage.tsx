@@ -3,12 +3,12 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Plus, Search, Edit2, Trash2, User, Building2, Filter, Truck, Users } from 'lucide-react';
 import { toast } from 'sonner';
 import { 
-  customersListOptions, 
-  customersListQueryKey, 
-  customersDestroyMutation,
-  providersListOptions, 
-  providersListQueryKey, 
-  providersDestroyMutation 
+  v1CustomersListOptions, 
+  v1CustomersListQueryKey, 
+  v1CustomersDestroyMutation,
+  v1ProvidersListOptions, 
+  v1ProvidersListQueryKey, 
+  v1ProvidersDestroyMutation 
 } from '../../client/@tanstack/react-query.gen';
 import type { Customer, Provider } from '../../client/types.gen';
 import CustomerForm from '../../components/customers/CustomerForm';
@@ -37,14 +37,14 @@ export default function ContactsPage() {
   const queryClient = useQueryClient();
 
   // Queries
-  const { data: customersData, isLoading: isCustomersLoading } = useQuery(customersListOptions());
-  const { data: providersData, isLoading: isProvidersLoading } = useQuery(providersListOptions());
+  const { data: customersData, isLoading: isCustomersLoading } = useQuery(v1CustomersListOptions());
+  const { data: providersData, isLoading: isProvidersLoading } = useQuery(v1ProvidersListOptions());
 
   // Mutations
   const deleteCustomerMutation = useMutation({
-    ...customersDestroyMutation(),
+    ...v1CustomersDestroyMutation(),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: customersListQueryKey() });
+      queryClient.invalidateQueries({ queryKey: v1CustomersListQueryKey() });
       toast.success('Cliente eliminado correctamente');
       closeConfirm();
     },
@@ -52,9 +52,9 @@ export default function ContactsPage() {
   });
 
   const deleteProviderMutation = useMutation({
-    ...providersDestroyMutation(),
+    ...v1ProvidersDestroyMutation(),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: providersListQueryKey() });
+      queryClient.invalidateQueries({ queryKey: v1ProvidersListQueryKey() });
       toast.success('Proveedor eliminado correctamente');
       closeConfirm();
     },

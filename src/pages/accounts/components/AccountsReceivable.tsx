@@ -1,9 +1,10 @@
-import { useQuery } from '@tanstack/react-query';
-import { salesListOptions } from '../../../client/@tanstack/react-query.gen';
+import { useInfiniteQuery } from '@tanstack/react-query';
+import { v1SalesListInfiniteOptions } from '../../../client/@tanstack/react-query.gen';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Download, AlertCircle } from 'lucide-react';
 import { useState } from 'react';
+import { useInView } from 'react-intersection-observer';
 import Modal from '../../../components/ui/Modal';
 import ActionConfirmationModal from '../../../components/ui/ActionConfirmationModal';
 import PaymentForm from './PaymentForm';
@@ -15,15 +16,38 @@ export default function AccountsReceivable() {
   const [selectedSale, setSelectedSale] = useState<SaleList | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isConfirmCloseOpen, setIsConfirmCloseOpen] = useState(false);
-  const { data: salesData, isLoading } = useQuery({
-    ...salesListOptions({
+  const { ref, inView } = useInView();
+
+  const { 
+    data: salesData, 
+    isLoading,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage
+  } = useInfiniteQuery({
+    ...v1SalesListInfiniteOptions({
       // @ts-expect-error - Query params might not be fully typed
       query: { branch: selectedBranch?.id }
     }),
-    enabled: !!selectedBranch?.id
+    enabled: !!selectedBranch?.id,
+    getNextPageParam: (lastPage) => {
+      // @ts-expect-error - Backend response has links.next
+      if (lastPage.links?.next) {
+        // @ts-expect-error - Backend response has current_page
+        return lastPage.current_page + 1;
+      }
+      return undefined;
+    },
+    initialPageParam: 1,
   });
 
-  const pendingSales = (Array.isArray(salesData) ? salesData : []).filter(
+  // Fetch next page when scrolled to bottom
+  if (inView && hasNextPage && !isFetchingNextPage) {
+    fetchNextPage();
+  }
+
+  const sales = salesData?.pages.flatMap(page => page.results) || [];
+  const pendingSales = sales.filter(
     (sale) => sale.payment_status !== 'PAID' && sale.payment_status !== 'OVERPAID'
   );
 
@@ -118,6 +142,20 @@ export default function AccountsReceivable() {
           )}
         </tbody>
       </table>
+
+      {/* Infinite Scroll Trigger */}
+      <div ref={ref} className="py-4 flex justify-center">
+        {isFetchingNextPage ? (
+          <div className="text-gray-500 text-sm animate-pulse flex items-center space-x-2">
+            <div className="w-4 h-4 border-2 border-gray-300 border-t-blue-500 rounded-full animate-spin"></div>
+            <span>Cargando más cuentas...</span>
+          </div>
+        ) : hasNextPage ? (
+          <span className="text-transparent">Cargar más</span>
+        ) : pendingSales.length > 0 ? (
+          <span className="text-gray-400 text-sm italic">No hay más cuentas por cobrar.</span>
+        ) : null}
+      </div>
 
       <Modal
         isOpen={isModalOpen}

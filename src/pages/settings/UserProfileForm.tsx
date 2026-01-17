@@ -1,9 +1,9 @@
 import { useForm } from 'react-hook-form';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { userInfoRetrieveOptions, userInfoPartialUpdateMutation, userInfoRetrieveQueryKey } from '../../client/@tanstack/react-query.gen';
+import { v1UserInfoRetrieveOptions, v1UserInfoPartialUpdateMutation, v1UserInfoRetrieveQueryKey } from '../../client/@tanstack/react-query.gen';
 import { toast } from 'sonner';
 import { Loader2, User, Mail } from 'lucide-react';
-import type { UserInfoPartialUpdateData } from '../../client/types.gen';
+import type { V1UserInfoPartialUpdateData } from '../../client/types.gen';
 import { useEffect } from 'react';
 
 interface ProfileFormValues {
@@ -14,7 +14,7 @@ interface ProfileFormValues {
 
 export default function UserProfileForm() {
   const queryClient = useQueryClient();
-  const { data: user, isLoading } = useQuery(userInfoRetrieveOptions());
+  const { data: user, isLoading } = useQuery(v1UserInfoRetrieveOptions());
 
   const {
     register,
@@ -40,9 +40,9 @@ export default function UserProfileForm() {
   }, [user, reset]);
 
   const updateMutation = useMutation({
-    ...userInfoPartialUpdateMutation(),
+    ...v1UserInfoPartialUpdateMutation(),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: userInfoRetrieveQueryKey() });
+      queryClient.invalidateQueries({ queryKey: v1UserInfoRetrieveQueryKey() });
       toast.success('Perfil actualizado correctamente');
     },
     onError: () => {
@@ -50,7 +50,7 @@ export default function UserProfileForm() {
     }
   });
 
-  const onSubmit = (data: UserInfoPartialUpdateData['body']) => {
+  const onSubmit = (data: V1UserInfoPartialUpdateData['body']) => {
     updateMutation.mutate({ body: data });
   };
 

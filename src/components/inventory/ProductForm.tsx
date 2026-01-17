@@ -5,12 +5,12 @@ import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { z } from 'zod';
 import { 
-  productCreateMutation, 
-  productUpdateMutation, 
-  categoryListOptions, 
-  measurementListOptions, 
-  productListQueryKey,
-  productRetrieveOptions 
+  v1ProductCreateMutation, 
+  v1ProductUpdateMutation, 
+  v1CategoryListOptions, 
+  v1MeasurementListOptions, 
+  v1ProductListQueryKey,
+  v1ProductRetrieveOptions 
 } from '../../client/@tanstack/react-query.gen';
 import type { Category, MeasurementUnit, ProductMaster } from '../../client/types.gen';
 import { Plus, Trash2, Package, Layers, Divide } from 'lucide-react';
@@ -86,7 +86,7 @@ export default function ProductForm({ initialData, onSuccess }: ProductFormProps
   // Fetch full product detail to get selling_units if editing
   // The listing API does not include selling_units for performance
   const { data: fullProduct, isLoading: isLoadingDetail } = useQuery({
-    ...productRetrieveOptions({ path: { id: initialData?.id || '' } }),
+    ...v1ProductRetrieveOptions({ path: { id: initialData?.id || '' } }),
     enabled: isEditing && !!initialData?.id
   });
 
@@ -100,19 +100,18 @@ export default function ProductForm({ initialData, onSuccess }: ProductFormProps
         IVA: fullProduct.IVA,
         category: fullProduct.category || '',
         measurement_unit: fullProduct.measurement_unit || '',
-        // @ts-expect-error - selling_units is not in the generated type yet
         selling_units: fullProduct.selling_units || []
       });
     }
   }, [fullProduct, reset]);
 
-  const { data: categories } = useQuery(categoryListOptions());
-  const { data: units } = useQuery(measurementListOptions());
+  const { data: categories } = useQuery(v1CategoryListOptions());
+  const { data: units } = useQuery(v1MeasurementListOptions());
 
   const createMutation = useMutation({
-    ...productCreateMutation(),
+    ...v1ProductCreateMutation(),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: productListQueryKey() });
+      queryClient.invalidateQueries({ queryKey: v1ProductListQueryKey() });
       toast.success('Producto creado exitosamente');
       reset();
       onSuccess();
@@ -124,9 +123,9 @@ export default function ProductForm({ initialData, onSuccess }: ProductFormProps
   });
 
   const updateMutation = useMutation({
-    ...productUpdateMutation(),
+    ...v1ProductUpdateMutation(),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: productListQueryKey() });
+      queryClient.invalidateQueries({ queryKey: v1ProductListQueryKey() });
       toast.success('Producto actualizado exitosamente');
       onSuccess();
     },
@@ -407,6 +406,7 @@ export default function ProductForm({ initialData, onSuccess }: ProductFormProps
                               />
                               <div className="absolute -bottom-5 left-0 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                 <span className="text-[9px] text-blue-500 font-bold whitespace-nowrap">
+                                  // eslint-disable-next-line react-hooks/incompatible-library
                                   FACTOR: {watch(`selling_units.${index}.unit_conversion_factor`)}
                                 </span>
                               </div>

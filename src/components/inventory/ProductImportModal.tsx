@@ -4,11 +4,11 @@ import * as XLSX from 'xlsx';
 import { toast } from 'sonner';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { 
-  productListOptions, 
-  categoryListOptions, 
-  measurementListOptions,
-  productCreateMutation,
-  productListQueryKey
+  v1ProductListOptions, 
+  v1CategoryListOptions, 
+  v1MeasurementListOptions,
+  v1ProductCreateMutation,
+  v1ProductListQueryKey
 } from '../../client/@tanstack/react-query.gen';
 import type { Category, MeasurementUnit, ProductMaster } from '../../client/types.gen';
 import { motion } from 'motion/react';
@@ -42,12 +42,12 @@ export default function ProductImportModal({ isOpen, onClose }: ProductImportMod
   const queryClient = useQueryClient();
 
   // Fetch existing data for validation
-  const { data: products } = useQuery(productListOptions());
-  const { data: categories } = useQuery(categoryListOptions());
-  const { data: units } = useQuery(measurementListOptions());
+  const { data: products } = useQuery(v1ProductListOptions());
+  const { data: categories } = useQuery(v1CategoryListOptions());
+  const { data: units } = useQuery(v1MeasurementListOptions());
 
   const createProduct = useMutation({
-    ...productCreateMutation(),
+    ...v1ProductCreateMutation(),
     onSuccess: () => {
       // We'll handle individual successes manually to track progress
     },
@@ -206,7 +206,7 @@ export default function ProductImportModal({ isOpen, onClose }: ProductImportMod
 
     setIsImporting(false);
     toast.success(`Importación completada: ${successCount} creados, ${failCount} fallidos.`);
-    queryClient.invalidateQueries({ queryKey: productListQueryKey() });
+    queryClient.invalidateQueries({ queryKey: v1ProductListQueryKey() });
     onClose();
     // Reset state
     setFile(null);

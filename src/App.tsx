@@ -6,7 +6,7 @@ import { router } from './router';
 import { AuthProvider } from './context/AuthProvider';
 import { BranchProvider } from './context/BranchProvider';
 import { client } from './client/client.gen';
-import { refreshCreate } from './client/sdk.gen';
+import { v1RefreshCreate } from './client/sdk.gen';
 
 // Initialize the QueryClient
 const queryClient = new QueryClient();
@@ -45,7 +45,7 @@ client.interceptors.response.use(async (response, request, options) => {
     if (response.status === 401 && !request.url.endsWith('/v1/refresh/')) {
         try {
             // Attempt to refresh the token
-            await refreshCreate({
+            await v1RefreshCreate({
                 body: { refresh: '' }, // Assuming HttpOnly cookies are used, but schema requires string
                 throwOnError: true,
             });

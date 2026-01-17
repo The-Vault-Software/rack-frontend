@@ -4,9 +4,9 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { z } from 'zod';
 import { 
-  customersCreateMutation, 
-  customersUpdateMutation,
-  customersListQueryKey 
+  v1CustomersCreateMutation, 
+  v1CustomersUpdateMutation,
+  v1CustomersListQueryKey 
 } from '../../client/@tanstack/react-query.gen';
 import type { Customer, CustomerRequest } from '../../client/types.gen';
 
@@ -39,9 +39,9 @@ export default function CustomerForm({ initialData, onSuccess }: CustomerFormPro
   });
 
   const createMutation = useMutation({
-    ...customersCreateMutation(),
+    ...v1CustomersCreateMutation(),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: customersListQueryKey() });
+      queryClient.invalidateQueries({ queryKey: v1CustomersListQueryKey() });
       toast.success('Cliente creado correctamente');
       reset();
       onSuccess();
@@ -50,9 +50,9 @@ export default function CustomerForm({ initialData, onSuccess }: CustomerFormPro
   });
 
   const updateMutation = useMutation({
-    ...customersUpdateMutation(),
+    ...v1CustomersUpdateMutation(),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: customersListQueryKey() });
+      queryClient.invalidateQueries({ queryKey: v1CustomersListQueryKey() });
       toast.success('Cliente actualizado correctamente');
       onSuccess();
     },

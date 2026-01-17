@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { companyRetrieveOptions } from '../../client/@tanstack/react-query.gen';
+import { v1CompanyRetrieveOptions } from '../../client/@tanstack/react-query.gen';
 import { Wallet, ShoppingCart, Package, Users, ArrowRight, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { motion } from 'motion/react';
@@ -40,7 +40,7 @@ const shortcuts = [
 ];
 
 export default function DashboardPage() {
-  const { data: company, isLoading: loadingCompany } = useQuery(companyRetrieveOptions({}));
+  const { data: company, isLoading: loadingCompany } = useQuery(v1CompanyRetrieveOptions({}));
 
   if (loadingCompany) {
     return (
