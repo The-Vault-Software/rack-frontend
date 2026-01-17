@@ -3,6 +3,7 @@ import LoginPage from './pages/auth/LoginPage';
 import RegisterPage from './pages/auth/RegisterPage';
 import DashboardPage from './pages/dashboard/DashboardPage';
 import CreateCompanyPage from './pages/company/CreateCompanyPage';
+import SetupBranchPage from './pages/auth/SetupBranchPage';
 import { ProtectedLayout } from './components/layouts/ProtectedLayout';
 import InventoryPage from './pages/inventory/InventoryPage';
 import DashboardLayout from './layouts/DashboardLayout';
@@ -26,6 +27,10 @@ export const router = createBrowserRouter([
             {
                 path: '/create-company',
                 element: <CreateCompanyPage />
+            },
+            {
+                path: '/setup-branch',
+                element: <SetupBranchPage />
             },
             {
                 element: <DashboardLayout />,
