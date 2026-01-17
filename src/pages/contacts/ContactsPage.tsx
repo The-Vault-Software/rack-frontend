@@ -1,6 +1,7 @@
+import { useNavigate } from 'react-router-dom';
 import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Plus, Search, Edit2, Trash2, User, Building2, Filter, Truck, Users } from 'lucide-react';
+import { Plus, Search, Edit2, Trash2, User, Building2, Filter, Truck, Users, History } from 'lucide-react';
 import { toast } from 'sonner';
 import { 
   v1CustomersListOptions, 
@@ -18,6 +19,7 @@ import Modal from '../../components/ui/Modal';
 import { cn } from '../../lib/utils';
 
 export default function ContactsPage() {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<'customers' | 'providers'>('customers');
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState<'all' | 'person' | 'company'>('all');
@@ -229,6 +231,13 @@ export default function ContactsPage() {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                           <button 
+                            onClick={() => navigate(`/contacts/customers/${customer.id}/sales`)}
+                            className="text-yellow-600 hover:text-yellow-900 mr-4"
+                            title="Ver Historial"
+                          >
+                            <History className="h-4 w-4" />
+                          </button>
+                          <button 
                             onClick={() => handleEdit(customer)}
                             className="text-blue-600 hover:text-blue-900 mr-4"
                           >
@@ -295,6 +304,13 @@ export default function ContactsPage() {
                           <div className="text-sm text-gray-500">{provider.email || 'Sin email'}</div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                          <button 
+                            onClick={() => navigate(`/contacts/providers/${provider.id}/accounts`)}
+                            className="text-yellow-600 hover:text-yellow-900 mr-4"
+                            title="Ver Historial"
+                          >
+                            <History className="h-4 w-4" />
+                          </button>
                           <button 
                             onClick={() => handleEdit(provider)}
                             className="text-blue-600 hover:text-blue-900 mr-4"

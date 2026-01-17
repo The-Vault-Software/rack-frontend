@@ -11,6 +11,9 @@ import ContactsPage from './pages/contacts/ContactsPage';
 import AccountsPage from './pages/accounts/AccountsPage';
 import SettingsPage from './pages/settings/SettingsPage';
 import SalesPage from './pages/sales/SalesPage';
+import CustomerSalesPage from './pages/contacts/CustomerSalesPage';
+import ProviderAccountsPage from './pages/contacts/ProviderAccountsPage';
+import AnalyticsPage from './pages/analytics/AnalyticsPage';
 
 export const router = createBrowserRouter([
     {
@@ -60,12 +63,24 @@ export const router = createBrowserRouter([
                         element: <ContactsPage />
                     },
                     {
+                        path: '/contacts/customers/:id/sales',
+                        element: <CustomerSalesPage />
+                    },
+                    {
+                        path: '/contacts/providers/:id/accounts',
+                        element: <ProviderAccountsPage />
+                    },
+                    {
                         path: '/accounts',
                         element: <AccountsPage />
                     },
                     {
                         path: '/settings',
                         element: <SettingsPage />
+                    },
+                    {
+                        path: '/analytics',
+                        element: <AnalyticsPage />
                     },
                     {
                         path: '/',

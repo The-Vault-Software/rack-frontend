@@ -1,7 +1,7 @@
 import { Link, useLocation, useOutlet } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { cn } from '../lib/utils';
-import { LayoutDashboard, ShoppingCart, Package, Users, Settings, LogOut, Wallet, ChevronRight } from 'lucide-react';
+import { LayoutDashboard, ShoppingCart, Package, Users, Settings, LogOut, Wallet, ChevronRight, BarChart3 } from 'lucide-react';
 import { BranchSelector } from '../components/BranchSelector';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -16,6 +16,7 @@ export default function DashboardLayout() {
     { name: 'Cuentas', href: '/accounts', icon: Wallet, color: 'text-indigo-500' },
     { name: 'Inventario', href: '/inventory', icon: Package, color: 'text-orange-500' },
     { name: 'Contactos', href: '/contacts', icon: Users, color: 'text-purple-500' },
+    { name: 'Analíticas', href: '/analytics', icon: BarChart3, color: 'text-blue-500' },
     { name: 'Configuración', href: '/settings', icon: Settings, color: 'text-gray-500' },
   ];
 
