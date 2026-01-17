@@ -5,6 +5,7 @@ import { es } from 'date-fns/locale';
 import { Download, AlertCircle } from 'lucide-react';
 import { useState } from 'react';
 import Modal from '../../../components/ui/Modal';
+import ActionConfirmationModal from '../../../components/ui/ActionConfirmationModal';
 import PaymentForm from './PaymentForm';
 import type { SaleList } from '../../../client/types.gen';
 import { useBranch } from '../../../context/BranchContext';
@@ -13,6 +14,7 @@ export default function AccountsReceivable() {
   const { selectedBranch } = useBranch();
   const [selectedSale, setSelectedSale] = useState<SaleList | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isConfirmCloseOpen, setIsConfirmCloseOpen] = useState(false);
   const { data: salesData, isLoading } = useQuery({
     ...salesListOptions({
       // @ts-expect-error - Query params might not be fully typed
@@ -28,6 +30,16 @@ export default function AccountsReceivable() {
   const handleCollectClick = (sale: SaleList) => {
     setSelectedSale(sale);
     setIsModalOpen(true);
+  };
+
+  const handleModalCloseAttempt = () => {
+    setIsConfirmCloseOpen(true);
+  };
+
+  const confirmClosePayment = () => {
+    setIsConfirmCloseOpen(false);
+    setIsModalOpen(false);
+    setSelectedSale(null);
   };
 
   if (isLoading) {
@@ -109,7 +121,7 @@ export default function AccountsReceivable() {
 
       <Modal
         isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        onClose={handleModalCloseAttempt}
         title={`Registrar Cobro - Venta #${selectedSale?.seq_number}`}
       >
         {selectedSale && (
@@ -121,6 +133,17 @@ export default function AccountsReceivable() {
           />
         )}
       </Modal>
+
+      <ActionConfirmationModal
+        isOpen={isConfirmCloseOpen}
+        onClose={() => setIsConfirmCloseOpen(false)}
+        onConfirm={confirmClosePayment}
+        title="¿Salir sin cobrar?"
+        description="¿Estás seguro que no quieres cobrar la venta?"
+        confirmText="Confirmar Salida"
+        cancelText="Mantenerse"
+        variant="warning"
+      />
     </div>
   );
 }

@@ -12,6 +12,7 @@ import { ShoppingCart, Plus, Minus, Trash2, Search, Truck, Edit2, ArrowRight } f
 import { toast } from 'sonner';
 import type { ProductMaster, AccountRequestWritable, Provider, Account } from '../../../client/types.gen';
 import Modal from '../../../components/ui/Modal';
+import ActionConfirmationModal from '../../../components/ui/ActionConfirmationModal';
 import ProductForm from '../../../components/inventory/ProductForm';
 import PaymentForm from './PaymentForm';
 
@@ -28,6 +29,7 @@ export default function AccountBuilder() {
   const [selectedProviderId, setSelectedProviderId] = useState<string>('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [isConfirmCloseOpen, setIsConfirmCloseOpen] = useState(false);
   const [createdAccount, setCreatedAccount] = useState<Account | null>(null);
   const [editingProduct, setEditingProduct] = useState<ProductMaster | null>(null);
 
@@ -166,6 +168,16 @@ export default function AccountBuilder() {
   const closeModal = () => {
     setIsModalOpen(false);
     setEditingProduct(null);
+  };
+
+  const handlePaymentModalCloseAttempt = () => {
+    setIsConfirmCloseOpen(true);
+  };
+
+  const confirmClosePayment = () => {
+    setIsConfirmCloseOpen(false);
+    setIsPaymentModalOpen(false);
+    setCreatedAccount(null);
   };
 
   return (
@@ -347,7 +359,7 @@ export default function AccountBuilder() {
 
       <Modal
         isOpen={isPaymentModalOpen}
-        onClose={() => setIsPaymentModalOpen(false)}
+        onClose={handlePaymentModalCloseAttempt}
         title="Registrar Pago a Proveedor"
       >
         {createdAccount && (
@@ -375,10 +387,7 @@ export default function AccountBuilder() {
             
             <div className="pt-2 border-t flex justify-center">
               <button 
-                onClick={() => {
-                  setIsPaymentModalOpen(false);
-                  setCreatedAccount(null);
-                }}
+                onClick={handlePaymentModalCloseAttempt}
                 className="text-sm text-gray-400 hover:text-gray-600 underline font-medium"
               >
                 Pagar después (Quedar a deber)
@@ -387,6 +396,17 @@ export default function AccountBuilder() {
           </div>
         )}
       </Modal>
+
+      <ActionConfirmationModal
+        isOpen={isConfirmCloseOpen}
+        onClose={() => setIsConfirmCloseOpen(false)}
+        onConfirm={confirmClosePayment}
+        title="¿Salir sin pagar?"
+        description="¿Estás seguro que no quieres pagar la compra?"
+        confirmText="Confirmar Salida"
+        cancelText="Mantenerse"
+        variant="warning"
+      />
     </div>
   );
 }

@@ -16,10 +16,11 @@ import {
 } from '../../client/@tanstack/react-query.gen';
 import { useBranch } from '../../context/BranchContext';
 import type { Category, MeasurementUnit, ProductMaster } from '../../client/types.gen';
-import { Plus, Trash2, Edit2, Search, Package, Tag, Scale, Filter } from 'lucide-react';
+import { Plus, Trash2, Edit2, Search, Package, Tag, Scale, Filter, FileSpreadsheet } from 'lucide-react';
 import ProductForm from '../../components/inventory/ProductForm';
 import CategoryForm from '../../components/inventory/CategoryForm';
 import UnitForm from '../../components/inventory/UnitForm';
+import ProductImportModal from '../../components/inventory/ProductImportModal';
 import ConfirmationDialog from '../../components/ui/ConfirmationDialog';
 import Modal from '../../components/ui/Modal';
 
@@ -29,6 +30,7 @@ export default function InventoryPage() {
   const [filterCategory, setFilterCategory] = useState<string>('all');
   const [filterUnit, setFilterUnit] = useState<string>('all');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [modalType, setModalType] = useState<'product' | 'category' | 'unit' | null>(null);
   const [editingData, setEditingData] = useState<ProductMaster | Category | MeasurementUnit | null>(null);
 
@@ -187,6 +189,13 @@ export default function InventoryPage() {
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold text-gray-900">Gestión de Inventario</h1>
         <button
+          onClick={() => setIsImportModalOpen(true)}
+          className="mr-3 inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+        >
+          <FileSpreadsheet className="h-4 w-4 mr-2 text-green-600" />
+          Importar
+        </button>
+        <button
           onClick={handleCreate}
           className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
         >
@@ -281,6 +290,7 @@ export default function InventoryPage() {
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nombre</th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Categoría</th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Unidad</th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">IVA</th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Precio Costo (USD)</th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Precio de Venta (USD)</th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Precio de Venta (Bs - BCV)</th>
@@ -291,17 +301,26 @@ export default function InventoryPage() {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {products.map((product: ProductMaster) => (
+                {products.map((product: ProductMaster) => {
+                  const basePrice = parseFloat(product.cost_price_usd) * (1 + parseFloat(product.profit_margin || '0') / 100);
+                  const finalPriceUsd = product.IVA ? basePrice * 1.16 : basePrice;
+                  
+                  return (
                   <tr key={product.id}>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{product.name}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{getCategoryName(product.category)}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{getUnitName(product.measurement_unit)}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${product.IVA ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}>
+                        {product.IVA ? 'Sí (16%)' : 'Exento'}
+                      </span>
+                    </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${product.cost_price_usd}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      ${(parseFloat(product.cost_price_usd) * (1 + parseFloat(product.profit_margin || '0') / 100)).toFixed(2)}
+                      ${finalPriceUsd.toFixed(2)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {rates ? `Bs. ${(parseFloat(product.cost_price_usd) * (1 + parseFloat(product.profit_margin || '0') / 100) * parseFloat(rates.bcv_rate)).toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '-'}
+                      {rates ? `Bs. ${(finalPriceUsd * parseFloat(rates.bcv_rate)).toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '-'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-bold">
                         <span className={parseFloat(getStock(product.id)) > 0 ? 'text-green-600' : 'text-red-600'}>
@@ -324,10 +343,11 @@ export default function InventoryPage() {
                       }} className="text-red-600 hover:text-red-900"><Trash2 className="h-4 w-4" /></button>
                     </td>
                   </tr>
-                ))}
+                  );
+                })}
                 {products.length === 0 && (
                    <tr>
-                       <td colSpan={7} className="px-6 py-4 text-center text-gray-500 text-sm">No se encontraron productos.</td>
+                       <td colSpan={8} className="px-6 py-4 text-center text-gray-500 text-sm">No se encontraron productos.</td>
                    </tr>
                 )}
               </tbody>
@@ -445,6 +465,8 @@ export default function InventoryPage() {
         {modalType === 'unit' && <UnitForm initialData={editingData as MeasurementUnit} onSuccess={closeModal} />}
       </Modal>
 
+      <ProductImportModal isOpen={isImportModalOpen} onClose={() => setIsImportModalOpen(false)} />
+
       <ConfirmationDialog
         isOpen={confirmState.isOpen}
         onClose={closeConfirm}
@@ -453,7 +475,7 @@ export default function InventoryPage() {
         description={confirmState.description}
         confirmText="Eliminar"
         variant="danger"
-      />
+        />
     </div>
   );
 }
@@ -461,3 +483,4 @@ export default function InventoryPage() {
 const tabButtonBaseClass = "group inline-flex items-center py-4 px-1 border-b-2 font-medium text-sm";
 const tabButtonActiveClass = "border-blue-500 text-blue-600";
 const tabButtonInactiveClass = "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300";
+

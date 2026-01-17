@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { salesListOptions } from '../../../client/@tanstack/react-query.gen';
 import { useBranch } from '../../../context/BranchContext';
 import { Calendar, User, DollarSign, Eye, HandCoins, Hash } from 'lucide-react';
+import ActionConfirmationModal from '../../../components/ui/ActionConfirmationModal';
 import Modal from '../../../components/ui/Modal';
 import SaleDetail from './SaleDetail';
 import PaymentForm from '../../accounts/components/PaymentForm';
@@ -16,6 +17,7 @@ export default function SalesHistory() {
   const [selectedSale, setSelectedSale] = useState<SaleList | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [isConfirmCloseOpen, setIsConfirmCloseOpen] = useState(false);
 
   const { data: sales = [], isLoading } = useQuery({
     ...salesListOptions({
@@ -33,6 +35,15 @@ export default function SalesHistory() {
   const handleCollectPayment = (sale: SaleList) => {
     setSelectedSale(sale);
     setIsPaymentModalOpen(true);
+  };
+
+  const handlePaymentModalCloseAttempt = () => {
+    setIsConfirmCloseOpen(true);
+  };
+
+  const confirmClosePayment = () => {
+    setIsConfirmCloseOpen(false);
+    setIsPaymentModalOpen(false);
   };
 
   if (isLoading) {
@@ -142,7 +153,7 @@ export default function SalesHistory() {
 
       <Modal
         isOpen={isPaymentModalOpen}
-        onClose={() => setIsPaymentModalOpen(false)}
+        onClose={handlePaymentModalCloseAttempt}
         title={`Registrar Cobro - Venta #${selectedSale?.seq_number}`}
       >
         {selectedSale && (
@@ -158,6 +169,17 @@ export default function SalesHistory() {
           />
         )}
       </Modal>
+
+      <ActionConfirmationModal
+        isOpen={isConfirmCloseOpen}
+        onClose={() => setIsConfirmCloseOpen(false)}
+        onConfirm={confirmClosePayment}
+        title="¿Salir sin cobrar?"
+        description="¿Estás seguro que no quieres cobrar la venta?"
+        confirmText="Confirmar Salida"
+        cancelText="Mantenerse"
+        variant="warning"
+      />
     </div>
   );
 }

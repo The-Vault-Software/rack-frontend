@@ -5,6 +5,7 @@ import { es } from 'date-fns/locale';
 import { CreditCard, AlertCircle } from 'lucide-react';
 import { useState } from 'react';
 import Modal from '../../../components/ui/Modal';
+import ActionConfirmationModal from '../../../components/ui/ActionConfirmationModal';
 import PaymentForm from './PaymentForm';
 import type { AccountList } from '../../../client/types.gen';
 import { useBranch } from '../../../context/BranchContext';
@@ -13,6 +14,7 @@ export default function AccountsPayable() {
   const { selectedBranch } = useBranch();
   const [selectedAccount, setSelectedAccount] = useState<AccountList | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isConfirmCloseOpen, setIsConfirmCloseOpen] = useState(false);
   const { data: accountsData, isLoading } = useQuery({
     ...accountsListOptions({
       // @ts-expect-error - Query params might not be fully typed
@@ -28,6 +30,16 @@ export default function AccountsPayable() {
   const handlePayClick = (account: AccountList) => {
     setSelectedAccount(account);
     setIsModalOpen(true);
+  };
+
+  const handleModalCloseAttempt = () => {
+    setIsConfirmCloseOpen(true);
+  };
+
+  const confirmClosePayment = () => {
+    setIsConfirmCloseOpen(false);
+    setIsModalOpen(false);
+    setSelectedAccount(null);
   };
 
   if (isLoading) {
@@ -109,7 +121,7 @@ export default function AccountsPayable() {
 
       <Modal
         isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        onClose={handleModalCloseAttempt}
         title={`Registrar Pago - Compra #${selectedAccount?.seq_number}`}
       >
         {selectedAccount && (
@@ -121,6 +133,17 @@ export default function AccountsPayable() {
           />
         )}
       </Modal>
+
+      <ActionConfirmationModal
+        isOpen={isConfirmCloseOpen}
+        onClose={() => setIsConfirmCloseOpen(false)}
+        onConfirm={confirmClosePayment}
+        title="¿Salir sin pagar?"
+        description="¿Estás seguro que no quieres pagar la compra?"
+        confirmText="Confirmar Salida"
+        cancelText="Mantenerse"
+        variant="warning"
+      />
     </div>
   );
 }

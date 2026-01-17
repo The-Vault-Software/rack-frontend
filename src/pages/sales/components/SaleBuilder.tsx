@@ -16,6 +16,7 @@ import type { ProductMaster, SaleRequestWritable, Customer, ProductStockSale, Sa
 import Modal from '../../../components/ui/Modal';
 import PaymentForm from '../../accounts/components/PaymentForm';
 import ProductForm from '../../../components/inventory/ProductForm';
+import ActionConfirmationModal from '../../../components/ui/ActionConfirmationModal';
 
 interface CartItem {
   product: ProductMaster;
@@ -32,6 +33,7 @@ export default function SaleBuilder() {
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const [createdSale, setCreatedSale] = useState<Sale | null>(null);
   const [editingProduct, setEditingProduct] = useState<ProductMaster | null>(null);
+  const [isConfirmCloseOpen, setIsConfirmCloseOpen] = useState(false);
 
   const { data: products = [] } = useQuery(productListOptions());
   const { data: customers = [] } = useQuery(customersListOptions());
@@ -82,8 +84,9 @@ export default function SaleBuilder() {
     return cart.reduce((acc: number, item: CartItem) => {
       const cost_price = parseFloat(item.product.cost_price_usd || '0');
       const margin = parseFloat(item.product.profit_margin || '0');
-      const price = cost_price * (1 + margin / 100);
-      return acc + (price * item.quantity);
+      const basePrice = cost_price * (1 + margin / 100);
+      const finalPrice = item.product.IVA ? basePrice * 1.16 : basePrice;
+      return acc + (finalPrice * item.quantity);
     }, 0);
   }, [cart]);
 
@@ -192,6 +195,16 @@ export default function SaleBuilder() {
     setEditingProduct(null);
   };
 
+  const handlePaymentModalCloseAttempt = () => {
+    setIsConfirmCloseOpen(true);
+  };
+
+  const confirmClosePayment = () => {
+    setIsConfirmCloseOpen(false);
+    setIsPaymentModalOpen(false);
+    setCreatedSale(null);
+  };
+
   return (
     <div className="flex flex-col lg:flex-row gap-6 h-[calc(100vh-16rem)]">
       {/* Product Selection */}
@@ -237,7 +250,8 @@ export default function SaleBuilder() {
         <div className="flex-1 overflow-y-auto p-4 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
           {filteredProducts.map(product => {
             const stock = getStock(product.id);
-            const price = parseFloat(product.cost_price_usd) * (1 + parseFloat(product.profit_margin) / 100);
+            const basePrice = parseFloat(product.cost_price_usd) * (1 + parseFloat(product.profit_margin) / 100);
+            const finalPrice = product.IVA ? basePrice * 1.16 : basePrice;
             
             return (
               <button
@@ -257,7 +271,12 @@ export default function SaleBuilder() {
                 </div>
                 <div className="mt-2 flex justify-between items-end">
                   <div>
-                    <p className="text-lg font-bold text-blue-600">${price.toFixed(2)}</p>
+                    <div className="flex items-center gap-2">
+                        <p className="text-lg font-bold text-blue-600">${finalPrice.toFixed(2)}</p>
+                        {product.IVA && (
+                            <span className="text-[10px] bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded border border-gray-200 font-medium">IVA 16%</span>
+                        )}
+                    </div>
                     <p className={`text-xs ${stock > 0 ? 'text-gray-500' : 'text-red-500'}`}>
                       Stock: {stock}
                     </p>
@@ -286,12 +305,17 @@ export default function SaleBuilder() {
 
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
           {cart.map(item => {
-            const price = parseFloat(item.product.cost_price_usd) * (1 + parseFloat(item.product.profit_margin) / 100);
+            const basePrice = parseFloat(item.product.cost_price_usd) * (1 + parseFloat(item.product.profit_margin) / 100);
+            const finalPrice = item.product.IVA ? basePrice * 1.16 : basePrice;
+
             return (
               <div key={item.product.id} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
                 <div className="flex-1 min-w-0 mr-4">
                   <h5 className="text-sm font-medium text-gray-900 truncate">{item.product.name}</h5>
-                  <p className="text-xs text-gray-500">${price.toFixed(2)} c/u</p>
+                  <div className="flex items-center gap-1.5">
+                    <p className="text-xs text-gray-500">${finalPrice.toFixed(2)} c/u</p>
+                    {item.product.IVA && <span className="text-[10px] text-gray-400 border px-1 rounded">IVA</span>}
+                  </div>
                 </div>
                 <div className="flex items-center space-x-2">
                   <div className="flex items-center border rounded-md">
@@ -362,7 +386,7 @@ export default function SaleBuilder() {
 -
       <Modal
         isOpen={isPaymentModalOpen}
-        onClose={() => setIsPaymentModalOpen(false)}
+        onClose={handlePaymentModalCloseAttempt}
         title="Registrar Cobro"
       >
         {createdSale && (
@@ -390,10 +414,7 @@ export default function SaleBuilder() {
             
             <div className="pt-2 border-t flex justify-center">
               <button 
-                onClick={() => {
-                  setIsPaymentModalOpen(false);
-                  setCreatedSale(null);
-                }}
+                onClick={handlePaymentModalCloseAttempt}
                 className="text-sm text-gray-400 hover:text-gray-600 underline font-medium"
               >
                 Pagar después
@@ -413,6 +434,19 @@ export default function SaleBuilder() {
           onSuccess={closeProductModal} 
         />
       </Modal>
+
+
+
+      <ActionConfirmationModal
+        isOpen={isConfirmCloseOpen}
+        onClose={() => setIsConfirmCloseOpen(false)}
+        onConfirm={confirmClosePayment}
+        title="¿Salir sin cobrar?"
+        description="¿Estás seguro que no quieres cobrar la venta?"
+        confirmText="Confirmar Salida"
+        cancelText="Mantenerse"
+        variant="warning"
+      />
     </div>
   );
 }

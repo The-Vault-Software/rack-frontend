@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { salesRetrieveOptions, salesPaymentsListOptions, exchangeRatesRetrieveOptions, exchangeRatesTodayRetrieveOptions } from '../../../client/@tanstack/react-query.gen';
+import { salesRetrieveOptions, salesPaymentsListOptions, exchangeRatesRetrieveOptions, exchangeRatesTodayRetrieveOptions, productListOptions } from '../../../client/@tanstack/react-query.gen';
 import { Package, User, Calendar, CreditCard, Receipt, Search, Info } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import Modal from '../../../components/ui/Modal';
-import type { SalePayment } from '../../../client/types.gen';
+import type { SalePayment, ProductMaster } from '../../../client/types.gen';
 
 interface SaleDetailProps {
   saleId: string;
@@ -63,6 +63,8 @@ function PaymentRow({ payment }: { payment: SalePayment }) {
 
 export default function SaleDetail({ saleId }: SaleDetailProps) {
   const [showPaymentsModal, setShowPaymentsModal] = useState(false);
+
+  const { data: products } = useQuery(productListOptions());
 
   const { data: sale, isLoading, error } = useQuery(salesRetrieveOptions({
     path: { id: saleId }
@@ -135,33 +137,46 @@ export default function SaleDetail({ saleId }: SaleDetailProps) {
           <Package className="h-4 w-4 mr-2" />
           <span className="font-semibold uppercase tracking-wider text-[10px]">Productos</span>
         </div>
-        <div className="border rounded-lg overflow-hidden">
+        <div className="border rounded-lg overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-4 py-2 text-left text-[10px] font-bold text-gray-500 uppercase">Producto</th>
-                <th className="px-4 py-2 text-center text-[10px] font-bold text-gray-500 uppercase">Cant.</th>
-                <th className="px-4 py-2 text-right text-[10px] font-bold text-gray-500 uppercase">P. Unit (USD)</th>
-                <th className="px-4 py-2 text-right text-[10px] font-bold text-gray-500 uppercase">Subtotal (Bs)</th>
-                <th className="px-4 py-2 text-right text-[10px] font-bold text-gray-500 uppercase">Subtotal (USD)</th>
+                <th className="px-2 py-2 text-left text-[10px] font-bold text-gray-500 uppercase">Producto</th>
+                <th className="px-2 py-2 text-center text-[10px] font-bold text-gray-500 uppercase">Cant.</th>
+                <th className="px-2 py-2 text-center text-[10px] font-bold text-gray-500 uppercase">IVA</th>
+                <th className="px-2 py-2 text-right text-[10px] font-bold text-gray-500 uppercase">P. Unit (USD)</th>
+                <th className="px-2 py-2 text-right text-[10px] font-bold text-gray-500 uppercase">Subtotal (Bs)</th>
+                <th className="px-2 py-2 text-right text-[10px] font-bold text-gray-500 uppercase">Subtotal (USD)</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {sale.sale_details.map((detail) => (
+              {sale.sale_details.map((detail) => {
+                const product = Array.isArray(products) ? products.find((p: ProductMaster) => p.id === detail.product) : null;
+                const hasIVA = product?.IVA;
+
+                return (
                 <tr key={detail.id} className="text-sm">
-                  <td className="px-4 py-3 text-gray-900 font-medium">{detail.product_name}</td>
-                  <td className="px-4 py-3 text-center text-gray-600">{detail.quantity}</td>
-                  <td className="px-4 py-3 text-right text-gray-600">${parseFloat(detail.unit_price || '0').toFixed(2)}</td>
-                  <td className="px-4 py-3 text-right text-gray-500 text-xs">
+                  <td className="px-2 py-3 text-gray-900 font-medium">{detail.product_name}</td>
+                  <td className="px-2 py-3 text-center text-gray-600">{detail.quantity}</td>
+                  <td className="px-2 py-3 text-center">
+                    {hasIVA ? (
+                        <span className="text-[10px] bg-red-100 text-red-700 px-1.5 py-0.5 rounded border border-red-200 font-bold">16%</span>
+                    ) : (
+                        <span className="text-[10px] text-gray-400 font-medium">-</span>
+                    )}
+                  </td>
+                  <td className="px-2 py-3 text-right text-gray-600">${parseFloat(detail.unit_price || '0').toFixed(2)}</td>
+                  <td className="px-2 py-3 text-right text-gray-500 text-xs">
                     {rates ? (
                       `Bs. ${((detail.quantity * parseFloat(detail.unit_price || '0')) * parseFloat(rates.bcv_rate)).toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
                     ) : '-'}
                   </td>
-                  <td className="px-4 py-3 text-right font-bold text-gray-900">
+                  <td className="px-2 py-3 text-right font-bold text-gray-900">
                     ${(detail.quantity * parseFloat(detail.unit_price || '0')).toFixed(2)}
                   </td>
                 </tr>
-              ))}
+                );
+              })}
             </tbody>
           </table>
         </div>

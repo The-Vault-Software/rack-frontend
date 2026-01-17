@@ -33,9 +33,7 @@ export default function DashboardLayout() {
               animate={{ scale: 1, opacity: 1 }}
               className="flex items-center gap-3"
             >
-              <div className="h-10 w-10 bg-linear-to-br from-blue-600 to-indigo-700 rounded-xl flex items-center justify-center shadow-lg shadow-blue-200">
-                <span className="text-white font-black text-xl">R</span>
-              </div>
+              <img src="/app_icon.png" alt="App Icon" className="h-10 w-10 rounded-xl object-cover" />
               <span className="text-2xl font-bold tracking-tight text-gray-900">Rack</span>
             </motion.div>
           </div>

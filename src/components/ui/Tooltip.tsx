@@ -87,7 +87,7 @@ export default function Tooltip({ content, children, className, icon = false, de
               marginTop: '-8px'
             }}
             className={cn(
-              "w-72 p-4 bg-gray-900/90 backdrop-blur-md text-white rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.3)] z-[9999] pointer-events-none border border-white/10 ring-1 ring-white/20",
+              "w-72 p-4 bg-gray-900/90 backdrop-blur-md text-white rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.3)] z-9999 pointer-events-none border border-white/10 ring-1 ring-white/20",
               className
             )}
           >
