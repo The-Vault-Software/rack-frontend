@@ -12,12 +12,14 @@ interface SaleDetailProps {
 }
 
 function PaymentRow({ payment }: { payment: SalePayment }) {
-  const { data: xr } = useQuery({
+  const { data: xrData } = useQuery({
     ...v1ExchangeRatesRetrieveOptions({
       path: { id: payment.exchange_rate as string }
     }),
     enabled: !!payment.exchange_rate
   });
+
+  const xr = xrData as { bcv_rate: string; parallel_rate: string } | undefined;
 
   return (
     <tr className="text-sm">
@@ -40,11 +42,11 @@ function PaymentRow({ payment }: { payment: SalePayment }) {
         </div>
       </td>
       <td className="px-4 py-3 text-right">
-        {parseFloat(payment.discount) !== 0 ? (
+        {parseFloat(payment.discount || '0') !== 0 ? (
           <div className="flex flex-col items-end">
-            <span className="text-blue-500 font-bold">%{parseFloat(payment.discount).toFixed(2)}</span>
+            <span className="text-blue-500 font-bold">%{parseFloat(payment.discount || '0').toFixed(2)}</span>
             <span className="text-[10px] text-gray-400 font-medium italic">
-              -${(parseFloat(payment.total_amount_usd) * (parseFloat(payment.discount) / 100)).toFixed(2)}
+              -${(parseFloat(payment.total_amount_usd) * (parseFloat(payment.discount || '0') / 100)).toFixed(2)}
             </span>
           </div>
         ) : (
@@ -52,10 +54,10 @@ function PaymentRow({ payment }: { payment: SalePayment }) {
         )}
       </td>
       <td className="px-4 py-3 text-right text-gray-600 font-medium">
-        Bs. {(parseFloat(payment.total_amount_ves) * (1 - parseFloat(payment.discount) / 100)).toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+        Bs. {(parseFloat(payment.total_amount_ves) * (1 - parseFloat(payment.discount || '0') / 100)).toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
       </td>
       <td className="px-4 py-3 text-right font-bold text-blue-600">
-        ${(parseFloat(payment.total_amount_usd) * (1 - parseFloat(payment.discount) / 100)).toFixed(2)}
+        ${(parseFloat(payment.total_amount_usd) * (1 - parseFloat(payment.discount || '0') / 100)).toFixed(2)}
       </td>
     </tr>
   );
@@ -168,11 +170,11 @@ export default function SaleDetail({ saleId }: SaleDetailProps) {
                   <td className="px-2 py-3 text-right text-gray-600">${parseFloat(detail.unit_price || '0').toFixed(2)}</td>
                   <td className="px-2 py-3 text-right text-gray-500 text-xs">
                     {rates ? (
-                      `Bs. ${((detail.quantity * parseFloat(detail.unit_price || '0')) * parseFloat(rates.bcv_rate)).toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                      `Bs. ${((parseFloat(detail.quantity) * parseFloat(detail.unit_price || '0')) * parseFloat(rates.bcv_rate)).toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
                     ) : '-'}
                   </td>
                   <td className="px-2 py-3 text-right font-bold text-gray-900">
-                    ${(detail.quantity * parseFloat(detail.unit_price || '0')).toFixed(2)}
+                    ${(parseFloat(detail.quantity) * parseFloat(detail.unit_price || '0')).toFixed(2)}
                   </td>
                 </tr>
                 );
@@ -264,12 +266,12 @@ export default function SaleDetail({ saleId }: SaleDetailProps) {
                       <div className="flex flex-col items-end">
                         <span className="text-[10px] text-gray-400">Total Desc:</span>
                         <span className="text-blue-500">
-                          -${payments.reduce((acc, p) => acc + (parseFloat(p.total_amount_usd) * parseFloat(p.discount) / 100), 0).toFixed(2)}
+                          -${payments.reduce((acc, p) => acc + (parseFloat(p.total_amount_usd) * parseFloat(p.discount || '0') / 100), 0).toFixed(2)}
                         </span>
                       </div>
                     </td>
                     <td className="px-4 py-2 text-right text-gray-700">
-                      Bs. {payments.reduce((acc, p) => acc + (parseFloat(p.total_amount_ves) * (1 - parseFloat(p.discount) / 100)), 0).toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      Bs. {payments.reduce((acc, p) => acc + (parseFloat(p.total_amount_ves) * (1 - parseFloat(p.discount || '0') / 100)), 0).toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </td>
                     <td className="px-4 py-2 text-right text-green-700">${parseFloat(sale.total_paid).toFixed(2)}</td>
                   </tr>
