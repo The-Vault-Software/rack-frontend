@@ -23,6 +23,10 @@ import UnitForm from '../../components/inventory/UnitForm';
 import ProductImportModal from '../../components/inventory/ProductImportModal';
 import ConfirmationDialog from '../../components/ui/ConfirmationDialog';
 import Modal from '../../components/ui/Modal';
+import { useMediaQuery } from '../../hooks/useMediaQuery';
+import MobileProductList from '../../components/inventory/MobileProductList';
+import MobileCategoryList from '../../components/inventory/MobileCategoryList';
+import MobileUnitList from '../../components/inventory/MobileUnitList';
 
 export default function InventoryPage() {
   const [activeTab, setActiveTab] = useState<'products' | 'categories' | 'units'>('products');
@@ -48,6 +52,7 @@ export default function InventoryPage() {
 
   const queryClient = useQueryClient();
   const { selectedBranch } = useBranch();
+  const isMobile = useMediaQuery('(max-width: 768px)');
 
   const { data: productsData, isLoading: isProductsLoading } = useQuery(v1ProductListOptions());
   const { data: categoriesData, isLoading: isCategoriesLoading } = useQuery(v1CategoryListOptions());
@@ -187,7 +192,7 @@ export default function InventoryPage() {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-900">Gestión de Inventario</h1>
+        <h1 className={isMobile ? 'text-xl font-bold text-gray-900' : 'text-2xl font-bold text-gray-900'}>Gestión de Inventario</h1>
         <div className="flex items-center gap-3">
           {activeTab === 'products' && (
             <button
@@ -288,6 +293,21 @@ export default function InventoryPage() {
              {isProductsLoading ? (
                <div className="p-4 text-center text-gray-500">Cargando productos...</div>
              ) : (
+               isMobile ? (
+                 <MobileProductList 
+                   products={products}
+                   getCategoryName={getCategoryName}
+                   getUnitName={getUnitName}
+                   getStock={getStock}
+                   rates={rates}
+                   onEdit={(p) => handleEdit('product', p)}
+                   onDelete={(p) => openConfirm(
+                     'Eliminar Producto',
+                     `¿Estás seguro de que deseas eliminar el producto "${p.name}"? Esta acción no se puede deshacer.`,
+                     () => deleteProduct.mutate({ path: { id: p.id } })
+                   )}
+                 />
+               ) : (
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
@@ -356,6 +376,7 @@ export default function InventoryPage() {
                 )}
               </tbody>
             </table>
+               )
              )}
           </div>
         )}
@@ -365,6 +386,17 @@ export default function InventoryPage() {
               {isCategoriesLoading ? (
                <div className="p-4 text-center text-gray-500">Cargando categorías...</div>
              ) : (
+               isMobile ? (
+                 <MobileCategoryList
+                   categories={categories}
+                   onEdit={(c) => handleEdit('category', c)}
+                   onDelete={(c) => openConfirm(
+                     'Eliminar Categoría',
+                     `¿Estás seguro de que deseas eliminar la categoría "${c.name}"? Esta acción no se puede deshacer.`,
+                     () => deleteCategory.mutate({ path: { id: c.id } })
+                   )}
+                 />
+               ) : (
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
@@ -402,6 +434,7 @@ export default function InventoryPage() {
                 )}
               </tbody>
             </table>
+             )
              )}
           </div>
         )}
@@ -411,6 +444,17 @@ export default function InventoryPage() {
              {isUnitsLoading ? (
                <div className="p-4 text-center text-gray-500">Cargando unidades...</div>
              ) : (
+               isMobile ? (
+                 <MobileUnitList
+                   units={units}
+                   onEdit={(u) => handleEdit('unit', u)}
+                   onDelete={(u) => openConfirm(
+                     'Eliminar Unidad',
+                     `¿Estás seguro de que deseas eliminar la unidad "${u.name}"? Esta acción no se puede deshacer.`,
+                     () => deleteUnit.mutate({ path: { id: u.id } })
+                   )}
+                 />
+               ) : (
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
@@ -450,6 +494,7 @@ export default function InventoryPage() {
                 )}
               </tbody>
             </table>
+             )
              )}
           </div>
         )}
