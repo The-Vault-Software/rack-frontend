@@ -9,12 +9,14 @@ import {
   v1ProductRetrieveOptions
 } from '../../../client/@tanstack/react-query.gen';
 import { useBranch } from '../../../context/BranchContext';
-import { ShoppingCart, Plus, Minus, Trash2, Search, User, ArrowRight, Edit2, Layers } from 'lucide-react';
+import { ShoppingCart, Plus, Minus, Trash2, Search, User, ArrowRight, Edit2, Layers, UserPlus } from 'lucide-react';
 import { toast } from 'sonner';
 import type { ProductMaster, Customer, ProductStockSale, MeasurementUnit } from '../../../client/types.gen';
 import Modal from '../../../components/ui/Modal';
 import ProductForm from '../../../components/inventory/ProductForm';
 import SaleProcessModal from './SaleProcessModal';
+import ActionConfirmationModal from '../../../components/ui/ActionConfirmationModal';
+import CustomerForm from '../../../components/customers/CustomerForm';
 
 interface SellingUnit {
   id: string;
@@ -40,6 +42,8 @@ export default function SaleBuilder() {
   const [selectedCustomerId, setSelectedCustomerId] = useState<string>('');
   const [isProcessModalOpen, setIsProcessModalOpen] = useState(false);
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
+  const [isCustomerModalOpen, setIsCustomerModalOpen] = useState(false);
+  const [showNoCustomerConfirmation, setShowNoCustomerConfirmation] = useState(false);
   const [editingProduct, setEditingProduct] = useState<ProductMaster | null>(null);
 
   const { data: products = [] } = useQuery(v1ProductListOptions());
@@ -218,7 +222,11 @@ export default function SaleBuilder() {
 
     if (cart.length === 0) return;
 
-    setIsProcessModalOpen(true);
+    if (!selectedCustomerId) {
+      setShowNoCustomerConfirmation(true);
+    } else {
+      setIsProcessModalOpen(true);
+    }
   };
 
   const handleEditProduct = (e: React.MouseEvent, product: ProductMaster) => {
@@ -260,18 +268,27 @@ export default function SaleBuilder() {
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
-            <div className="w-full sm:w-64 relative">
-              <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <select
-                value={selectedCustomerId}
-                onChange={(e) => setSelectedCustomerId(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500 appearance-none bg-white"
+            <div className="w-full sm:w-64 flex gap-2">
+              <div className="relative flex-1">
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <select
+                  value={selectedCustomerId}
+                  onChange={(e) => setSelectedCustomerId(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500 appearance-none bg-white"
+                >
+                  <option value="">Cliente (Opcional)</option>
+                  {customers.map((c: Customer) => (
+                    <option key={c.id} value={c.id}>{c.name}</option>
+                  ))}
+                </select>
+              </div>
+              <button
+                onClick={() => setIsCustomerModalOpen(true)}
+                className="p-2 border rounded-md hover:bg-gray-50 text-blue-600 border-blue-200"
+                title="Nuevo Cliente"
               >
-                <option value="">Cliente (Opcional)</option>
-                {customers.map((c: Customer) => (
-                  <option key={c.id} value={c.id}>{c.name}</option>
-                ))}
-              </select>
+                <UserPlus className="h-5 w-5" />
+              </button>
             </div>
           </div>
         </div>
@@ -477,6 +494,30 @@ export default function SaleBuilder() {
           onSuccess={closeProductModal} 
         />
       </Modal>
+
+      <Modal
+        isOpen={isCustomerModalOpen}
+        onClose={() => setIsCustomerModalOpen(false)}
+        title="Crear Nuevo Cliente"
+      >
+        <CustomerForm
+          onSuccess={() => setIsCustomerModalOpen(false)}
+        />
+      </Modal>
+      
+      <ActionConfirmationModal
+        isOpen={showNoCustomerConfirmation}
+        onClose={() => setShowNoCustomerConfirmation(false)}
+        onConfirm={() => {
+          setShowNoCustomerConfirmation(false);
+          setIsProcessModalOpen(true);
+        }}
+        title="¿Vender sin cliente?"
+        description="No has seleccionado un cliente para esta venta. La venta se registrará como 'Anónima'. ¿Deseas continuar?"
+        confirmText="Continuar sin cliente"
+        cancelText="Seleccionar cliente"
+        variant="warning"
+      />
     </div>
   );
 }
