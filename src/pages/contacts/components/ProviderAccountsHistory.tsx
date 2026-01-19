@@ -9,6 +9,9 @@ import PaymentForm from '../../accounts/components/PaymentForm';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import type { AccountList } from '../../../client/types.gen';
+import { useMediaQuery } from '../../../hooks/useMediaQuery';
+import { cn } from '../../../lib/utils';
+import MobileAccountList from '../../accounts/components/MobileAccountList';
 
 interface ProviderAccountsHistoryProps {
   providerId: string;
@@ -20,6 +23,7 @@ export default function ProviderAccountsHistory({ providerId }: ProviderAccounts
   const [isConfirmCloseOpen, setIsConfirmCloseOpen] = useState(false);
 
   const { ref, inView } = useInView();
+  const isMobile = useMediaQuery('(max-width: 768px)');
 
   const { 
     data, 
@@ -71,107 +75,117 @@ export default function ProviderAccountsHistory({ providerId }: ProviderAccounts
   }
 
   return (
-    <div className="overflow-x-auto">
-      <table className="min-w-full divide-y divide-gray-200">
-        <thead className="bg-gray-50">
-          <tr>
-             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              <div className="flex items-center space-x-1">
-                <Hash className="h-3 w-3" />
-                <span>Nro</span>
-              </div>
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              <div className="flex items-center space-x-1">
-                <Calendar className="h-3 w-3" />
-                <span>Fecha</span>
-              </div>
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-               <div className="flex items-center space-x-1">
-                <User className="h-3 w-3" />
-                <span>Proveedor</span>
-              </div>
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-               <div className="flex items-center space-x-1">
-                <DollarSign className="h-3 w-3" />
-                <span>Total (USD)</span>
-              </div>
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pagado</th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pendiente</th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Estado
-            </th>
-            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Acciones
-            </th>
-          </tr>
-        </thead>
-        <tbody className="bg-white divide-y divide-gray-200">
-          {accounts.map((account) => {
-             const total = parseFloat(account.total_amount_usd || '0');
-             const paid = parseFloat(account.total_paid || '0');
-             const pending = total - paid;
-
-             return (
-            <tr key={account.id} className="hover:bg-gray-50 transition-colors">
-              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                #{account.seq_number}
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                {format(new Date(account.created_at), "dd/MM/yyyy", { locale: es })}
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                {account.provider_name || 'Proveedor Desconocido'}
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
-                ${total.toFixed(2)}
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-green-600">
-                ${paid.toFixed(2)}
-              </td>
-               <td className="px-6 py-4 whitespace-nowrap text-sm text-red-600 font-bold">
-                 ${pending.toFixed(2)}
-               </td>
-              <td className="px-6 py-4 whitespace-nowrap">
-                <span className={`px-2 inline-flex text-xs leading-5 font-bold rounded-full ${
-                  account.payment_status === 'PAID' 
-                    ? 'bg-green-100 text-green-800' 
-                    : account.payment_status === 'PARTIALLY_PAID'
-                    ? 'bg-yellow-100 text-yellow-800'
-                    : 'bg-red-100 text-red-800'
-                }`}>
-                  {account.payment_status === 'PAID' ? 'Pagado' : account.payment_status === 'PARTIALLY_PAID' ? 'Parcial' : 'Pendiente'}
-                </span>
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
-                {account.payment_status !== 'PAID' && (
-                  <button 
-                    onClick={() => handlePayClick(account)}
-                    className="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                    title="Pagar"
-                  >
-                    <CreditCard className="h-3 w-3 mr-1" />
-                    Pagar
-                  </button>
-                )}
-              </td>
-            </tr>
-          )})}
-          {accounts.length === 0 && (
+    <div className={cn(
+      "overflow-x-auto",
+      isMobile && "overflow-visible"
+    )}>
+      {isMobile ? (
+        <MobileAccountList 
+          accounts={accounts}
+          onPay={handlePayClick}
+        />
+      ) : (
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead className="bg-gray-50">
             <tr>
-              <td colSpan={8} className="px-6 py-12 text-center text-gray-500">
-                 <div className="flex flex-col items-center">
-                  <AlertCircle className="h-8 w-8 text-gray-300 mb-2" />
-                  <p>No se encontraron cuentas para este proveedor.</p>
+               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <div className="flex items-center space-x-1">
+                  <Hash className="h-3 w-3" />
+                  <span>Nro</span>
                 </div>
-              </td>
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <div className="flex items-center space-x-1">
+                  <Calendar className="h-3 w-3" />
+                  <span>Fecha</span>
+                </div>
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                 <div className="flex items-center space-x-1">
+                  <User className="h-3 w-3" />
+                  <span>Proveedor</span>
+                </div>
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                 <div className="flex items-center space-x-1">
+                  <DollarSign className="h-3 w-3" />
+                  <span>Total (USD)</span>
+                </div>
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pagado</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pendiente</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Estado
+              </th>
+              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Acciones
+              </th>
             </tr>
-          )}
-        </tbody>
-      </table>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {accounts.map((account) => {
+               const total = parseFloat(account.total_amount_usd || '0');
+               const paid = parseFloat(account.total_paid || '0');
+               const pending = total - paid;
+
+               return (
+              <tr key={account.id} className="hover:bg-gray-50 transition-colors">
+                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                  #{account.seq_number}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  {format(new Date(account.created_at), "dd/MM/yyyy", { locale: es })}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  {account.provider_name || 'Proveedor Desconocido'}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
+                  ${total.toFixed(2)}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-green-600">
+                  ${paid.toFixed(2)}
+                </td>
+                 <td className="px-6 py-4 whitespace-nowrap text-sm text-red-600 font-bold">
+                   ${pending.toFixed(2)}
+                 </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <span className={`px-2 inline-flex text-xs leading-5 font-bold rounded-full ${
+                    account.payment_status === 'PAID' 
+                      ? 'bg-green-100 text-green-800' 
+                      : account.payment_status === 'PARTIALLY_PAID'
+                      ? 'bg-yellow-100 text-yellow-800'
+                      : 'bg-red-100 text-red-800'
+                  }`}>
+                    {account.payment_status === 'PAID' ? 'Pagado' : account.payment_status === 'PARTIALLY_PAID' ? 'Parcial' : 'Pendiente'}
+                  </span>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
+                  {account.payment_status !== 'PAID' && (
+                    <button 
+                      onClick={() => handlePayClick(account)}
+                      className="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                      title="Pagar"
+                    >
+                      <CreditCard className="h-3 w-3 mr-1" />
+                      Pagar
+                    </button>
+                  )}
+                </td>
+              </tr>
+            )})}
+            {accounts.length === 0 && (
+              <tr>
+                <td colSpan={8} className="px-6 py-12 text-center text-gray-500">
+                   <div className="flex flex-col items-center">
+                    <AlertCircle className="h-8 w-8 text-gray-300 mb-2" />
+                    <p>No se encontraron cuentas para este proveedor.</p>
+                  </div>
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      )}
 
       {/* Infinite Scroll Trigger */}
       <div ref={ref} className="py-4 flex justify-center">

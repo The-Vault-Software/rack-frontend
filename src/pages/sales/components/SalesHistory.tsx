@@ -11,6 +11,9 @@ import PaymentForm from '../../accounts/components/PaymentForm';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import type { SaleList } from '../../../client/types.gen';
+import { useMediaQuery } from '../../../hooks/useMediaQuery';
+import { cn } from '../../../lib/utils';
+import MobileSaleList from './MobileSaleList';
 
 export default function SalesHistory({ customerId }: { customerId?: string }) {
   const { selectedBranch } = useBranch();
@@ -75,102 +78,115 @@ export default function SalesHistory({ customerId }: { customerId?: string }) {
     setIsPaymentModalOpen(false);
   };
 
+  const isMobile = useMediaQuery('(max-width: 768px)');
+
   if (isLoading) {
     return <div className="p-8 text-center text-gray-500">Cargando historial de ventas...</div>;
   }
 
   return (
-    <div className="overflow-x-auto">
-      <table className="min-w-full divide-y divide-gray-200">
-        <thead className="bg-gray-50">
-          <tr>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              <div className="flex items-center space-x-1">
-                <Hash className="h-3 w-3" />
-                <span>Nro</span>
-              </div>
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              <div className="flex items-center space-x-1">
-                <Calendar className="h-3 w-3" />
-                <span>Fecha</span>
-              </div>
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-               <div className="flex items-center space-x-1">
-                <User className="h-3 w-3" />
-                <span>Cliente</span>
-              </div>
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-               <div className="flex items-center space-x-1">
-                <DollarSign className="h-3 w-3" />
-                <span>Total</span>
-              </div>
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Estado
-            </th>
-            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Acciones
-            </th>
-          </tr>
-        </thead>
-        <tbody className="bg-white divide-y divide-gray-200">
-          {sales.map((sale) => (
-            <tr key={sale.id} className="hover:bg-gray-50 transition-colors">
-              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                #{sale.seq_number}
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                {format(new Date(sale.created_at), "dd/MM/yyyy HH:mm", { locale: es })}
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                {sale.customer_name || 'Consumidor Final'}
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
-                ${parseFloat(sale.total_amount_usd || '0').toFixed(2)}
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap">
-                <span className={`px-2 inline-flex text-xs leading-5 font-bold rounded-full ${
-                  sale.payment_status === 'PAID' 
-                    ? 'bg-green-100 text-green-800' 
-                    : sale.payment_status === 'PARTIALLY_PAID'
-                    ? 'bg-yellow-100 text-yellow-800'
-                    : 'bg-red-100 text-red-800'
-                }`}>
-                  {sale.payment_status === 'PAID' ? 'Pagado' : sale.payment_status === 'PARTIALLY_PAID' ? 'Parcial' : 'Pendiente'}
-                </span>
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
-                {sale.payment_status !== 'PAID' && (
-                  <button 
-                    onClick={() => handleCollectPayment(sale)}
-                    className="text-green-600 hover:text-green-900 bg-green-50 p-2 rounded-full transition-colors cursor-pointer"
-                    title="Cobrar"
-                  >
-                    <HandCoins className="h-4 w-4" />
-                  </button>
-                )}
-                <button 
-                  onClick={() => handleViewDetail(sale.id)}
-                  className="text-blue-600 hover:text-blue-900 bg-blue-50 p-2 rounded-full transition-colors cursor-pointer"
-                  title="Ver detalles"
-                >
-                  <Eye className="h-4 w-4" />
-                </button>
-              </td>
-            </tr>
-          ))}
-          {sales.length === 0 && (
+    <div className={cn(
+      "overflow-x-auto",
+      isMobile && "overflow-visible"
+    )}>
+      {isMobile ? (
+        <MobileSaleList 
+          sales={sales}
+          onViewDetail={handleViewDetail}
+          onCollectPayment={handleCollectPayment}
+        />
+      ) : (
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead className="bg-gray-50">
             <tr>
-              <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
-                {customerId ? 'No se encontraron ventas para este cliente.' : 'No se encontraron ventas en esta sucursal.'}
-              </td>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <div className="flex items-center space-x-1">
+                  <Hash className="h-3 w-3" />
+                  <span>Nro</span>
+                </div>
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <div className="flex items-center space-x-1">
+                  <Calendar className="h-3 w-3" />
+                  <span>Fecha</span>
+                </div>
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                 <div className="flex items-center space-x-1">
+                  <User className="h-3 w-3" />
+                  <span>Cliente</span>
+                </div>
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                 <div className="flex items-center space-x-1">
+                  <DollarSign className="h-3 w-3" />
+                  <span>Total</span>
+                </div>
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Estado
+              </th>
+              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Acciones
+              </th>
             </tr>
-          )}
-        </tbody>
-      </table>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {sales.map((sale) => (
+              <tr key={sale.id} className="hover:bg-gray-50 transition-colors">
+                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                  #{sale.seq_number}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  {format(new Date(sale.created_at), "dd/MM/yyyy HH:mm", { locale: es })}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  {sale.customer_name || 'Consumidor Final'}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
+                  ${parseFloat(sale.total_amount_usd || '0').toFixed(2)}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <span className={`px-2 inline-flex text-xs leading-5 font-bold rounded-full ${
+                    sale.payment_status === 'PAID' 
+                      ? 'bg-green-100 text-green-800' 
+                      : sale.payment_status === 'PARTIALLY_PAID'
+                      ? 'bg-yellow-100 text-yellow-800'
+                      : 'bg-red-100 text-red-800'
+                  }`}>
+                    {sale.payment_status === 'PAID' ? 'Pagado' : sale.payment_status === 'PARTIALLY_PAID' ? 'Parcial' : 'Pendiente'}
+                  </span>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
+                  {sale.payment_status !== 'PAID' && (
+                    <button 
+                      onClick={() => handleCollectPayment(sale)}
+                      className="text-green-600 hover:text-green-900 bg-green-50 p-2 rounded-full transition-colors cursor-pointer"
+                      title="Cobrar"
+                    >
+                      <HandCoins className="h-4 w-4" />
+                    </button>
+                  )}
+                  <button 
+                    onClick={() => handleViewDetail(sale.id)}
+                    className="text-blue-600 hover:text-blue-900 bg-blue-50 p-2 rounded-full transition-colors cursor-pointer"
+                    title="Ver detalles"
+                  >
+                    <Eye className="h-4 w-4" />
+                  </button>
+                </td>
+              </tr>
+            ))}
+            {sales.length === 0 && (
+              <tr>
+                <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
+                  {customerId ? 'No se encontraron ventas para este cliente.' : 'No se encontraron ventas en esta sucursal.'}
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      )}
 
       {/* Infinite Scroll Trigger */}
       <div ref={ref} className="py-4 flex justify-center">
