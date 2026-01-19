@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { CreditCard, Calendar, Hash, User, AlertCircle } from 'lucide-react';
+import { CreditCard, Calendar, Hash, User, AlertCircle, Eye } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import type { AccountList } from '../../../client/types.gen';
@@ -94,7 +94,7 @@ const MobileAccountList: React.FC<MobileAccountListProps> = ({
                     onClick={() => onViewDetail(account.id)}
                     className="flex-none flex items-center justify-center p-2 text-gray-500 bg-gray-50 rounded-xl hover:bg-gray-100 active:bg-gray-200 transition-colors border border-gray-100"
                   >
-                    <AlertCircle className="h-5 w-5" />
+                    <Eye className="h-5 w-5" />
                   </button>
                 </div>
             </div>

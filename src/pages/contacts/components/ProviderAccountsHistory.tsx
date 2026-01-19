@@ -12,6 +12,7 @@ import type { AccountList } from '../../../client/types.gen';
 import { useMediaQuery } from '../../../hooks/useMediaQuery';
 import { cn } from '../../../lib/utils';
 import MobileAccountList from '../../accounts/components/MobileAccountList';
+import AccountDetail from '../../accounts/components/AccountDetail';
 
 interface ProviderAccountsHistoryProps {
   providerId: string;
@@ -21,6 +22,8 @@ export default function ProviderAccountsHistory({ providerId }: ProviderAccounts
   const [selectedAccount, setSelectedAccount] = useState<AccountList | null>(null);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [isConfirmCloseOpen, setIsConfirmCloseOpen] = useState(false);
+  const [selectedDetailAccountId, setSelectedDetailAccountId] = useState<string | null>(null);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
 
   const { ref, inView } = useInView();
   const isMobile = useMediaQuery('(max-width: 768px)');
@@ -70,6 +73,11 @@ export default function ProviderAccountsHistory({ providerId }: ProviderAccounts
     setSelectedAccount(null);
   };
 
+  const handleViewDetail = (id: string) => {
+    setSelectedDetailAccountId(id);
+    setIsDetailModalOpen(true);
+  };
+
   if (isLoading) {
     return <div className="p-8 text-center text-gray-500">Cargando historial de cuentas...</div>;
   }
@@ -83,6 +91,7 @@ export default function ProviderAccountsHistory({ providerId }: ProviderAccounts
         <MobileAccountList 
           accounts={accounts}
           onPay={handlePayClick}
+          onViewDetail={handleViewDetail}
         />
       ) : (
         <table className="min-w-full divide-y divide-gray-200">
@@ -216,6 +225,17 @@ export default function ProviderAccountsHistory({ providerId }: ProviderAccounts
                setIsPaymentModalOpen(false); 
             }}
           />
+        )}
+      </Modal>
+
+      <Modal
+        isOpen={isDetailModalOpen}
+        onClose={() => setIsDetailModalOpen(false)}
+        title="Detalles de la Cuenta"
+        maxWidth="max-w-4xl"
+      >
+        {selectedDetailAccountId && (
+          <AccountDetail accountId={selectedDetailAccountId} />
         )}
       </Modal>
 
