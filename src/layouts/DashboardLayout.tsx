@@ -4,6 +4,7 @@ import { cn } from '../lib/utils';
 import { LayoutDashboard, ShoppingCart, Package, Users, Settings, LogOut, Wallet, ChevronRight, BarChart3 } from 'lucide-react';
 import { BranchSelector } from '../components/BranchSelector';
 import { motion, AnimatePresence } from 'motion/react';
+import { BottomNavigationBar } from '../components/navigation/BottomNavigationBar';
 
 export default function DashboardLayout() {
   const { logout, user } = useAuth();
@@ -117,7 +118,7 @@ export default function DashboardLayout() {
 
       {/* Main content */}
       <div className="flex flex-col flex-1 min-w-0 overflow-hidden relative">
-        <header className="bg-white/80 backdrop-blur-md border-b border-gray-100 px-8 py-4 flex items-center justify-between sticky top-0 z-10">
+        <header className="bg-white/80 backdrop-blur-md border-b border-gray-100 px-8 py-4 items-center justify-between sticky top-0 z-10 hidden md:flex">
           <motion.h1 
             key={pageTitle}
             initial={{ opacity: 0, x: -10 }}
@@ -130,9 +131,18 @@ export default function DashboardLayout() {
             <BranchSelector />
           </div>
         </header>
+
+        {/* Mobile Header */}
+        <header className="md:hidden bg-white/80 backdrop-blur-md border-b border-gray-100 px-4 py-3 flex items-center justify-between sticky top-0 z-10">
+           <div className="flex items-center gap-2">
+              <img src="/app_icon.png" alt="App Icon" className="h-8 w-8 rounded-lg object-cover" />
+              <span className="text-lg font-bold text-gray-900">Rack</span>
+           </div>
+           <BranchSelector />
+        </header>
         
-        <main className="flex-1 overflow-y-auto bg-transparent scroll-smooth">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-10">
+        <main className="flex-1 overflow-y-auto bg-transparent scroll-smooth pb-24 md:pb-0">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-10">
             <AnimatePresence mode="wait">
               <motion.div
                 key={location.pathname}
@@ -146,6 +156,8 @@ export default function DashboardLayout() {
             </AnimatePresence>
           </div>
         </main>
+        
+        <BottomNavigationBar />
       </div>
     </div>
   );
