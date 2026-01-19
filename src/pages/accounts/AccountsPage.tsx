@@ -1,15 +1,16 @@
 import { useState } from 'react';
-import { ArrowUpCircle, ArrowDownCircle, History, PlusCircle } from 'lucide-react';
+import { ArrowUpCircle, ArrowDownCircle, History, PlusCircle, List } from 'lucide-react';
 import CashFlow from './components/CashFlow';
 import AccountsReceivable from './components/AccountsReceivable';
 import AccountsPayable from './components/AccountsPayable';
 import AccountBuilder from './components/AccountBuilder';
+import AccountHistory from './components/AccountHistory';
 import MobileAccountBuilder from './components/MobileAccountBuilder';
 import { useMediaQuery } from '../../hooks/useMediaQuery';
 import { cn } from '../../lib/utils';
 
 export default function AccountsPage() {
-  const [activeTab, setActiveTab] = useState<'cashflow' | 'receivable' | 'payable' | 'new-account'>('new-account');
+  const [activeTab, setActiveTab] = useState<'cashflow' | 'receivable' | 'payable' | 'new-account' | 'history'>('new-account');
   const isMobile = useMediaQuery('(max-width: 768px)');
 
   return (
@@ -32,6 +33,13 @@ export default function AccountsPage() {
             onClick={() => setActiveTab('new-account')}
             icon={<PlusCircle className={cn(activeTab === 'new-account' ? 'text-blue-500' : 'text-gray-400 group-hover:text-gray-500', "-ml-0.5 mr-2 h-5 w-5", isMobile && "h-4 w-4")} />}
             label="Nueva Compra"
+            isMobile={isMobile}
+          />
+          <TabButton 
+            active={activeTab === 'history'} 
+            onClick={() => setActiveTab('history')}
+            icon={<List className={cn(activeTab === 'history' ? 'text-blue-500' : 'text-gray-400 group-hover:text-gray-500', "-ml-0.5 mr-2 h-5 w-5", isMobile && "h-4 w-4")} />}
+            label="Historial"
             isMobile={isMobile}
           />
           <TabButton 
@@ -64,6 +72,7 @@ export default function AccountsPage() {
         isMobile && "bg-transparent shadow-none rounded-none"
       )}>
         {activeTab === 'new-account' && (isMobile ? <MobileAccountBuilder /> : <AccountBuilder />)}
+        {activeTab === 'history' && <AccountHistory />}
         {activeTab === 'cashflow' && <CashFlow />}
         {activeTab === 'receivable' && <AccountsReceivable />}
         {activeTab === 'payable' && <AccountsPayable />}

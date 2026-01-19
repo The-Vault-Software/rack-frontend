@@ -1,11 +1,8 @@
 import { useState, useMemo } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { 
   v1ProductListOptions, 
   v1ProductBranchStockListOptions,
-  v1SalesCreateMutation,
-  v1SalesListQueryKey,
-  v1ProductBranchStockListQueryKey,
   v1CustomersListOptions,
   v1ExchangeRatesTodayRetrieveOptions,
   v1MeasurementListOptions,
@@ -14,11 +11,10 @@ import {
 import { useBranch } from '../../../context/BranchContext';
 import { ShoppingCart, Plus, Minus, Trash2, Search, User, ArrowRight, Edit2, Layers } from 'lucide-react';
 import { toast } from 'sonner';
-import type { ProductMaster, SaleRequestWritable, Customer, ProductStockSale, Sale, MeasurementUnit } from '../../../client/types.gen';
+import type { ProductMaster, Customer, ProductStockSale, MeasurementUnit } from '../../../client/types.gen';
 import Modal from '../../../components/ui/Modal';
-import PaymentForm from '../../accounts/components/PaymentForm';
 import ProductForm from '../../../components/inventory/ProductForm';
-import ActionConfirmationModal from '../../../components/ui/ActionConfirmationModal';
+import SaleProcessModal from './SaleProcessModal';
 
 interface SellingUnit {
   id: string;
@@ -42,11 +38,9 @@ export default function SaleBuilder() {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCustomerId, setSelectedCustomerId] = useState<string>('');
-  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [isProcessModalOpen, setIsProcessModalOpen] = useState(false);
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
-  const [createdSale, setCreatedSale] = useState<Sale | null>(null);
   const [editingProduct, setEditingProduct] = useState<ProductMaster | null>(null);
-  const [isConfirmCloseOpen, setIsConfirmCloseOpen] = useState(false);
 
   const { data: products = [] } = useQuery(v1ProductListOptions());
   const { data: customers = [] } = useQuery(v1CustomersListOptions());
@@ -68,22 +62,6 @@ export default function SaleBuilder() {
 
   const { data: measurementUnits = [] } = useQuery(v1MeasurementListOptions());
   const { branches, isLoading: loadingBranches } = useBranch();
-
-  const createSaleMutation = useMutation({
-    ...v1SalesCreateMutation(),
-    onSuccess: (data: Sale) => {
-      queryClient.invalidateQueries({ queryKey: v1SalesListQueryKey() });
-      queryClient.invalidateQueries({ queryKey: v1ProductBranchStockListQueryKey() });
-      toast.success('Venta realizada con éxito');
-      setCart([]);
-      setSelectedCustomerId('');
-      setCreatedSale(data);
-      setIsPaymentModalOpen(true);
-    },
-    onError: () => {
-      toast.error('Error al realizar la venta');
-    }
-  });
 
   const getStock = (productId: string) => {
     const stockItem = stockData.find((s: ProductStockSale) => s.product_id === productId);
@@ -240,19 +218,7 @@ export default function SaleBuilder() {
 
     if (cart.length === 0) return;
 
-    const payload: SaleRequestWritable = {
-      branch: selectedBranch.id,
-      customer: selectedCustomerId || null,
-      details: cart.map((item: CartItem) => {
-        const factor = item.selectedSellingUnit ? parseFloat(item.selectedSellingUnit.unit_conversion_factor) : 1;
-        return {
-          product: item.product.id,
-          quantity: item.quantity * factor
-        };
-      })
-    };
-
-    createSaleMutation.mutate({ body: payload });
+    setIsProcessModalOpen(true);
   };
 
   const handleEditProduct = (e: React.MouseEvent, product: ProductMaster) => {
@@ -266,15 +232,7 @@ export default function SaleBuilder() {
     setEditingProduct(null);
   };
 
-  const handlePaymentModalCloseAttempt = () => {
-    setIsConfirmCloseOpen(true);
-  };
 
-  const confirmClosePayment = () => {
-    setIsConfirmCloseOpen(false);
-    setIsPaymentModalOpen(false);
-    setCreatedSale(null);
-  };
 
   return (
     <div className="flex flex-col lg:flex-row gap-6 h-[calc(100vh-16rem)]">
@@ -485,60 +443,29 @@ export default function SaleBuilder() {
 
           <button
             onClick={handleCheckout}
-            disabled={cart.length === 0 || createSaleMutation.isPending}
+            disabled={cart.length === 0}
             className="w-full py-3 px-4 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg shadow-md transition-colors disabled:opacity-50 disabled:bg-gray-400 flex items-center justify-center space-x-2"
           >
-            {createSaleMutation.isPending ? (
-              'Procesando...'
-            ) : (
               <>
                 <span>Finalizar y Cobrar</span>
                 <ArrowRight className="h-5 w-5" />
               </>
-            )}
           </button>
         </div>
       </div>
--
-      <Modal
-        isOpen={isPaymentModalOpen}
-        onClose={handlePaymentModalCloseAttempt}
-        title="Registrar Cobro"
-      >
-        {createdSale && (
-          <div className="space-y-4">
-            <div className="bg-blue-50 p-4 rounded-lg flex items-center justify-between">
-              <div>
-                <p className="text-xs text-blue-600 font-bold uppercase">Monto de la Venta</p>
-                <p className="text-2xl font-black text-blue-900">${parseFloat(createdSale.total_amount_usd || '0').toFixed(2)}</p>
-              </div>
-              <div className="text-right text-sm text-blue-700">
-                <p className="font-medium">Venta #{createdSale.seq_number}</p>
-                <p>{createdSale.customer_name}</p>
-              </div>
-            </div>
-
-            <PaymentForm 
-              type="sale" 
-              id={createdSale.id} 
-              pendingAmount={parseFloat(createdSale.total_amount_usd || '0') - parseFloat(createdSale.total_paid || '0')}
-              onSuccess={() => {
-                setIsPaymentModalOpen(false);
-                setCreatedSale(null);
-              }}
-            />
-            
-            <div className="pt-2 border-t flex justify-center">
-              <button 
-                onClick={handlePaymentModalCloseAttempt}
-                className="text-sm text-gray-400 hover:text-gray-600 underline font-medium"
-              >
-                Pagar después
-              </button>
-            </div>
-          </div>
-        )}
-      </Modal>
+      <SaleProcessModal
+        isOpen={isProcessModalOpen}
+        onClose={() => setIsProcessModalOpen(false)}
+        cart={cart}
+        customerId={selectedCustomerId}
+        branchId={selectedBranch?.id || ''}
+        totalAmount={total}
+        onSuccess={() => {
+          setIsProcessModalOpen(false);
+          setCart([]);
+          setSelectedCustomerId('');
+        }}
+      />
 
       <Modal
         isOpen={isProductModalOpen}
@@ -550,19 +477,6 @@ export default function SaleBuilder() {
           onSuccess={closeProductModal} 
         />
       </Modal>
-
-
-
-      <ActionConfirmationModal
-        isOpen={isConfirmCloseOpen}
-        onClose={() => setIsConfirmCloseOpen(false)}
-        onConfirm={confirmClosePayment}
-        title="¿Salir sin cobrar?"
-        description="¿Estás seguro que no quieres cobrar la venta?"
-        confirmText="Confirmar Salida"
-        cancelText="Mantenerse"
-        variant="warning"
-      />
     </div>
   );
 }

@@ -1,30 +1,37 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { v1SalesRetrieveOptions, v1SalesPaymentsListOptions, v1ExchangeRatesRetrieveOptions, v1ExchangeRatesTodayRetrieveOptions, v1ProductListOptions } from '../../../client/@tanstack/react-query.gen';
+import { v1AccountsRetrieveOptions, v1AccountsPaymentsListOptions, v1ExchangeRatesTodayRetrieveOptions } from '../../../client/@tanstack/react-query.gen';
 import { Package, User, Calendar, CreditCard, Receipt, Search, Info, Wallet } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import Modal from '../../../components/ui/Modal';
-import type { SalePayment, ProductMaster } from '../../../client/types.gen';
+import type { AccountPayment } from '../../../client/types.gen';
 import { useMediaQuery } from '../../../hooks/useMediaQuery';
 import { cn } from '../../../lib/utils';
 
-interface SaleDetailProps {
-  saleId: string;
+interface AccountDetailProps {
+  accountId: string;
 }
 
-function PaymentRow({ payment, isMobile }: { payment: SalePayment, isMobile?: boolean }) {
+function PaymentRow({ payment, isMobile }: { payment: AccountPayment, isMobile?: boolean }) {
+  // Exchange rate for payment usually is not stored in payment itself as ID? 
+  // Wait, AccountPayment type has exchange_rate: string | null. 
+  // In SalePayment it was ID but then resolved. 
+  // However, in SaleDetail it was:
+  /*
   const { data: xrData } = useQuery({
     ...v1ExchangeRatesRetrieveOptions({
       path: { id: payment.exchange_rate as string }
     }),
     enabled: !!payment.exchange_rate
   });
-
-  const xr = xrData as { bcv_rate: string; parallel_rate: string } | undefined;
-  const discount = parseFloat(payment.discount || '0');
-  const totalUsd = parseFloat(payment.total_amount_usd) * (1 - discount / 100);
-  const totalVes = parseFloat(payment.total_amount_ves) * (1 - discount / 100);
+  */
+  // I will assume the same logic applies if exchange_rate is an ID.
+  
+  // Note: AccountPayment does not have discount field currently based on types. 
+  
+  const totalUsd = parseFloat(payment.total_amount_usd);
+  const totalVes = parseFloat(payment.total_amount_ves);
 
   if (isMobile) {
     return (
@@ -44,20 +51,6 @@ function PaymentRow({ payment, isMobile }: { payment: SalePayment, isMobile?: bo
             <p className="text-[10px] text-gray-400">Bs. {totalVes.toLocaleString('es-VE', { minimumFractionDigits: 2 })}</p>
           </div>
         </div>
-        
-        {discount > 0 && (
-          <div className="flex justify-between items-center px-3 py-1.5 bg-green-50 rounded-lg">
-            <span className="text-[10px] font-bold text-green-700 uppercase">Descuento</span>
-            <span className="text-[10px] font-black text-green-700">-{discount}%</span>
-          </div>
-        )}
-
-        {xr && (
-          <div className="flex gap-4 text-[10px] font-medium text-gray-400 border-t pt-2">
-            <span>BCV: {parseFloat(xr.bcv_rate).toFixed(2)}</span>
-            <span>PAR: {parseFloat(xr.parallel_rate).toFixed(2)}</span>
-          </div>
-        )}
       </div>
     );
   }
@@ -72,27 +65,6 @@ function PaymentRow({ payment, isMobile }: { payment: SalePayment, isMobile?: bo
       </td>
       <td className="px-4 py-3">
         <span className="font-medium text-gray-900">{payment.payment_method}</span>
-        <div className="text-[10px] text-gray-400 font-mono mt-0.5">
-          {payment.currency} @ {xr ? (
-            <span className="flex gap-1.5">
-              <span title="Tasa BCV" className="text-blue-600/70">BCV: {parseFloat(xr.bcv_rate).toFixed(2)}</span>
-              <span className="text-gray-300">|</span>
-              <span title="Tasa Paralelo" className="text-purple-600/70">PAR: {parseFloat(xr.parallel_rate).toFixed(2)}</span>
-            </span>
-          ) : payment.exchange_rate ? 'Cargando tasa...' : '-'}
-        </div>
-      </td>
-      <td className="px-4 py-3 text-right">
-        {discount !== 0 ? (
-          <div className="flex flex-col items-end">
-            <span className="text-blue-500 font-bold">%{discount.toFixed(2)}</span>
-            <span className="text-[10px] text-gray-400 font-medium italic">
-              -${(parseFloat(payment.total_amount_usd) * (discount / 100)).toFixed(2)}
-            </span>
-          </div>
-        ) : (
-          <span className="text-gray-400">-</span>
-        )}
       </td>
       <td className="px-4 py-3 text-right text-gray-600 font-medium">
         Bs. {totalVes.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
@@ -104,18 +76,17 @@ function PaymentRow({ payment, isMobile }: { payment: SalePayment, isMobile?: bo
   );
 }
 
-export default function SaleDetail({ saleId }: SaleDetailProps) {
+export default function AccountDetail({ accountId }: AccountDetailProps) {
   const [showPaymentsModal, setShowPaymentsModal] = useState(false);
   const isMobile = useMediaQuery('(max-width: 768px)');
-  const { data: products } = useQuery(v1ProductListOptions());
-
-  const { data: sale, isLoading, error } = useQuery(v1SalesRetrieveOptions({
-    path: { id: saleId }
+  
+  const { data: account, isLoading, error } = useQuery(v1AccountsRetrieveOptions({
+    path: { id: accountId }
   }));
 
   const { data: payments, isLoading: isLoadingPayments } = useQuery({
-    ...v1SalesPaymentsListOptions({
-      path: { sale_id: saleId }
+    ...v1AccountsPaymentsListOptions({
+      path: { account_id: accountId }
     }),
     enabled: showPaymentsModal
   });
@@ -131,12 +102,12 @@ export default function SaleDetail({ saleId }: SaleDetailProps) {
     return (
       <div className="flex flex-col items-center justify-center p-12 space-y-4">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-        <p className="text-gray-500 text-sm animate-pulse">Cargando detalles de la venta...</p>
+        <p className="text-gray-500 text-sm animate-pulse">Cargando detalles de la cuenta...</p>
       </div>
     );
   }
 
-  if (error || !sale) {
+  if (error || !account) {
     return (
       <div className="p-8 text-center">
         <p className="text-red-500 font-medium">Error al cargar los detalles</p>
@@ -151,13 +122,13 @@ export default function SaleDetail({ saleId }: SaleDetailProps) {
         <div className="bg-gray-50 p-4 rounded-2xl space-y-3">
           <div className="flex items-center text-sm text-gray-500">
             <Receipt className="h-4 w-4 mr-2" />
-            <span className="font-bold uppercase tracking-widest text-[10px]">Información de Venta</span>
+            <span className="font-bold uppercase tracking-widest text-[10px]">Información de Cuenta</span>
           </div>
           <div>
-            <p className="text-lg font-black text-gray-900">Venta #{sale.seq_number}</p>
+            <p className="text-lg font-black text-gray-900">Cuenta #{account.seq_number}</p>
             <div className="flex items-center text-xs text-gray-500 mt-1 font-medium">
               <Calendar className="h-3.5 w-3.5 mr-1.5 text-blue-500" />
-              {format(new Date(sale.created_at), "PPP p", { locale: es })}
+              {format(new Date(account.created_at), "PPP p", { locale: es })}
             </div>
           </div>
         </div>
@@ -165,11 +136,11 @@ export default function SaleDetail({ saleId }: SaleDetailProps) {
         <div className="bg-gray-50 p-4 rounded-2xl space-y-3">
           <div className="flex items-center text-sm text-gray-500">
             <User className="h-4 w-4 mr-2" />
-            <span className="font-bold uppercase tracking-widest text-[10px]">Cliente</span>
+            <span className="font-bold uppercase tracking-widest text-[10px]">Proveedor</span>
           </div>
           <div>
-            <p className="text-lg font-black text-gray-900">{sale.customer_name || 'Consumidor Final'}</p>
-            <p className="text-xs text-blue-600 font-bold bg-blue-100/50 inline-block px-2 py-0.5 rounded-full mt-1 break-all">ID: {sale.customer || 'Público General'}</p>
+            <p className="text-lg font-black text-gray-900">{account.provider_name || 'Proveedor Desconocido'}</p>
+            {account.provider && <p className="text-xs text-blue-600 font-bold bg-blue-100/50 inline-block px-2 py-0.5 rounded-full mt-1 break-all">ID: {account.provider}</p>}
           </div>
         </div>
       </div>
@@ -178,14 +149,12 @@ export default function SaleDetail({ saleId }: SaleDetailProps) {
       <div>
         <div className="flex items-center text-sm text-gray-500 mb-3 ml-1">
           <Package className="h-4 w-4 mr-2" />
-          <span className="font-bold uppercase tracking-widest text-[10px]">Productos Vendidos</span>
+          <span className="font-bold uppercase tracking-widest text-[10px]">Detalle de Productos</span>
         </div>
 
         {isMobile ? (
           <div className="space-y-3">
-            {sale.sale_details.map((detail) => {
-              const product = Array.isArray(products) ? products.find((p: ProductMaster) => p.id === detail.product) : null;
-              const hasIVA = product?.IVA;
+            {account.account_details.map((detail) => {
               const subtotal = parseFloat(detail.quantity) * parseFloat(detail.unit_price || '0');
 
               return (
@@ -195,7 +164,6 @@ export default function SaleDetail({ saleId }: SaleDetailProps) {
                       <h4 className="font-bold text-gray-900 truncate">{detail.product_name}</h4>
                       <div className="flex items-center gap-2 mt-1">
                         <span className="text-xs font-bold text-blue-600">${parseFloat(detail.unit_price || '0').toFixed(2)} c/u</span>
-                        {hasIVA && <span className="text-[10px] bg-red-50 text-red-600 px-1.5 py-0.5 rounded font-bold border border-red-100">IVA 16%</span>}
                       </div>
                     </div>
                     <div className="px-3 py-1 bg-gray-100 rounded-lg text-xs font-black text-gray-600">
@@ -221,29 +189,19 @@ export default function SaleDetail({ saleId }: SaleDetailProps) {
                 <tr>
                   <th className="px-4 py-3 text-left text-[10px] font-bold text-gray-500 uppercase tracking-widest">Producto</th>
                   <th className="px-4 py-3 text-center text-[10px] font-bold text-gray-500 uppercase tracking-widest">Cant.</th>
-                  <th className="px-4 py-3 text-center text-[10px] font-bold text-gray-500 uppercase tracking-widest">IVA</th>
                   <th className="px-4 py-3 text-right text-[10px] font-bold text-gray-500 uppercase tracking-widest">P. Unit (USD)</th>
                   <th className="px-4 py-3 text-right text-[10px] font-bold text-gray-500 uppercase tracking-widest">Subtotal (Bs)</th>
                   <th className="px-4 py-3 text-right text-[10px] font-bold text-gray-500 uppercase tracking-widest">Subtotal (USD)</th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {sale.sale_details.map((detail) => {
-                  const product = Array.isArray(products) ? products.find((p: ProductMaster) => p.id === detail.product) : null;
-                  const hasIVA = product?.IVA;
+                {account.account_details.map((detail) => {
                   const subtotal = parseFloat(detail.quantity) * parseFloat(detail.unit_price || '0');
 
                   return (
                   <tr key={detail.id} className="text-sm hover:bg-gray-50/50 transition-colors">
                     <td className="px-4 py-4 text-gray-900 font-semibold">{detail.product_name}</td>
                     <td className="px-4 py-4 text-center text-gray-600 font-medium">{detail.quantity}</td>
-                    <td className="px-4 py-4 text-center">
-                      {hasIVA ? (
-                          <span className="text-[10px] bg-red-50 text-red-600 px-2 py-1 rounded-full border border-red-100 font-black">16%</span>
-                      ) : (
-                          <span className="text-[10px] text-gray-400 font-medium">-</span>
-                      )}
-                    </td>
                     <td className="px-4 py-4 text-right text-gray-600 font-semibold">${parseFloat(detail.unit_price || '0').toFixed(2)}</td>
                     <td className="px-4 py-4 text-right text-gray-500 text-xs">
                       {rates ? (
@@ -278,18 +236,18 @@ export default function SaleDetail({ saleId }: SaleDetailProps) {
               className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-xl backdrop-blur-md transition-all flex items-center gap-2 text-[10px] font-black uppercase tracking-widest border border-white/20"
             >
               <Search className="h-3.5 w-3.5" />
-              Pagos Recibidos
+              Pagos Realizados
             </button>
           </div>
           
           <div className="space-y-4">
             <div className="flex justify-between items-end">
-              <span className="text-blue-100 text-xs font-bold uppercase tracking-widest">Total de Venta</span>
+              <span className="text-blue-100 text-xs font-bold uppercase tracking-widest">Total de Cuenta</span>
               <div className="text-right">
-                <span className="text-3xl font-black text-white block">${parseFloat(sale.total_amount_usd || '0').toFixed(2)}</span>
+                <span className="text-3xl font-black text-white block">${parseFloat(account.total_amount_usd || '0').toFixed(2)}</span>
                 {rates && (
                   <span className="text-xs text-blue-100 font-bold opacity-80">
-                    ≈ Bs. {(parseFloat(sale.total_amount_usd || '0') * parseFloat(rates.bcv_rate)).toLocaleString('es-VE', { minimumFractionDigits: 2 })}
+                    ≈ Bs. {(parseFloat(account.total_amount_usd || '0') * parseFloat(rates.bcv_rate)).toLocaleString('es-VE', { minimumFractionDigits: 2 })}
                   </span>
                 )}
               </div>
@@ -300,21 +258,21 @@ export default function SaleDetail({ saleId }: SaleDetailProps) {
                 <span className="text-blue-100 text-[10px] font-black uppercase tracking-[0.2em]">Saldo Pendiente</span>
                 <span className={cn(
                   "text-xs font-bold mt-1 inline-flex items-center px-2 py-0.5 rounded-full",
-                  sale.payment_status === 'PAID' ? "bg-green-400/20 text-green-300" : "bg-red-400/20 text-red-200"
+                  account.payment_status === 'PAID' ? "bg-green-400/20 text-green-300" : "bg-red-400/20 text-red-200"
                 )}>
-                  {sale.payment_status === 'PAID' ? 'Totalmente Pagado' : sale.payment_status === 'PARTIALLY_PAID' ? 'Pago Parcial' : 'Deuda Total'}
+                  {account.payment_status === 'PAID' ? 'Totalmente Pagado' : account.payment_status === 'PARTIALLY_PAID' ? 'Pago Parcial' : 'Deuda Total'}
                 </span>
               </div>
               <div className="text-right">
                 <span className={cn(
                   "text-2xl font-black block",
-                  sale.payment_status === 'PAID' ? "text-green-300" : "text-red-300"
+                  account.payment_status === 'PAID' ? "text-green-300" : "text-red-300"
                 )}>
-                  ${(parseFloat(sale.total_amount_usd || '0') - parseFloat(sale.total_paid || '0')).toFixed(2)}
+                  ${(parseFloat(account.total_amount_usd || '0') - parseFloat(account.total_paid || '0')).toFixed(2)}
                 </span>
                 {rates && (
                   <span className="text-xs text-red-200 font-bold opacity-80">
-                    ≈ Bs. {((parseFloat(sale.total_amount_usd || '0') - parseFloat(sale.total_paid || '0')) * parseFloat(rates.bcv_rate)).toLocaleString('es-VE', { minimumFractionDigits: 2 })}
+                    ≈ Bs. {((parseFloat(account.total_amount_usd || '0') - parseFloat(account.total_paid || '0')) * parseFloat(rates.bcv_rate)).toLocaleString('es-VE', { minimumFractionDigits: 2 })}
                   </span>
                 )}
               </div>
@@ -327,7 +285,7 @@ export default function SaleDetail({ saleId }: SaleDetailProps) {
       <Modal
         isOpen={showPaymentsModal}
         onClose={() => setShowPaymentsModal(false)}
-        title={`Pagos de Venta #${sale.seq_number}`}
+        title={`Pagos de Cuenta #${account.seq_number}`}
         maxWidth="max-w-2xl"
       >
         <div className="space-y-6">
@@ -352,7 +310,6 @@ export default function SaleDetail({ saleId }: SaleDetailProps) {
                         <th className="px-4 py-3 text-left text-[10px] font-bold text-gray-500 uppercase tracking-widest">Fecha</th>
                         <th className="px-4 py-3 text-left text-[10px] font-bold text-gray-500 uppercase tracking-widest">Moneda</th>
                         <th className="px-4 py-3 text-left text-[10px] font-bold text-gray-500 uppercase tracking-widest">Método</th>
-                        <th className="px-4 py-3 text-right text-[10px] font-bold text-gray-500 uppercase tracking-widest">Desc.</th>
                         <th className="px-4 py-3 text-right text-[10px] font-bold text-gray-500 uppercase tracking-widest">Monto (Bs)</th>
                         <th className="px-4 py-3 text-right text-[10px] font-bold text-gray-500 uppercase tracking-widest">Monto (USD)</th>
                       </tr>
@@ -365,18 +322,10 @@ export default function SaleDetail({ saleId }: SaleDetailProps) {
                     <tfoot className="bg-gray-50/50">
                       <tr className="text-sm font-black">
                         <td colSpan={3} className="px-4 py-4 text-right text-gray-500 uppercase text-[10px] tracking-widest">Consolidado Pagado</td>
-                        <td className="px-4 py-4 text-right">
-                          <div className="flex flex-col items-end">
-                            <span className="text-[9px] text-gray-400 font-bold uppercase">Total Desc:</span>
-                            <span className="text-blue-500">
-                              -${payments.reduce((acc, p) => acc + (parseFloat(p.total_amount_usd) * parseFloat(p.discount || '0') / 100), 0).toFixed(2)}
-                            </span>
-                          </div>
-                        </td>
                         <td className="px-4 py-4 text-right text-gray-700">
-                          Bs. {payments.reduce((acc, p) => acc + (parseFloat(p.total_amount_ves) * (1 - parseFloat(p.discount || '0') / 100)), 0).toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          Bs. {payments.reduce((acc, p) => acc + parseFloat(p.total_amount_ves), 0).toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </td>
-                        <td className="px-4 py-4 text-right text-emerald-600 text-lg">${parseFloat(sale.total_paid).toFixed(2)}</td>
+                        <td className="px-4 py-4 text-right text-emerald-600 text-lg">${parseFloat(account.total_paid).toFixed(2)}</td>
                       </tr>
                     </tfoot>
                   </table>
@@ -385,8 +334,8 @@ export default function SaleDetail({ saleId }: SaleDetailProps) {
               
               {isMobile && (
                 <div className="bg-emerald-600 p-4 rounded-2xl text-white flex justify-between items-center shadow-lg shadow-emerald-50">
-                  <span className="text-xs font-black uppercase tracking-widest">Total Cobrado</span>
-                  <span className="text-xl font-black">${parseFloat(sale.total_paid).toFixed(2)}</span>
+                  <span className="text-xs font-black uppercase tracking-widest">Total Pagado</span>
+                  <span className="text-xl font-black">${parseFloat(account.total_paid).toFixed(2)}</span>
                 </div>
               )}
             </div>
@@ -395,7 +344,7 @@ export default function SaleDetail({ saleId }: SaleDetailProps) {
               <div className="p-4 bg-gray-100 rounded-full mb-4">
                 <Info className="h-8 w-8 text-gray-400" />
               </div>
-              <p className="text-gray-500 text-sm font-medium">No hay registros de pago para esta venta.</p>
+              <p className="text-gray-500 text-sm font-medium">No hay registros de pago para esta cuenta.</p>
             </div>
           )}
           
@@ -410,5 +359,3 @@ export default function SaleDetail({ saleId }: SaleDetailProps) {
     </div>
   );
 }
-
-

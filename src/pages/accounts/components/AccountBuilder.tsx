@@ -1,10 +1,8 @@
 import { useState, useMemo } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { 
   v1ProductListOptions, 
   v1ProvidersListOptions,
-  v1AccountsCreateMutation,
-  v1AccountsListQueryKey,
   v1ExchangeRatesTodayRetrieveOptions,
   v1MeasurementListOptions,
   v1ProductRetrieveOptions
@@ -12,11 +10,10 @@ import {
 import { useBranch } from '../../../context/BranchContext';
 import { ShoppingCart, Plus, Minus, Trash2, Search, Truck, Edit2, ArrowRight, Layers } from 'lucide-react';
 import { toast } from 'sonner';
-import type { ProductMaster, AccountRequestWritable, Provider, Account, MeasurementUnit } from '../../../client/types.gen';
+import type { ProductMaster, Provider, MeasurementUnit } from '../../../client/types.gen';
 import Modal from '../../../components/ui/Modal';
-import ActionConfirmationModal from '../../../components/ui/ActionConfirmationModal';
 import ProductForm from '../../../components/inventory/ProductForm';
-import PaymentForm from './PaymentForm';
+import AccountProcessModal from './AccountProcessModal';
 
 interface SellingUnit {
   id: string;
@@ -42,9 +39,7 @@ export default function AccountBuilder() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedProviderId, setSelectedProviderId] = useState<string>('');
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
-  const [isConfirmCloseOpen, setIsConfirmCloseOpen] = useState(false);
-  const [createdAccount, setCreatedAccount] = useState<Account | null>(null);
+  const [isProcessModalOpen, setIsProcessModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<ProductMaster | null>(null);
 
   const { data: products = [] } = useQuery(v1ProductListOptions());
@@ -57,20 +52,7 @@ export default function AccountBuilder() {
   const { data: measurementUnits = [] } = useQuery(v1MeasurementListOptions());
   const { branches, isLoading: loadingBranches } = useBranch();
 
-  const createAccountMutation = useMutation({
-    ...v1AccountsCreateMutation(),
-    onSuccess: (data: Account) => {
-      queryClient.invalidateQueries({ queryKey: v1AccountsListQueryKey() });
-      toast.success('Compra registrada con éxito');
-      setCart([]);
-      setSelectedProviderId('');
-      setCreatedAccount(data);
-      setIsPaymentModalOpen(true);
-    },
-    onError: () => {
-      toast.error('Error al realizar la compra');
-    }
-  });
+
 
   const filteredProducts = useMemo(() => {
     return products.filter((p: ProductMaster) => p.name.toLowerCase().includes(searchTerm.toLowerCase()));
@@ -227,19 +209,7 @@ export default function AccountBuilder() {
 
     if (cart.length === 0) return;
 
-    const payload: AccountRequestWritable = {
-      branch: selectedBranch.id,
-      provider: selectedProviderId,
-      details: cart.map(item => {
-        const factor = item.selectedSellingUnit ? parseFloat(item.selectedSellingUnit.unit_conversion_factor) : 1;
-        return {
-          product: item.product.id,
-          quantity: item.quantity * factor
-        };
-      })
-    };
-
-    createAccountMutation.mutate({ body: payload });
+    setIsProcessModalOpen(true);
   };
 
   const handleCreateProduct = () => {
@@ -258,15 +228,7 @@ export default function AccountBuilder() {
     setEditingProduct(null);
   };
 
-  const handlePaymentModalCloseAttempt = () => {
-    setIsConfirmCloseOpen(true);
-  };
 
-  const confirmClosePayment = () => {
-    setIsConfirmCloseOpen(false);
-    setIsPaymentModalOpen(false);
-    setCreatedAccount(null);
-  };
 
   return (
     <div className="flex flex-col lg:flex-row gap-6 h-[calc(100vh-16rem)]">
@@ -476,17 +438,13 @@ export default function AccountBuilder() {
 
           <button
             onClick={handleCheckout}
-            disabled={cart.length === 0 || createAccountMutation.isPending || !selectedProviderId}
+            disabled={cart.length === 0 || !selectedProviderId}
             className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg shadow-md transition-colors disabled:opacity-50 disabled:bg-gray-400 flex items-center justify-center space-x-2"
           >
-            {createAccountMutation.isPending ? (
-              'Registrando...'
-            ) : (
               <>
                 <span>Registrar y Pagar</span>
                 <ArrowRight className="h-5 w-5" />
               </>
-            )}
           </button>
         </div>
       </div>
@@ -502,55 +460,18 @@ export default function AccountBuilder() {
         />
       </Modal>
 
-      <Modal
-        isOpen={isPaymentModalOpen}
-        onClose={handlePaymentModalCloseAttempt}
-        title="Registrar Pago a Proveedor"
-      >
-        {createdAccount && (
-          <div className="space-y-4">
-            <div className="bg-blue-50 p-4 rounded-lg flex items-center justify-between">
-              <div>
-                <p className="text-xs text-blue-600 font-bold uppercase">Monto de la Compra</p>
-                <p className="text-2xl font-black text-blue-900">${parseFloat(createdAccount.total_amount_usd || '0').toFixed(2)}</p>
-              </div>
-              <div className="text-right text-sm text-blue-700">
-                <p className="font-medium">Compra #{createdAccount.seq_number}</p>
-                <p>{createdAccount.provider_name}</p>
-              </div>
-            </div>
-
-            <PaymentForm 
-              type="account" 
-              id={createdAccount.id} 
-              pendingAmount={parseFloat(createdAccount.total_amount_usd || '0') - parseFloat(createdAccount.total_paid || '0')}
-              onSuccess={() => {
-                setIsPaymentModalOpen(false);
-                setCreatedAccount(null);
-              }}
-            />
-            
-            <div className="pt-2 border-t flex justify-center">
-              <button 
-                onClick={handlePaymentModalCloseAttempt}
-                className="text-sm text-gray-400 hover:text-gray-600 underline font-medium"
-              >
-                Pagar después (Quedar a deber)
-              </button>
-            </div>
-          </div>
-        )}
-      </Modal>
-
-      <ActionConfirmationModal
-        isOpen={isConfirmCloseOpen}
-        onClose={() => setIsConfirmCloseOpen(false)}
-        onConfirm={confirmClosePayment}
-        title="¿Salir sin pagar?"
-        description="¿Estás seguro que no quieres pagar la compra?"
-        confirmText="Confirmar Salida"
-        cancelText="Mantenerse"
-        variant="warning"
+      <AccountProcessModal
+        isOpen={isProcessModalOpen}
+        onClose={() => setIsProcessModalOpen(false)}
+        cart={cart}
+        providerId={selectedProviderId}
+        branchId={selectedBranch?.id || ''}
+        totalAmount={total}
+        onSuccess={() => {
+          setIsProcessModalOpen(false);
+          setCart([]);
+          setSelectedProviderId('');
+        }}
       />
     </div>
   );

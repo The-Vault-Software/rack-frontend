@@ -8,11 +8,13 @@ import type { AccountList } from '../../../client/types.gen';
 interface MobileAccountListProps {
   accounts: AccountList[];
   onPay: (account: AccountList) => void;
+  onViewDetail: (id: string) => void;
 }
 
 const MobileAccountList: React.FC<MobileAccountListProps> = ({
   accounts,
   onPay,
+  onViewDetail,
 }) => {
   if (accounts.length === 0) {
     return (
@@ -78,7 +80,7 @@ const MobileAccountList: React.FC<MobileAccountListProps> = ({
                 </div>
               </div>
 
-              <div className="mt-4 flex items-center justify-end gap-2">
+                <div className="mt-4 flex items-center justify-end gap-2">
                  {account.payment_status !== 'PAID' && (
                   <button
                     onClick={() => onPay(account)}
@@ -88,7 +90,13 @@ const MobileAccountList: React.FC<MobileAccountListProps> = ({
                     Pagar
                   </button>
                 )}
-              </div>
+                 <button
+                    onClick={() => onViewDetail(account.id)}
+                    className="flex-none flex items-center justify-center p-2 text-gray-500 bg-gray-50 rounded-xl hover:bg-gray-100 active:bg-gray-200 transition-colors border border-gray-100"
+                  >
+                    <AlertCircle className="h-5 w-5" />
+                  </button>
+                </div>
             </div>
           </div>
         );
