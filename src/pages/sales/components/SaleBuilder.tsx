@@ -9,8 +9,10 @@ import {
   v1ProductRetrieveOptions
 } from '../../../client/@tanstack/react-query.gen';
 import { useBranch } from '../../../context/BranchContext';
-import { ShoppingCart, Plus, Minus, Trash2, Search, User, ArrowRight, Edit2, Layers, UserPlus } from 'lucide-react';
+import { ShoppingCart, Plus, Minus, Trash2, Search, User, ArrowRight, Edit2, Layers, UserPlus, Check, ChevronsUpDown, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
+import { Combobox, ComboboxButton, ComboboxInput, ComboboxOption, ComboboxOptions } from '@headlessui/react';
+import { motion, AnimatePresence } from 'framer-motion';
 import type { ProductMaster, Customer, ProductStockSale, MeasurementUnit } from '../../../client/types.gen';
 import Modal from '../../../components/ui/Modal';
 import ProductForm from '../../../components/inventory/ProductForm';
@@ -40,6 +42,7 @@ export default function SaleBuilder() {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCustomerId, setSelectedCustomerId] = useState<string>('');
+  const [customerQuery, setCustomerQuery] = useState('');
   const [isProcessModalOpen, setIsProcessModalOpen] = useState(false);
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const [isCustomerModalOpen, setIsCustomerModalOpen] = useState(false);
@@ -75,6 +78,20 @@ export default function SaleBuilder() {
   const filteredProducts = useMemo(() => {
     return products.filter((p: ProductMaster) => p.name.toLowerCase().includes(searchTerm.toLowerCase()));
   }, [products, searchTerm]);
+
+  const filteredCustomers = useMemo(() => {
+    return customerQuery === ''
+      ? customers
+      : customers.filter((c: Customer) =>
+          c.name.toLowerCase().includes(customerQuery.toLowerCase())
+        );
+  }, [customerQuery, customers]);
+
+  const selectedCustomer = useMemo(() => {
+    return customers.find(c => c.id === selectedCustomerId) || null;
+  }, [customers, selectedCustomerId]);
+
+  const isMissingCustomer = cart.length > 0 && !selectedCustomerId;
 
   const total = useMemo(() => {
     return cart.reduce((acc: number, item: CartItem) => {
@@ -257,8 +274,8 @@ export default function SaleBuilder() {
               </div>
            </div>
 
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="flex-1 relative">
+          <div className="flex flex-col gap-4">
+            <div className="w-full relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
               <input
                 type="text"
@@ -268,19 +285,82 @@ export default function SaleBuilder() {
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
-            <div className="w-full sm:w-64 flex gap-2">
+            
+            <div className="w-full flex gap-2">
               <div className="relative flex-1">
-                <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <select
-                  value={selectedCustomerId}
-                  onChange={(e) => setSelectedCustomerId(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500 appearance-none bg-white"
+                <motion.div
+                   animate={isMissingCustomer ? { x: [0, -3, 3, -3, 3, 0] } : {}}
+                   transition={{ duration: 0.4 }}
+                   className="relative"
                 >
-                  <option value="">Cliente (Opcional)</option>
-                  {customers.map((c: Customer) => (
-                    <option key={c.id} value={c.id}>{c.name}</option>
-                  ))}
-                </select>
+                  <Combobox 
+                      value={selectedCustomer} 
+                      onChange={(c: Customer | null) => setSelectedCustomerId(c?.id || '')}
+                      onClose={() => setCustomerQuery('')}
+                    >
+                      <div className="relative">
+                        <div className="relative w-full cursor-default overflow-hidden rounded-md text-left focus:outline-none sm:text-sm">
+                          <User className={`absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 z-10 ${isMissingCustomer ? 'text-yellow-600' : 'text-gray-400'}`} />
+                          <ComboboxInput
+                            className={`w-full border py-2 pl-10 pr-10 text-sm leading-5 text-gray-900 focus:ring-1 focus:outline-none ${
+                              isMissingCustomer 
+                                ? 'border-yellow-300 focus:border-yellow-500 focus:ring-yellow-500 bg-yellow-50/50' 
+                                : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500 bg-white'
+                            } rounded-md transition-colors duration-200`}
+                            displayValue={(c: Customer) => c?.name || ''}
+                            onChange={(event) => setCustomerQuery(event.target.value)}
+                            placeholder="Buscar cliente (Opcional)"
+                          />
+                          <ComboboxButton className="absolute inset-y-0 right-0 flex items-center pr-2">
+                            <ChevronsUpDown
+                              className="h-5 w-5 text-gray-400 hover:text-gray-500"
+                              aria-hidden="true"
+                            />
+                          </ComboboxButton>
+                        </div>
+                        <ComboboxOptions className="absolute mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm z-50">
+                          {filteredCustomers.length === 0 && customerQuery !== '' ? (
+                            <div className="relative cursor-default select-none py-2 px-4 text-gray-700">
+                              No se encontraron resultados.
+                            </div>
+                          ) : (
+                            filteredCustomers.map((person) => (
+                              <ComboboxOption
+                                key={person.id}
+                                className={({ focus }) =>
+                                  `relative cursor-default select-none py-2 pl-10 pr-4 ${
+                                    focus ? 'bg-blue-600 text-white' : 'text-gray-900'
+                                  }`
+                                }
+                                value={person}
+                              >
+                                {({ selected, focus }) => (
+                                  <>
+                                    <span
+                                      className={`block truncate ${
+                                        selected ? 'font-medium' : 'font-normal'
+                                      }`}
+                                    >
+                                      {person.name}
+                                    </span>
+                                    {selected ? (
+                                      <span
+                                        className={`absolute inset-y-0 left-0 flex items-center pl-3 ${
+                                          focus ? 'text-white' : 'text-blue-600'
+                                        }`}
+                                      >
+                                        <Check className="h-5 w-5" aria-hidden="true" />
+                                      </span>
+                                    ) : null}
+                                  </>
+                                )}
+                              </ComboboxOption>
+                            ))
+                          )}
+                        </ComboboxOptions>
+                      </div>
+                    </Combobox>
+                </motion.div>
               </div>
               <button
                 onClick={() => setIsCustomerModalOpen(true)}
@@ -468,6 +548,26 @@ export default function SaleBuilder() {
                 <ArrowRight className="h-5 w-5" />
               </>
           </button>
+          
+          <AnimatePresence>
+            {isMissingCustomer && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, height: 0 }}
+                className="mt-3 text-center"
+              >
+                <motion.span 
+                  animate={{ scale: [1, 1.05, 1] }}
+                  transition={{ repeat: Infinity, duration: 2 }}
+                  className="text-yellow-600 text-sm font-bold bg-yellow-50 px-3 py-1 rounded-full border border-yellow-200 flex items-center justify-center gap-2 mx-auto w-fit"
+                >
+                  <AlertTriangle className="h-3 w-3" />
+                  No has seleccionado un cliente
+                </motion.span>
+              </motion.div>
+            )}
+           </AnimatePresence>
         </div>
       </div>
       <SaleProcessModal
