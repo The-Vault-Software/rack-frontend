@@ -249,7 +249,7 @@ export default function MobileSaleBuilder() {
           {searchTerm && (
             <button 
               onClick={() => setSearchTerm('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 p-1 bg-gray-200 rounded-full"
+              className="absolute right-3 top-1/2 -translate-y-1/2 p-1 bg-gray-200 rounded-full cursor-pointer"
             >
               <X className="h-3 w-3 text-gray-500" />
             </button>
@@ -298,7 +298,7 @@ export default function MobileSaleBuilder() {
                   <div className="flex items-center bg-white border border-blue-200 rounded-xl overflow-hidden shadow-sm">
                     <button 
                       onClick={() => updateQuantity(product.id, -1)}
-                      className="p-2 hover:bg-gray-50 text-blue-600"
+                      className="p-2 hover:bg-gray-50 text-blue-600 cursor-pointer"
                     >
                       <Minus className="h-4 w-4" />
                     </button>
@@ -307,7 +307,7 @@ export default function MobileSaleBuilder() {
                     </span>
                     <button 
                       onClick={() => updateQuantity(product.id, 1)}
-                      className="p-2 hover:bg-gray-50 text-blue-600"
+                      className="p-2 hover:bg-gray-50 text-blue-600 cursor-pointer"
                     >
                       <Plus className="h-4 w-4" />
                     </button>
@@ -316,7 +316,7 @@ export default function MobileSaleBuilder() {
                   <button
                     onClick={() => addToCart(product)}
                     disabled={stock <= 0}
-                    className="p-3 bg-blue-600 text-white rounded-xl shadow-md shadow-blue-200 active:bg-blue-700 disabled:bg-gray-300 disabled:shadow-none transition-all"
+                    className="p-3 bg-blue-600 text-white rounded-xl shadow-md shadow-blue-200 active:bg-blue-700 disabled:bg-gray-300 disabled:shadow-none transition-all cursor-pointer"
                   >
                     <Plus className="h-5 w-5" />
                   </button>
@@ -339,7 +339,7 @@ export default function MobileSaleBuilder() {
         <div className="fixed bottom-20 left-0 right-0 px-4 z-30 pointer-events-none">
           <button
             onClick={() => setIsCartOpen(true)}
-            className="w-full bg-blue-600 text-white p-4 rounded-2xl shadow-xl shadow-blue-300 flex items-center justify-between pointer-events-auto active:scale-95 transition-all animate-in fade-in slide-in-from-bottom-4"
+            className="w-full bg-blue-600 text-white p-4 rounded-2xl shadow-xl shadow-blue-300 flex items-center justify-between pointer-events-auto active:scale-95 transition-all animate-in fade-in slide-in-from-bottom-4 cursor-pointer"
           >
             <div className="flex items-center gap-3">
               <div className="relative">
@@ -399,7 +399,7 @@ export default function MobileSaleBuilder() {
                     </div>
                     <button 
                       onClick={() => removeFromCart(item.product.id)}
-                      className="p-1.5 text-gray-400 hover:text-red-500"
+                      className="p-1.5 text-gray-400 hover:text-red-500 cursor-pointer"
                     >
                       <Trash2 className="h-4 w-4" />
                     </button>
@@ -410,7 +410,7 @@ export default function MobileSaleBuilder() {
                       <div className="flex-1 relative">
                         <Layers className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-gray-400" />
                         <select
-                          className="w-full pl-7 pr-2 py-1.5 bg-gray-50 border-none rounded-lg text-[10px] font-medium focus:ring-1 focus:ring-blue-500 outline-none"
+                          className="w-full pl-7 pr-2 py-1.5 bg-gray-50 border-none rounded-lg text-[10px] font-medium focus:ring-1 focus:ring-blue-500 outline-none cursor-pointer"
                           value={item.selectedSellingUnit?.id || ''}
                           onChange={(e) => handleSelectSellingUnit(item.product.id, e.target.value)}
                         >
@@ -423,7 +423,7 @@ export default function MobileSaleBuilder() {
                     )}
 
                     <div className="flex items-center bg-gray-50 rounded-xl overflow-hidden border border-gray-100">
-                      <button onClick={() => updateQuantity(item.product.id, -1)} className="p-1.5 px-3">
+                      <button onClick={() => updateQuantity(item.product.id, -1)} className="p-1.5 px-3 cursor-pointer">
                         <Minus className="h-3 w-3" />
                       </button>
                       <input 
@@ -432,7 +432,7 @@ export default function MobileSaleBuilder() {
                         onChange={(e) => handleManualQuantityChange(item.product.id, e.target.value)}
                         className="w-12 text-center text-xs font-bold bg-transparent outline-none"
                       />
-                      <button onClick={() => updateQuantity(item.product.id, 1)} className="p-1.5 px-3">
+                      <button onClick={() => updateQuantity(item.product.id, 1)} className="p-1.5 px-3 cursor-pointer">
                         <Plus className="h-3 w-3" />
                       </button>
                     </div>
@@ -471,7 +471,7 @@ export default function MobileSaleBuilder() {
             <button
               onClick={handleCheckout}
               disabled={createSaleMutation.isPending}
-              className="w-full py-4 bg-emerald-600 text-white font-bold rounded-2xl shadow-lg shadow-emerald-100 flex items-center justify-center gap-2 active:bg-emerald-700 transition-all disabled:opacity-50"
+              className="w-full py-4 bg-emerald-600 text-white font-bold rounded-2xl shadow-lg shadow-emerald-100 flex items-center justify-center gap-2 active:bg-emerald-700 transition-all disabled:opacity-50 cursor-pointer"
             >
               {createSaleMutation.isPending ? 'Procesando...' : (
                 <>
@@ -516,7 +516,7 @@ export default function MobileSaleBuilder() {
             
             <button 
               onClick={() => setIsConfirmCloseOpen(true)}
-              className="w-full py-3 text-sm text-gray-400 font-medium hover:text-gray-600 transition-colors"
+              className="w-full py-3 text-sm text-gray-400 font-medium hover:text-gray-600 transition-colors cursor-pointer"
             >
               Pagar después
             </button>

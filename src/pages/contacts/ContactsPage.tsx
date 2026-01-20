@@ -125,7 +125,7 @@ export default function ContactsPage() {
         </h1>
         <button
           onClick={handleCreate}
-          className="inline-flex items-center justify-center px-4 py-2.5 border border-transparent text-sm font-bold rounded-xl shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all active:scale-95"
+          className="inline-flex items-center justify-center px-4 py-2.5 border border-transparent text-sm font-bold rounded-xl shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all active:scale-95 cursor-pointer"
         >
           <Plus className="h-4 w-4 mr-2" />
           Nuevo {activeTab === 'customers' ? 'Cliente' : 'Proveedor'}
@@ -167,7 +167,7 @@ export default function ContactsPage() {
           <button
             onClick={() => { setActiveTab('customers'); setSearchTerm(''); setFilterType('all'); }}
             className={cn(
-              "group inline-flex items-center py-4 px-1 border-b-2 font-bold text-sm transition-all",
+              "group inline-flex items-center py-4 px-1 border-b-2 font-bold text-sm transition-all cursor-pointer",
               activeTab === 'customers' 
                 ? "border-blue-500 text-blue-600" 
                 : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
@@ -182,7 +182,7 @@ export default function ContactsPage() {
           <button
             onClick={() => { setActiveTab('providers'); setSearchTerm(''); setFilterType('all'); }}
             className={cn(
-              "group inline-flex items-center py-4 px-1 border-b-2 font-bold text-sm transition-all",
+              "group inline-flex items-center py-4 px-1 border-b-2 font-bold text-sm transition-all cursor-pointer",
               activeTab === 'providers' 
                 ? "border-blue-500 text-blue-600" 
                 : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
@@ -253,20 +253,20 @@ export default function ContactsPage() {
                           <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                             <button 
                               onClick={() => navigate(`/contacts/customers/${customer.id}/sales`)}
-                              className="text-yellow-600 hover:text-yellow-900 mr-4"
+                              className="text-yellow-600 hover:text-yellow-900 mr-4 cursor-pointer"
                               title="Ver Historial"
                             >
                               <History className="h-4 w-4" />
                             </button>
                             <button 
                               onClick={() => handleEdit(customer)}
-                              className="text-blue-600 hover:text-blue-900 mr-4"
+                              className="text-blue-600 hover:text-blue-900 mr-4 cursor-pointer"
                             >
                               <Edit2 className="h-4 w-4" />
                             </button>
                             <button 
                               onClick={() => handleDelete(customer, 'customer')}
-                              className="text-red-600 hover:text-red-900"
+                              className="text-red-600 hover:text-red-900 cursor-pointer"
                             >
                               <Trash2 className="h-4 w-4" />
                             </button>
@@ -336,20 +336,20 @@ export default function ContactsPage() {
                           <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                             <button 
                               onClick={() => navigate(`/contacts/providers/${provider.id}/accounts`)}
-                              className="text-yellow-600 hover:text-yellow-900 mr-4"
+                              className="text-yellow-600 hover:text-yellow-900 mr-4 cursor-pointer"
                               title="Ver Historial"
                             >
                               <History className="h-4 w-4" />
                             </button>
                             <button 
                               onClick={() => handleEdit(provider)}
-                              className="text-blue-600 hover:text-blue-900 mr-4"
+                              className="text-blue-600 hover:text-blue-900 mr-4 cursor-pointer"
                             >
                               <Edit2 className="h-4 w-4" />
                             </button>
                             <button 
                               onClick={() => handleDelete(provider, 'provider')}
-                              className="text-red-600 hover:text-red-900"
+                              className="text-red-600 hover:text-red-900 cursor-pointer"
                             >
                               <Trash2 className="h-4 w-4" />
                             </button>

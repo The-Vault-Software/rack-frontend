@@ -84,7 +84,7 @@ const MobileAccountList: React.FC<MobileAccountListProps> = ({
                  {account.payment_status !== 'PAID' && (
                   <button
                     onClick={() => onPay(account)}
-                    className="flex-1 flex items-center justify-center px-4 py-2 text-sm font-bold text-blue-600 bg-blue-50 rounded-xl hover:bg-blue-100 active:bg-blue-200 transition-colors border border-blue-100"
+                    className="flex-1 flex items-center justify-center px-4 py-2 text-sm font-bold text-blue-600 bg-blue-50 rounded-xl hover:bg-blue-100 active:bg-blue-200 transition-colors border border-blue-100 cursor-pointer"
                   >
                     <CreditCard className="h-4 w-4 mr-2" />
                     Pagar
@@ -92,7 +92,7 @@ const MobileAccountList: React.FC<MobileAccountListProps> = ({
                 )}
                  <button
                     onClick={() => onViewDetail(account.id)}
-                    className="flex-none flex items-center justify-center p-2 text-gray-500 bg-gray-50 rounded-xl hover:bg-gray-100 active:bg-gray-200 transition-colors border border-gray-100"
+                    className="flex-none flex items-center justify-center p-2 text-gray-500 bg-gray-50 rounded-xl hover:bg-gray-100 active:bg-gray-200 transition-colors border border-gray-100 cursor-pointer"
                   >
                     <Eye className="h-5 w-5" />
                   </button>

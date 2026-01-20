@@ -52,7 +52,7 @@ export default function PaymentFormFields({
                 }
               }
             })}
-            className="block w-full rounded-lg border-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border py-2.5 px-3 bg-white transition-all"
+            className="block w-full rounded-lg border-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border py-2.5 px-3 bg-white transition-all cursor-pointer"
           >
             <option value="VES">Bolívares (VES)</option>
             <option value="USD">Dólares (USD)</option>
@@ -63,7 +63,7 @@ export default function PaymentFormFields({
           <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Método de Pago</label>
           <select
             {...register('payment_method')}
-            className="block w-full rounded-lg border-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border py-2.5 px-3 bg-white transition-all"
+            className="block w-full rounded-lg border-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border py-2.5 px-3 bg-white transition-all cursor-pointer"
           >
             <option value="PAGO_MOVIL">Pago Móvil</option>
             <option value="CASH">Efectivo</option>
@@ -97,7 +97,7 @@ export default function PaymentFormFields({
               <button
                 type="button"
                 onClick={() => setAdjustmentType(prev => prev === 'off' ? 'auto' : 'off')}
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ring-2 ring-offset-2 ${adjustmentType !== 'off' ? 'bg-blue-600 ring-blue-500' : 'bg-gray-200 ring-transparent'}`}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ring-2 ring-offset-2 cursor-pointer ${adjustmentType !== 'off' ? 'bg-blue-600 ring-blue-500' : 'bg-gray-200 ring-transparent'}`}
               >
                 <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${adjustmentType !== 'off' ? 'translate-x-6' : 'translate-x-1'}`} />
               </button>
@@ -129,7 +129,7 @@ export default function PaymentFormFields({
               <button 
                 type="button"
                 onClick={() => setAdjustmentType('auto')}
-                className="p-1 hover:bg-orange-100 rounded-full text-orange-600 transition-colors"
+                className="p-1 hover:bg-orange-100 rounded-full text-orange-600 transition-colors cursor-pointer"
                 title="Restablecer monto sugerido"
               >
                 <RefreshCw className="h-5 w-5" />

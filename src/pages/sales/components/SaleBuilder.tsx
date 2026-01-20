@@ -311,7 +311,7 @@ export default function SaleBuilder() {
                             onChange={(event) => setCustomerQuery(event.target.value)}
                             placeholder="Buscar cliente (Opcional)"
                           />
-                          <ComboboxButton className="absolute inset-y-0 right-0 flex items-center pr-2">
+                          <ComboboxButton className="absolute inset-y-0 right-0 flex items-center pr-2 cursor-pointer">
                             <ChevronsUpDown
                               className="h-5 w-5 text-gray-400 hover:text-gray-500"
                               aria-hidden="true"
@@ -364,7 +364,7 @@ export default function SaleBuilder() {
               </div>
               <button
                 onClick={() => setIsCustomerModalOpen(true)}
-                className="p-2 border rounded-md hover:bg-gray-50 text-blue-600 border-blue-200"
+                className="p-2 border rounded-md hover:bg-gray-50 text-blue-600 border-blue-200 cursor-pointer"
                 title="Nuevo Cliente"
               >
                 <UserPlus className="h-5 w-5" />
@@ -384,13 +384,13 @@ export default function SaleBuilder() {
                 key={product.id}
                 onClick={() => addToCart(product)}
                 disabled={stock <= 0}
-                className="flex flex-col p-4 border rounded-lg hover:border-blue-500 hover:shadow-md transition-all text-left disabled:opacity-50 disabled:bg-gray-50 relative group"
+                className="flex flex-col p-4 border rounded-lg hover:border-blue-500 hover:shadow-md transition-all text-left disabled:opacity-50 disabled:bg-gray-50 relative group cursor-pointer"
               >
                 <div className="flex justify-between items-start w-full">
                   <h4 className="font-semibold text-gray-900 truncate pr-8">{product.name}</h4>
                   <button
                     onClick={(e) => handleEditProduct(e, product)}
-                    className="absolute right-2 top-2 p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                    className="absolute right-2 top-2 p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
                   >
                     <Edit2 className="h-4 w-4" />
                   </button>
@@ -448,7 +448,7 @@ export default function SaleBuilder() {
                       </span>
                     </div>
                   </div>
-                  <button onClick={() => removeFromCart(item.product.id)} className="text-gray-400 hover:text-red-500">
+                  <button onClick={() => removeFromCart(item.product.id)} className="text-gray-400 hover:text-red-500 cursor-pointer">
                     <Trash2 className="h-4 w-4" />
                   </button>
                 </div>
@@ -458,7 +458,7 @@ export default function SaleBuilder() {
                   <div className="flex items-center gap-2">
                     <Layers className="h-3 w-3 text-gray-400" />
                     <select
-                      className="text-[10px] bg-gray-50 border-none rounded p-1 focus:ring-1 focus:ring-blue-500 outline-none"
+                      className="text-[10px] bg-gray-50 border-none rounded p-1 focus:ring-1 focus:ring-blue-500 outline-none cursor-pointer"
                       value={item.selectedSellingUnit?.id || ''}
                       onChange={(e) => handleSelectSellingUnit(item.product.id, e.target.value)}
                     >
@@ -473,7 +473,7 @@ export default function SaleBuilder() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
                     <div className="flex items-center border rounded-md overflow-hidden bg-white">
-                      <button onClick={() => updateQuantity(item.product.id, -1)} className="p-1 px-2 hover:bg-gray-100 border-r">
+                      <button onClick={() => updateQuantity(item.product.id, -1)} className="p-1 px-2 hover:bg-gray-100 border-r cursor-pointer">
                         <Minus className="h-3 w-3" />
                       </button>
                       <input 
@@ -483,7 +483,7 @@ export default function SaleBuilder() {
                         onChange={(e) => handleManualQuantityChange(item.product.id, e.target.value)}
                         className="w-16 text-center text-sm font-semibold outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                       />
-                      <button onClick={() => updateQuantity(item.product.id, 1)} className="p-1 px-2 hover:bg-gray-100 border-l">
+                      <button onClick={() => updateQuantity(item.product.id, 1)} className="p-1 px-2 hover:bg-gray-100 border-l cursor-pointer">
                         <Plus className="h-3 w-3" />
                       </button>
                     </div>
@@ -541,7 +541,7 @@ export default function SaleBuilder() {
           <button
             onClick={handleCheckout}
             disabled={cart.length === 0}
-            className="w-full py-3 px-4 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg shadow-md transition-colors disabled:opacity-50 disabled:bg-gray-400 flex items-center justify-center space-x-2"
+            className="w-full py-3 px-4 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg shadow-md transition-colors disabled:opacity-50 disabled:bg-gray-400 flex items-center justify-center space-x-2 cursor-pointer"
           >
               <>
                 <span>Finalizar y Cobrar</span>

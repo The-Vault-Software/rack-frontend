@@ -12,7 +12,7 @@ import {
 import { useBranch } from '../../../context/BranchContext';
 import { 
   ShoppingCart, Plus, Minus, Trash2, Search, Truck, 
-  ArrowRight, Layers, X, ChevronRight, Info, PlusCircle
+  ArrowRight, Layers, X, ChevronRight, Info, PlusCircle, UserPlus
 } from 'lucide-react';
 import { toast } from 'sonner';
 import type { 
@@ -23,6 +23,7 @@ import Modal from '../../../components/ui/Modal';
 import PaymentForm from './PaymentForm';
 import ActionConfirmationModal from '../../../components/ui/ActionConfirmationModal';
 import ProductForm from '../../../components/inventory/ProductForm';
+import ProviderForm from '../../../components/providers/ProviderForm';
 import { cn } from '../../../lib/utils';
 
 interface SellingUnit {
@@ -52,6 +53,7 @@ export default function MobileAccountBuilder() {
   const [createdAccount, setCreatedAccount] = useState<Account | null>(null);
   const [isConfirmCloseOpen, setIsConfirmCloseOpen] = useState(false);
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
+  const [isProviderModalOpen, setIsProviderModalOpen] = useState(false);
 
   const { data: products = [] } = useQuery(v1ProductListOptions());
   const { data: providers = [] } = useQuery(v1ProvidersListOptions());
@@ -330,16 +332,24 @@ export default function MobileAccountBuilder() {
                 <Truck className="h-3 w-3" />
                 <span>Proveedor</span>
              </div>
-             <select
-                value={selectedProviderId}
-                onChange={(e) => setSelectedProviderId(e.target.value)}
-                className="w-full p-3 bg-white border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none appearance-none"
-              >
-                <option value="">Seleccionar Proveedor</option>
-                {providers.map((p: Provider) => (
-                  <option key={p.id} value={p.id}>{p.name}</option>
-                ))}
-              </select>
+             <div className="flex gap-2">
+               <select
+                  value={selectedProviderId}
+                  onChange={(e) => setSelectedProviderId(e.target.value)}
+                  className="flex-1 p-3 bg-white border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none appearance-none"
+                >
+                  <option value="">Seleccionar Proveedor</option>
+                  {providers.map((p: Provider) => (
+                    <option key={p.id} value={p.id}>{p.name}</option>
+                  ))}
+                </select>
+                <button
+                  onClick={() => setIsProviderModalOpen(true)}
+                  className="p-3 bg-blue-50 text-blue-600 rounded-xl active:scale-95 transition-all"
+                >
+                  <UserPlus className="h-5 w-5" />
+                </button>
+             </div>
           </div>
 
           <div className="flex-1 overflow-y-auto space-y-4 px-1">
@@ -504,6 +514,16 @@ export default function MobileAccountBuilder() {
         cancelText="Volver al pago"
         variant="warning"
       />
+
+      <Modal
+        isOpen={isProviderModalOpen}
+        onClose={() => setIsProviderModalOpen(false)}
+        title="Crear Nuevo Proveedor"
+      >
+        <ProviderForm 
+          onSuccess={() => setIsProviderModalOpen(false)} 
+        />
+      </Modal>
     </div>
   );
 }

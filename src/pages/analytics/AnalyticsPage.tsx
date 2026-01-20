@@ -20,7 +20,7 @@ export default function AnalyticsPage() {
         <div className="flex bg-gray-100/80 p-1 rounded-2xl border border-gray-200/50 backdrop-blur-sm overflow-x-auto no-scrollbar">
           <button
             onClick={() => setActiveTab('sales')}
-            className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 whitespace-nowrap ${
+            className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 whitespace-nowrap cursor-pointer ${
               activeTab === 'sales'
                 ? 'bg-white text-blue-600 shadow-sm border border-gray-100 ring-4 ring-blue-50/30'
                 : 'text-gray-500 hover:text-gray-700 hover:bg-white/50'
@@ -31,7 +31,7 @@ export default function AnalyticsPage() {
           </button>
           <button
             onClick={() => setActiveTab('accounts')}
-            className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 whitespace-nowrap ${
+            className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 whitespace-nowrap cursor-pointer ${
               activeTab === 'accounts'
                 ? 'bg-white text-indigo-600 shadow-sm border border-gray-100 ring-4 ring-indigo-50/30'
                 : 'text-gray-500 hover:text-gray-700 hover:bg-white/50'
@@ -42,7 +42,7 @@ export default function AnalyticsPage() {
           </button>
           <button
             onClick={() => setActiveTab('inventory')}
-            className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 whitespace-nowrap ${
+            className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 whitespace-nowrap cursor-pointer ${
               activeTab === 'inventory'
                 ? 'bg-white text-orange-600 shadow-sm border border-gray-100 ring-4 ring-orange-50/30'
                 : 'text-gray-500 hover:text-gray-700 hover:bg-white/50'

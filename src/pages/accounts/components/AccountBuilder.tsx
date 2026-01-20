@@ -8,7 +8,7 @@ import {
   v1ProductRetrieveOptions
 } from '../../../client/@tanstack/react-query.gen';
 import { useBranch } from '../../../context/BranchContext';
-import { ShoppingCart, Plus, Minus, Trash2, Search, Truck, Edit2, ArrowRight, Layers, Check, ChevronsUpDown } from 'lucide-react';
+import { ShoppingCart, Plus, Minus, Trash2, Search, Truck, Edit2, ArrowRight, Layers, Check, ChevronsUpDown, UserPlus } from 'lucide-react';
 import { toast } from 'sonner';
 import { Combobox, ComboboxButton, ComboboxInput, ComboboxOption, ComboboxOptions } from '@headlessui/react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -16,6 +16,7 @@ import type { ProductMaster, Provider, MeasurementUnit } from '../../../client/t
 import Modal from '../../../components/ui/Modal';
 import ProductForm from '../../../components/inventory/ProductForm';
 import AccountProcessModal from './AccountProcessModal';
+import ProviderForm from '../../../components/providers/ProviderForm';
 
 interface SellingUnit {
   id: string;
@@ -43,6 +44,7 @@ export default function AccountBuilder() {
   const [providerQuery, setProviderQuery] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isProcessModalOpen, setIsProcessModalOpen] = useState(false);
+  const [isProviderModalOpen, setIsProviderModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<ProductMaster | null>(null);
 
   const { data: products = [] } = useQuery(v1ProductListOptions());
@@ -272,80 +274,89 @@ export default function AccountBuilder() {
                 />
               </div>
               
-              <div className="w-full relative">
-                <motion.div
-                   animate={isProviderInvalid ? { x: [0, -5, 5, -5, 5, 0] } : {}}
-                   transition={{ duration: 0.4 }}
-                   className="relative"
-                >
-                  <Combobox 
-                    value={selectedProvider} 
-                    onChange={(p: Provider | null) => setSelectedProviderId(p?.id || '')}
-                    onClose={() => setProviderQuery('')}
+              <div className="w-full flex gap-2">
+                <div className="relative flex-1">
+                  <motion.div
+                     animate={isProviderInvalid ? { x: [0, -5, 5, -5, 5, 0] } : {}}
+                     transition={{ duration: 0.4 }}
+                     className="relative"
                   >
-                    <div className="relative">
-                      <div className="relative w-full cursor-default overflow-hidden rounded-md text-left focus:outline-none sm:text-sm">
-                        <Truck className={`absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 z-10 ${isProviderInvalid ? 'text-red-400' : 'text-gray-400'}`} />
-                        <ComboboxInput
-                          className={`w-full border py-2 pl-10 pr-10 text-sm leading-5 text-gray-900 focus:ring-1 focus:outline-none ${
-                            isProviderInvalid 
-                              ? 'border-red-300 focus:border-red-500 focus:ring-red-500 bg-red-50' 
-                              : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500 bg-white'
-                          } rounded-md transition-colors duration-200`}
-                          displayValue={(p: Provider) => p?.name || ''}
-                          onChange={(event) => setProviderQuery(event.target.value)}
-                          placeholder="Buscar proveedor..."
-                        />
-                        <ComboboxButton className="absolute inset-y-0 right-0 flex items-center pr-2">
-                          <ChevronsUpDown
-                            className="h-5 w-5 text-gray-400 hover:text-gray-500"
-                            aria-hidden="true"
+                    <Combobox 
+                      value={selectedProvider} 
+                      onChange={(p: Provider | null) => setSelectedProviderId(p?.id || '')}
+                      onClose={() => setProviderQuery('')}
+                    >
+                      <div className="relative">
+                        <div className="relative w-full cursor-default overflow-hidden rounded-md text-left focus:outline-none sm:text-sm">
+                          <Truck className={`absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 z-10 ${isProviderInvalid ? 'text-red-400' : 'text-gray-400'}`} />
+                          <ComboboxInput
+                            className={`w-full border py-2 pl-10 pr-10 text-sm leading-5 text-gray-900 focus:ring-1 focus:outline-none ${
+                              isProviderInvalid 
+                                ? 'border-red-300 focus:border-red-500 focus:ring-red-500 bg-red-50' 
+                                : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500 bg-white'
+                            } rounded-md transition-colors duration-200`}
+                            displayValue={(p: Provider) => p?.name || ''}
+                            onChange={(event) => setProviderQuery(event.target.value)}
+                            placeholder="Buscar proveedor..."
                           />
-                        </ComboboxButton>
-                      </div>
-                      <ComboboxOptions className="absolute mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm z-50">
-                        {filteredProviders.length === 0 && providerQuery !== '' ? (
-                          <div className="relative cursor-default select-none py-2 px-4 text-gray-700">
-                            No se encontraron resultados.
-                          </div>
-                        ) : (
-                          filteredProviders.map((person) => (
-                            <ComboboxOption
-                              key={person.id}
-                              className={({ focus }) =>
-                                `relative cursor-default select-none py-2 pl-10 pr-4 ${
-                                  focus ? 'bg-blue-600 text-white' : 'text-gray-900'
-                                }`
-                              }
-                              value={person}
-                            >
-                              {({ selected, focus }) => (
-                                <>
-                                  <span
-                                    className={`block truncate ${
-                                      selected ? 'font-medium' : 'font-normal'
-                                    }`}
-                                  >
-                                    {person.name}
-                                  </span>
-                                  {selected ? (
+                          <ComboboxButton className="absolute inset-y-0 right-0 flex items-center pr-2">
+                            <ChevronsUpDown
+                              className="h-5 w-5 text-gray-400 hover:text-gray-500"
+                              aria-hidden="true"
+                            />
+                          </ComboboxButton>
+                        </div>
+                        <ComboboxOptions className="absolute mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm z-50">
+                          {filteredProviders.length === 0 && providerQuery !== '' ? (
+                            <div className="relative cursor-default select-none py-2 px-4 text-gray-700">
+                              No se encontraron resultados.
+                            </div>
+                          ) : (
+                            filteredProviders.map((person) => (
+                              <ComboboxOption
+                                key={person.id}
+                                className={({ focus }) =>
+                                  `relative cursor-default select-none py-2 pl-10 pr-4 ${
+                                    focus ? 'bg-blue-600 text-white' : 'text-gray-900'
+                                  }`
+                                }
+                                value={person}
+                              >
+                                {({ selected, focus }) => (
+                                  <>
                                     <span
-                                      className={`absolute inset-y-0 left-0 flex items-center pl-3 ${
-                                        focus ? 'text-white' : 'text-blue-600'
+                                      className={`block truncate ${
+                                        selected ? 'font-medium' : 'font-normal'
                                       }`}
                                     >
-                                      <Check className="h-5 w-5" aria-hidden="true" />
+                                      {person.name}
                                     </span>
-                                  ) : null}
-                                </>
-                              )}
-                            </ComboboxOption>
-                          ))
-                        )}
-                      </ComboboxOptions>
-                    </div>
-                  </Combobox>
-                </motion.div>
+                                    {selected ? (
+                                      <span
+                                        className={`absolute inset-y-0 left-0 flex items-center pl-3 ${
+                                          focus ? 'text-white' : 'text-blue-600'
+                                        }`}
+                                      >
+                                        <Check className="h-5 w-5" aria-hidden="true" />
+                                      </span>
+                                    ) : null}
+                                  </>
+                                )}
+                              </ComboboxOption>
+                            ))
+                          )}
+                        </ComboboxOptions>
+                      </div>
+                    </Combobox>
+                  </motion.div>
+                </div>
+                <button
+                  onClick={() => setIsProviderModalOpen(true)}
+                  className="p-2 border rounded-md hover:bg-gray-50 text-blue-600 border-blue-200"
+                  title="Nuevo Proveedor"
+                >
+                  <UserPlus className="h-5 w-5" />
+                </button>
               </div>
           </div>
         </div>
@@ -573,6 +584,16 @@ export default function AccountBuilder() {
           setSelectedProviderId('');
         }}
       />
+
+      <Modal
+        isOpen={isProviderModalOpen}
+        onClose={() => setIsProviderModalOpen(false)}
+        title="Crear Nuevo Proveedor"
+      >
+        <ProviderForm
+          onSuccess={() => setIsProviderModalOpen(false)}
+        />
+      </Modal>
     </div>
   );
 }

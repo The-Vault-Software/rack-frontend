@@ -23,7 +23,7 @@ export function BottomNavigationBar() {
             <Link
               key={item.name}
               to={item.href}
-              className="relative flex flex-col items-center justify-center w-full h-full touchscreen-target focus:outline-none"
+              className="relative flex flex-col items-center justify-center w-full h-full touchscreen-target focus:outline-none cursor-pointer"
             >
               {isActive && (
                 <motion.div

@@ -110,7 +110,7 @@ export default function AccountsAnalytics() {
           <select 
             value={limit}
             onChange={(e) => setLimit(Number(e.target.value))}
-            className="bg-indigo-50/50 border border-indigo-100 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 text-indigo-700 font-bold"
+            className="bg-indigo-50/50 border border-indigo-100 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 text-indigo-700 font-bold cursor-pointer"
           >
             {[50, 100, 200, 500].map(opt => (
               <option key={opt} value={opt}>{opt}</option>
@@ -122,7 +122,7 @@ export default function AccountsAnalytics() {
         <button 
           onClick={refetchAll}
           disabled={isFetching}
-          className="p-2 hover:bg-indigo-50 rounded-xl transition-all disabled:opacity-50"
+          className="p-2 hover:bg-indigo-50 rounded-xl transition-all disabled:opacity-50 cursor-pointer"
         >
           <RefreshCw className={`h-4 w-4 text-indigo-400 ${isFetching ? 'animate-spin' : ''}`} />
         </button>

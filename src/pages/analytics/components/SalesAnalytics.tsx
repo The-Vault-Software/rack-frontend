@@ -105,7 +105,7 @@ export default function SalesAnalytics() {
           <select 
             value={limit}
             onChange={(e) => setLimit(Number(e.target.value))}
-            className="bg-gray-50 border border-gray-200 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+            className="bg-gray-50 border border-gray-200 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500/20 cursor-pointer"
           >
             {LIMIT_OPTIONS.map(opt => (
               <option key={opt} value={opt}>{opt}</option>
@@ -117,7 +117,7 @@ export default function SalesAnalytics() {
         <button 
           onClick={() => refetch()}
           disabled={isFetching}
-          className="p-2 hover:bg-gray-50 rounded-lg transition-colors disabled:opacity-50"
+          className="p-2 hover:bg-gray-50 rounded-lg transition-colors disabled:opacity-50 cursor-pointer"
         >
           <RefreshCw className={`h-4 w-4 text-gray-500 ${isFetching ? 'animate-spin' : ''}`} />
         </button>

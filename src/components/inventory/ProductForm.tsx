@@ -180,7 +180,7 @@ export default function ProductForm({ initialData, onSuccess }: ProductFormProps
         <button
           type="button"
           onClick={() => setActiveTab('basic')}
-          className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium rounded-md transition-all duration-200 ${
+          className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium rounded-md transition-all duration-200 cursor-pointer ${
             activeTab === 'basic' 
               ? 'bg-white text-blue-600 shadow-sm ring-1 ring-gray-200' 
               : 'text-gray-500 hover:text-gray-700 hover:bg-white/50'
@@ -192,7 +192,7 @@ export default function ProductForm({ initialData, onSuccess }: ProductFormProps
         <button
           type="button"
           onClick={() => setActiveTab('selling_units')}
-          className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium rounded-md transition-all duration-200 ${
+          className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium rounded-md transition-all duration-200 cursor-pointer ${
             activeTab === 'selling_units' 
               ? 'bg-white text-blue-600 shadow-sm ring-1 ring-gray-200' 
               : 'text-gray-500 hover:text-gray-700 hover:bg-white/50'
@@ -224,7 +224,7 @@ export default function ProductForm({ initialData, onSuccess }: ProductFormProps
                 <select
                   id="category"
                   {...register('category')}
-                  className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2.5 outline-none bg-white cursor-pointer"
+                  className="block w-full pl-3 pr-10 py-2.5 text-sm border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 rounded-xl border bg-white shadow-sm transition-all cursor-pointer"
                 >
                   <option value="">Sin categoría</option>
                   {categoryList.map((cat: Category) => (
@@ -239,7 +239,7 @@ export default function ProductForm({ initialData, onSuccess }: ProductFormProps
                 <select
                   id="measurement_unit"
                   {...register('measurement_unit')}
-                  className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2.5 outline-none bg-white cursor-pointer"
+                  className="block w-full pl-3 pr-10 py-2.5 text-sm border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 rounded-xl border bg-white shadow-sm transition-all cursor-pointer"
                 >
                   <option value="">Seleccione una unidad</option>
                   {unitList.map((unit: MeasurementUnit) => (
@@ -318,7 +318,7 @@ export default function ProductForm({ initialData, onSuccess }: ProductFormProps
               <button
                 type="button"
                 onClick={() => append({ name: '', unit_conversion_factor: '', measurement_unit: '' })}
-                className="inline-flex items-center px-3 py-2 border border-blue-200 text-xs font-bold rounded-lg text-blue-700 bg-white hover:bg-blue-50 focus:outline-none ring-offset-2 focus:ring-2 focus:ring-blue-500 transition-all shadow-sm"
+                className="inline-flex items-center px-3 py-2 border border-blue-200 text-xs font-bold rounded-lg text-blue-700 bg-white hover:bg-blue-50 focus:outline-none ring-offset-2 focus:ring-2 focus:ring-blue-500 transition-all shadow-sm cursor-pointer"
               >
                 <Plus className="h-4 w-4 mr-1.5" />
                 Añadir
@@ -332,7 +332,7 @@ export default function ProductForm({ initialData, onSuccess }: ProductFormProps
                 <button
                   type="button"
                   onClick={() => append({ name: '', unit_conversion_factor: '', measurement_unit: '' })}
-                  className="mt-4 text-sm font-bold text-blue-600 hover:text-blue-700"
+                  className="mt-4 text-sm font-bold text-blue-600 hover:text-blue-700 cursor-pointer"
                 >
                   Comenzar a añadir empaques
                 </button>
@@ -344,7 +344,7 @@ export default function ProductForm({ initialData, onSuccess }: ProductFormProps
                     <button
                       type="button"
                       onClick={() => remove(index)}
-                      className="absolute -top-2 -right-2 p-1.5 bg-white text-gray-400 hover:text-red-500 border border-gray-100 shadow-sm hover:border-red-100 rounded-full transition-all z-10 opacity-0 group-hover:opacity-100"
+                      className="absolute -top-2 -right-2 p-1.5 bg-white text-gray-400 hover:text-red-500 border border-gray-100 shadow-sm hover:border-red-100 rounded-full transition-all z-10 opacity-0 group-hover:opacity-100 cursor-pointer"
                       title="Eliminar unidad"
                     >
                       <Trash2 className="h-3.5 w-3.5" />
@@ -380,7 +380,7 @@ export default function ProductForm({ initialData, onSuccess }: ProductFormProps
                               setFractionModes(prev => ({ ...prev, [index]: !currentMode }));
                               setValue(`selling_units.${index}.unit_conversion_factor`, '');
                             }}
-                            className={`p-1 rounded-md transition-all ${fractionModes[index] ? 'bg-blue-100 text-blue-600' : 'text-gray-300 hover:text-blue-500 hover:bg-blue-50'}`}
+                            className={`p-1 rounded-md transition-all cursor-pointer ${fractionModes[index] ? 'bg-blue-100 text-blue-600' : 'text-gray-300 hover:text-blue-500 hover:bg-blue-50'}`}
                             title={fractionModes[index] ? 'Modo Multiplicador' : 'Modo Fraccionario'}
                           >
                             <Divide className="h-3 w-3" />
@@ -433,7 +433,7 @@ export default function ProductForm({ initialData, onSuccess }: ProductFormProps
                         </div>
                         <select
                           {...register(`selling_units.${index}.measurement_unit` as const)}
-                          className="block w-full rounded-lg border border-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2.5 outline-none bg-white cursor-pointer"
+                          className="block w-full pl-3 pr-10 py-2.5 text-sm border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 rounded-xl border bg-white shadow-sm transition-all cursor-pointer"
                         >
                           <option value="">Seleccione...</option>
                           {unitList.map((unit: MeasurementUnit) => (
@@ -474,7 +474,7 @@ export default function ProductForm({ initialData, onSuccess }: ProductFormProps
           <button
             type="submit"
             disabled={createMutation.isPending || updateMutation.isPending}
-            className="group relative inline-flex justify-center w-full rounded-xl border border-transparent shadow-md px-4 py-3 bg-blue-600 text-base font-bold text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:text-sm disabled:opacity-50 transition-all duration-300 ring-offset-white"
+            className="group relative inline-flex justify-center w-full rounded-xl border border-transparent shadow-md px-4 py-3 bg-blue-600 text-base font-bold text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:text-sm disabled:opacity-50 transition-all duration-300 ring-offset-white cursor-pointer"
           >
             <span className="flex items-center gap-2">
               {createMutation.isPending || updateMutation.isPending 

@@ -275,7 +275,7 @@ export default function SaleDetail({ saleId }: SaleDetailProps) {
             </div>
             <button
               onClick={() => setShowPaymentsModal(true)}
-              className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-xl backdrop-blur-md transition-all flex items-center gap-2 text-[10px] font-black uppercase tracking-widest border border-white/20"
+              className="px-4 py-2 cursor-pointer bg-white/10 hover:bg-white/20 text-white rounded-xl backdrop-blur-md transition-all flex items-center gap-2 text-[10px] font-black uppercase tracking-widest border border-white/20"
             >
               <Search className="h-3.5 w-3.5" />
               Pagos Recibidos
@@ -401,7 +401,7 @@ export default function SaleDetail({ saleId }: SaleDetailProps) {
           
           <button
             onClick={() => setShowPaymentsModal(false)}
-            className="w-full py-4 text-sm font-black text-gray-500 hover:text-gray-700 transition-colors uppercase tracking-widest"
+            className="w-full py-4 text-sm font-black text-gray-500 hover:text-gray-700 transition-colors uppercase tracking-widest cursor-pointer"
           >
             Cerrar Ventana
           </button>

@@ -47,7 +47,7 @@ export default function Modal({ isOpen, onClose, title, children, maxWidth = 'ma
                   </Dialog.Title>
                   <button
                     type="button"
-                    className="text-gray-400 hover:text-gray-500 focus:outline-none"
+                    className="text-gray-400 hover:text-gray-500 focus:outline-none cursor-pointer"
                     onClick={onClose}
                   >
                     <X className="h-5 w-5" aria-hidden="true" />

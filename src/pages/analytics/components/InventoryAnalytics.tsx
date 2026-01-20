@@ -135,7 +135,7 @@ export default function InventoryAnalytics() {
         
         <button
           onClick={handleStartAnalysis}
-          className="group relative flex items-center gap-3 bg-gray-900 text-white px-10 py-4 rounded-2xl font-bold hover:bg-black transition-all hover:scale-105 active:scale-95 shadow-xl shadow-gray-200"
+          className="group relative flex items-center gap-3 bg-gray-900 text-white px-10 py-4 rounded-2xl font-bold hover:bg-black transition-all hover:scale-105 active:scale-95 shadow-xl shadow-gray-200 cursor-pointer"
         >
           <Play className="h-5 w-5 fill-current" />
           Comenzar Análisis
@@ -200,7 +200,7 @@ export default function InventoryAnalytics() {
           </div>
           <button 
             onClick={handleStartAnalysis}
-            className="flex items-center gap-2 text-xs font-bold text-gray-500 hover:text-blue-600 transition-colors"
+            className="flex items-center gap-2 text-xs font-bold text-gray-500 hover:text-blue-600 transition-colors cursor-pointer"
           >
             <History className="h-3 w-3" />
             Recalcular con datos frescos

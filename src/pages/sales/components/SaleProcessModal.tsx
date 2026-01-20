@@ -185,7 +185,7 @@ export default function SaleProcessModal({
               type="button"
               onClick={() => setIsPayLaterConfirmOpen(true)}
               disabled={isSubmitting || createSaleMutation.isPending}
-              className="px-4 py-3 border-2 border-orange-100 bg-orange-50 text-orange-700 rounded-xl text-sm font-bold hover:bg-orange-100 transition-colors flex items-center justify-center gap-2"
+              className="px-4 py-3 border-2 border-orange-100 bg-orange-50 text-orange-700 rounded-xl text-sm font-bold hover:bg-orange-100 transition-colors flex items-center justify-center gap-2 cursor-pointer"
             >
               <AlertCircle className="h-4 w-4" />
               Pagar Después / Crédito
@@ -196,7 +196,7 @@ export default function SaleProcessModal({
               type="button"
               onClick={handleSubmit(handleRegisterAndPay)}
               disabled={isSubmitting || createSaleMutation.isPending || salePaymentMutation.isPending}
-              className="px-4 py-3 bg-green-600 text-white rounded-xl text-sm font-bold shadow-lg shadow-green-200 hover:bg-green-700 disabled:opacity-50 transition-all flex items-center justify-center gap-2"
+              className="px-4 py-3 bg-green-600 text-white rounded-xl text-sm font-bold shadow-lg shadow-green-200 hover:bg-green-700 disabled:opacity-50 transition-all flex items-center justify-center gap-2 cursor-pointer"
             >
               {(isSubmitting || createSaleMutation.isPending || salePaymentMutation.isPending) ? (
                 <motion.div
@@ -212,7 +212,7 @@ export default function SaleProcessModal({
             <button
               type="button"
               onClick={handleAttemptClose} // Trigger confirmation
-              className="col-span-2 px-4 py-3 text-gray-400 hover:text-gray-600 font-medium text-sm hover:bg-gray-50 rounded-lg transition-colors"
+              className="col-span-2 px-4 py-3 text-gray-400 hover:text-gray-600 font-medium text-sm hover:bg-gray-50 rounded-lg transition-colors cursor-pointer"
             >
               Cancelar y Volver al Carrito
             </button>

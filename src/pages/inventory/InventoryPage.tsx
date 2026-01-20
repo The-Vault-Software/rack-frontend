@@ -232,7 +232,7 @@ export default function InventoryPage() {
             <select
               value={filterCategory}
               onChange={(e) => setFilterCategory(e.target.value)}
-              className="block cursor-pointer w-full sm:w-48 pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md border"
+              className="block cursor-pointer w-full sm:w-48 pl-3 pr-10 py-2.5 text-sm border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 rounded-xl border bg-white shadow-sm transition-all"
             >
               <option value="all">Todas las categorías</option>
               {(Array.isArray(categoriesData) ? categoriesData : []).map((cat: Category) => (
@@ -242,7 +242,7 @@ export default function InventoryPage() {
             <select
               value={filterUnit}
               onChange={(e) => setFilterUnit(e.target.value)}
-              className="block cursor-pointer w-full sm:w-48 pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md border"
+              className="block cursor-pointer w-full sm:w-48 pl-3 pr-10 py-2.5 text-sm border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 rounded-xl border bg-white shadow-sm transition-all"
             >
               <option value="all">Todas las unidades</option>
               {(Array.isArray(unitsData) ? unitsData : []).map((unit: MeasurementUnit) => (
@@ -354,7 +354,7 @@ export default function InventoryPage() {
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <button 
                         onClick={() => handleEdit('product', product)}
-                        className="text-blue-600 hover:text-blue-900 mr-4"
+                        className="text-blue-600 hover:text-blue-900 mr-4 cursor-pointer"
                       >
                         <Edit2 className="h-4 w-4" />
                       </button>
@@ -364,7 +364,7 @@ export default function InventoryPage() {
                             `¿Estás seguro de que deseas eliminar el producto "${product.name}"? Esta acción no se puede deshacer.`,
                             () => deleteProduct.mutate({ path: { id: product.id } })
                           );
-                      }} className="text-red-600 hover:text-red-900"><Trash2 className="h-4 w-4" /></button>
+                      }} className="text-red-600 hover:text-red-900 cursor-pointer"><Trash2 className="h-4 w-4" /></button>
                     </td>
                   </tr>
                   );
@@ -413,7 +413,7 @@ export default function InventoryPage() {
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <button 
                         onClick={() => handleEdit('category', category)}
-                        className="text-blue-600 hover:text-blue-900 mr-4"
+                        className="text-blue-600 hover:text-blue-900 mr-4 cursor-pointer"
                       >
                         <Edit2 className="h-4 w-4" />
                       </button>
@@ -423,7 +423,7 @@ export default function InventoryPage() {
                             `¿Estás seguro de que deseas eliminar la categoría "${category.name}"? Esta acción no se puede deshacer.`,
                             () => deleteCategory.mutate({ path: { id: category.id } })
                           );
-                      }} className="text-red-600 hover:text-red-900"><Trash2 className="h-4 w-4" /></button>
+                      }} className="text-red-600 hover:text-red-900 cursor-pointer"><Trash2 className="h-4 w-4" /></button>
                     </td>
                   </tr>
                 ))}
@@ -473,7 +473,7 @@ export default function InventoryPage() {
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <button 
                         onClick={() => handleEdit('unit', unit)}
-                        className="text-blue-600 hover:text-blue-900 mr-4"
+                        className="text-blue-600 hover:text-blue-900 mr-4 cursor-pointer"
                       >
                         <Edit2 className="h-4 w-4" />
                       </button>
@@ -483,7 +483,7 @@ export default function InventoryPage() {
                             `¿Estás seguro de que deseas eliminar la unidad "${unit.name}"? Esta acción no se puede deshacer.`,
                             () => deleteUnit.mutate({ path: { id: unit.id } })
                           );
-                      }} className="text-red-600 hover:text-red-900"><Trash2 className="h-4 w-4" /></button>
+                      }} className="text-red-600 hover:text-red-900 cursor-pointer"><Trash2 className="h-4 w-4" /></button>
                     </td>
                   </tr>
                 ))}
@@ -529,7 +529,7 @@ export default function InventoryPage() {
   );
 }
 
-const tabButtonBaseClass = "group inline-flex items-center py-4 px-1 border-b-2 font-medium text-sm";
+const tabButtonBaseClass = "group inline-flex items-center py-4 px-1 border-b-2 font-medium text-sm cursor-pointer";
 const tabButtonActiveClass = "border-blue-500 text-blue-600";
 const tabButtonInactiveClass = "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300";
 

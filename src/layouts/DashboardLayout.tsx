@@ -53,7 +53,7 @@ export default function DashboardLayout() {
                     initial={false}
                     animate={isActive ? "active" : "inactive"}
                     className={cn(
-                      "relative flex items-center px-4 py-3.5 text-sm font-semibold rounded-2xl transition-colors duration-200",
+                      "relative flex items-center px-4 py-3.5 text-sm font-semibold rounded-2xl transition-colors duration-200 cursor-pointer",
                       isActive ? "text-blue-600" : "text-gray-500 hover:text-gray-900"
                     )}
                   >
@@ -106,7 +106,7 @@ export default function DashboardLayout() {
               </div>
               <button
                 onClick={() => logout()}
-                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-xs font-bold text-gray-600 bg-white border border-gray-200 rounded-xl hover:bg-red-50 hover:text-red-600 hover:border-red-100 transition-all duration-200 shadow-sm"
+                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-xs font-bold text-gray-600 bg-white border border-gray-200 rounded-xl hover:bg-red-50 hover:text-red-600 hover:border-red-100 transition-all duration-200 shadow-sm cursor-pointer"
               >
                 <LogOut className="h-4 w-4" />
                 Cerrar Sesión
