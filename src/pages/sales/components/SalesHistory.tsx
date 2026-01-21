@@ -3,7 +3,7 @@ import { useInfiniteQuery } from '@tanstack/react-query';
 import { v1SalesListInfiniteOptions } from '../../../client/@tanstack/react-query.gen';
 import { useBranch } from '../../../context/BranchContext';
 import { useInView } from 'react-intersection-observer';
-import { Calendar, User, DollarSign, Eye, HandCoins, Hash } from 'lucide-react';
+import { Trash2, Calendar, User, DollarSign, Eye, HandCoins, Hash } from 'lucide-react';
 import ActionConfirmationModal from '../../../components/ui/ActionConfirmationModal';
 import Modal from '../../../components/ui/Modal';
 import SaleDetail from './SaleDetail';
@@ -14,6 +14,9 @@ import type { SaleList } from '../../../client/types.gen';
 import { useMediaQuery } from '../../../hooks/useMediaQuery';
 import { cn } from '../../../lib/utils';
 import MobileSaleList from './MobileSaleList';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { v1SalesDestroyMutation } from '../../../client/@tanstack/react-query.gen';
+import { toast } from 'sonner';
 
 export default function SalesHistory({ customerId }: { customerId?: string }) {
   const { selectedBranch } = useBranch();
@@ -22,6 +25,10 @@ export default function SalesHistory({ customerId }: { customerId?: string }) {
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [isConfirmCloseOpen, setIsConfirmCloseOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [saleToDelete, setSaleToDelete] = useState<SaleList | null>(null);
+
+  const queryClient = useQueryClient();
 
   const { ref, inView } = useInView();
 
@@ -78,6 +85,30 @@ export default function SalesHistory({ customerId }: { customerId?: string }) {
     setIsPaymentModalOpen(false);
   };
 
+  const { mutate: deleteSale, isPending: isDeleting } = useMutation({
+    ...v1SalesDestroyMutation(),
+    onSuccess: () => {
+      toast.success('Venta eliminada correctamente');
+      queryClient.invalidateQueries({ queryKey: ['v1SalesList'] });
+      setIsDeleteModalOpen(false);
+      setSaleToDelete(null);
+    },
+    onError: () => {
+      toast.error('Error al eliminar la venta');
+    }
+  });
+
+  const handleDeleteClick = (sale: SaleList) => {
+    setSaleToDelete(sale);
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleConfirmDelete = () => {
+    if (saleToDelete) {
+      deleteSale({ path: { id: saleToDelete.id } });
+    }
+  };
+
   const isMobile = useMediaQuery('(max-width: 768px)');
 
   if (isLoading) {
@@ -94,6 +125,7 @@ export default function SalesHistory({ customerId }: { customerId?: string }) {
           sales={sales}
           onViewDetail={handleViewDetail}
           onCollectPayment={handleCollectPayment}
+          onDelete={handleDeleteClick}
         />
       ) : (
         <table className="min-w-full divide-y divide-gray-200">
@@ -158,6 +190,15 @@ export default function SalesHistory({ customerId }: { customerId?: string }) {
                   </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
+                  {sale.payment_status === 'PENDING' && (
+                    <button 
+                      onClick={() => handleDeleteClick(sale)}
+                      className="text-red-600 hover:text-red-900 bg-red-50 p-2 rounded-full transition-colors cursor-pointer"
+                      title="Eliminar (Invalidar)"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  )}
                   {sale.payment_status !== 'PAID' && (
                     <button 
                       onClick={() => handleCollectPayment(sale)}
@@ -238,6 +279,17 @@ export default function SalesHistory({ customerId }: { customerId?: string }) {
         confirmText="Confirmar Salida"
         cancelText="Mantenerse"
         variant="warning"
+      />
+
+      <ActionConfirmationModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={handleConfirmDelete}
+        title={`¿Eliminar Venta #${saleToDelete?.seq_number}?`}
+        description="Esta acción invalidará la venta de forma permanente. El stock de los productos incluidos será restaurado automáticamente. La venta quedará guardada en el historial como 'Invalidada' para fines contables."
+        confirmText={isDeleting ? "Eliminando..." : "Eliminar Venta"}
+        cancelText="Cancelar"
+        variant="danger"
       />
     </div>
   );

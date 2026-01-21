@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Eye, HandCoins, Calendar, Hash, User, DollarSign } from 'lucide-react';
+import { Trash2, Eye, HandCoins, Calendar, Hash, User, DollarSign } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import type { SaleList } from '../../../client/types.gen';
@@ -9,12 +9,14 @@ interface MobileSaleListProps {
   sales: SaleList[];
   onViewDetail: (id: string) => void;
   onCollectPayment: (sale: SaleList) => void;
+  onDelete: (sale: SaleList) => void;
 }
 
 const MobileSaleList: React.FC<MobileSaleListProps> = ({
   sales,
   onViewDetail,
   onCollectPayment,
+  onDelete,
 }) => {
   if (sales.length === 0) {
     return (
@@ -68,18 +70,27 @@ const MobileSaleList: React.FC<MobileSaleListProps> = ({
               </div>
             </div>
 
-            <div className="mt-4 pt-4 border-t border-gray-100 flex items-center justify-between gap-2">
+            <div className="mt-4 pt-4 border-t border-gray-100 flex flex-wrap items-center justify-between gap-2">
               <button
                 onClick={() => onViewDetail(sale.id)}
-                className="flex-1 flex items-center justify-center px-3 py-2 text-sm font-semibold text-blue-600 bg-blue-50 rounded-xl hover:bg-blue-100 active:bg-blue-200 transition-colors border border-blue-100"
+                className="flex-1 min-w-[100px] flex items-center justify-center px-3 py-2 text-sm font-semibold text-blue-600 bg-blue-50 rounded-xl hover:bg-blue-100 active:bg-blue-200 transition-colors border border-blue-100"
               >
                 <Eye className="h-4 w-4 mr-2" />
                 Detalles
               </button>
+              {sale.payment_status === 'PENDING' && (
+                <button
+                  onClick={() => onDelete(sale)}
+                  className="flex-1 min-w-[100px] flex items-center justify-center px-3 py-2 text-sm font-semibold text-red-600 bg-red-50 rounded-xl hover:bg-red-100 active:bg-red-200 transition-colors border border-red-100"
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Eliminar
+                </button>
+              )}
               {sale.payment_status !== 'PAID' && (
                 <button
                   onClick={() => onCollectPayment(sale)}
-                  className="flex-1 flex items-center justify-center px-3 py-2 text-sm font-semibold text-emerald-600 bg-emerald-50 rounded-xl hover:bg-emerald-100 active:bg-emerald-200 transition-colors border border-emerald-100"
+                  className="flex-1 min-w-[100px] flex items-center justify-center px-3 py-2 text-sm font-semibold text-emerald-600 bg-emerald-50 rounded-xl hover:bg-emerald-100 active:bg-emerald-200 transition-colors border border-emerald-100"
                 >
                   <HandCoins className="h-4 w-4 mr-2" />
                   Cobrar

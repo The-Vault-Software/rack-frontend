@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { v1AccountsListInfiniteOptions } from '../../../client/@tanstack/react-query.gen';
 import { useInView } from 'react-intersection-observer';
-import { Calendar, User, DollarSign, CreditCard, AlertCircle, Hash } from 'lucide-react';
+import { Trash2, Calendar, User, DollarSign, CreditCard, AlertCircle, Hash } from 'lucide-react';
 import ActionConfirmationModal from '../../../components/ui/ActionConfirmationModal';
 import Modal from '../../../components/ui/Modal';
 import PaymentForm from '../../accounts/components/PaymentForm';
@@ -13,6 +13,9 @@ import { useMediaQuery } from '../../../hooks/useMediaQuery';
 import { cn } from '../../../lib/utils';
 import MobileAccountList from '../../accounts/components/MobileAccountList';
 import AccountDetail from '../../accounts/components/AccountDetail';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { v1AccountsDestroyMutation } from '../../../client/@tanstack/react-query.gen';
+import { toast } from 'sonner';
 
 interface ProviderAccountsHistoryProps {
   providerId: string;
@@ -24,6 +27,10 @@ export default function ProviderAccountsHistory({ providerId }: ProviderAccounts
   const [isConfirmCloseOpen, setIsConfirmCloseOpen] = useState(false);
   const [selectedDetailAccountId, setSelectedDetailAccountId] = useState<string | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [accountToDelete, setAccountToDelete] = useState<AccountList | null>(null);
+
+  const queryClient = useQueryClient();
 
   const { ref, inView } = useInView();
   const isMobile = useMediaQuery('(max-width: 768px)');
@@ -78,6 +85,30 @@ export default function ProviderAccountsHistory({ providerId }: ProviderAccounts
     setIsDetailModalOpen(true);
   };
 
+  const { mutate: deleteAccount, isPending: isDeleting } = useMutation({
+    ...v1AccountsDestroyMutation(),
+    onSuccess: () => {
+      toast.success('Cuenta eliminada correctamente');
+      queryClient.invalidateQueries({ queryKey: ['v1AccountsList'] });
+      setIsDeleteModalOpen(false);
+      setAccountToDelete(null);
+    },
+    onError: () => {
+      toast.error('Error al eliminar la cuenta');
+    }
+  });
+
+  const handleDeleteClick = (account: AccountList) => {
+    setAccountToDelete(account);
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleConfirmDelete = () => {
+    if (accountToDelete) {
+      deleteAccount({ path: { id: accountToDelete.id } });
+    }
+  };
+
   if (isLoading) {
     return <div className="p-8 text-center text-gray-500">Cargando historial de cuentas...</div>;
   }
@@ -92,6 +123,7 @@ export default function ProviderAccountsHistory({ providerId }: ProviderAccounts
           accounts={accounts}
           onPay={handlePayClick}
           onViewDetail={handleViewDetail}
+          onDelete={handleDeleteClick}
         />
       ) : (
         <table className="min-w-full divide-y divide-gray-200">
@@ -169,10 +201,20 @@ export default function ProviderAccountsHistory({ providerId }: ProviderAccounts
                   </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
+                  {account.payment_status === 'PENDING' && (
+                    <button 
+                      onClick={() => handleDeleteClick(account)}
+                      className="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded-md text-red-700 bg-red-100 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 cursor-pointer"
+                      title="Eliminar (Invalidar)"
+                    >
+                      <Trash2 className="h-3 w-3 mr-1" />
+                      Eliminar
+                    </button>
+                  )}
                   {account.payment_status !== 'PAID' && (
                     <button 
                       onClick={() => handlePayClick(account)}
-                      className="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                      className="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 cursor-pointer"
                       title="Pagar"
                     >
                       <CreditCard className="h-3 w-3 mr-1" />
@@ -248,6 +290,17 @@ export default function ProviderAccountsHistory({ providerId }: ProviderAccounts
         confirmText="Confirmar Salida"
         cancelText="Mantenerse"
         variant="warning"
+      />
+
+      <ActionConfirmationModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={handleConfirmDelete}
+        title={`¿Eliminar Cuenta #${accountToDelete?.seq_number}?`}
+        description="Esta acción invalidará la cuenta de forma permanente. El stock de los productos incluidos será descontado automáticamente. La cuenta quedará guardada en el historial como 'Invalidada' para fines contables."
+        confirmText={isDeleting ? "Eliminando..." : "Eliminar Cuenta"}
+        cancelText="Cancelar"
+        variant="danger"
       />
     </div>
   );

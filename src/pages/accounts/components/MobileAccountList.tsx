@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { CreditCard, Calendar, Hash, User, AlertCircle, Eye } from 'lucide-react';
+import { Trash2, CreditCard, Calendar, Hash, User, AlertCircle, Eye } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import type { AccountList } from '../../../client/types.gen';
@@ -9,12 +9,14 @@ interface MobileAccountListProps {
   accounts: AccountList[];
   onPay: (account: AccountList) => void;
   onViewDetail: (id: string) => void;
+  onDelete: (account: AccountList) => void;
 }
 
 const MobileAccountList: React.FC<MobileAccountListProps> = ({
   accounts,
   onPay,
   onViewDetail,
+  onDelete,
 }) => {
   if (accounts.length === 0) {
     return (
@@ -80,19 +82,29 @@ const MobileAccountList: React.FC<MobileAccountListProps> = ({
                 </div>
               </div>
 
-                <div className="mt-4 flex items-center justify-end gap-2">
-                 {account.payment_status !== 'PAID' && (
+                <div className="mt-4 flex flex-wrap items-center justify-end gap-2">
+                  {account.payment_status === 'PENDING' && (
+                    <button
+                      onClick={() => onDelete(account)}
+                      className="flex-1 min-w-[100px] flex items-center justify-center px-4 py-2 text-sm font-bold text-red-600 bg-red-50 rounded-xl hover:bg-red-100 active:bg-red-200 transition-colors border border-red-100 cursor-pointer"
+                    >
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Eliminar
+                    </button>
+                  )}
+                  {account.payment_status !== 'PAID' && (
+                    <button
+                      onClick={() => onPay(account)}
+                      className="flex-1 min-w-[100px] flex items-center justify-center px-4 py-2 text-sm font-bold text-blue-600 bg-blue-50 rounded-xl hover:bg-blue-100 active:bg-blue-200 transition-colors border border-blue-100 cursor-pointer"
+                    >
+                      <CreditCard className="h-4 w-4 mr-2" />
+                      Pagar
+                    </button>
+                  )}
                   <button
-                    onClick={() => onPay(account)}
-                    className="flex-1 flex items-center justify-center px-4 py-2 text-sm font-bold text-blue-600 bg-blue-50 rounded-xl hover:bg-blue-100 active:bg-blue-200 transition-colors border border-blue-100 cursor-pointer"
-                  >
-                    <CreditCard className="h-4 w-4 mr-2" />
-                    Pagar
-                  </button>
-                )}
-                 <button
                     onClick={() => onViewDetail(account.id)}
                     className="flex-none flex items-center justify-center p-2 text-gray-500 bg-gray-50 rounded-xl hover:bg-gray-100 active:bg-gray-200 transition-colors border border-gray-100 cursor-pointer"
+                    title="Ver detalle"
                   >
                     <Eye className="h-5 w-5" />
                   </button>
