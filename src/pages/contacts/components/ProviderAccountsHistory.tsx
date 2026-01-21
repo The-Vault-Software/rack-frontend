@@ -87,14 +87,44 @@ export default function ProviderAccountsHistory({ providerId }: ProviderAccounts
 
   const { mutate: deleteAccount, isPending: isDeleting } = useMutation({
     ...v1AccountsDestroyMutation(),
+    onMutate: async (variables) => {
+      const accountId = variables.path.id;
+      // Cancel any outgoing refetches for the accounts list
+      await queryClient.cancelQueries({ queryKey: [{ _id: 'v1AccountsList' }] });
+
+      // Snapshot the previous value
+      const previousAccounts = queryClient.getQueriesData({ queryKey: [{ _id: 'v1AccountsList' }] });
+
+      // Optimistically update to the new value
+      queryClient.setQueriesData({ queryKey: [{ _id: 'v1AccountsList' }] }, (oldData: unknown) => {
+        const data = oldData as { pages: { results: AccountList[] }[] };
+        if (!data || !data.pages) return oldData;
+        return {
+          ...data,
+          pages: data.pages.map((page) => ({
+            ...page,
+            results: page.results.filter((account) => account.id !== accountId),
+          })),
+        };
+      });
+
+      return { previousAccounts };
+    },
+    onError: (_err, _variables, context) => {
+      if (context?.previousAccounts) {
+        context.previousAccounts.forEach(([key, value]) => {
+          queryClient.setQueryData(key, value);
+        });
+      }
+      toast.error('Error al eliminar la cuenta');
+    },
     onSuccess: () => {
       toast.success('Cuenta eliminada correctamente');
-      queryClient.invalidateQueries({ queryKey: ['v1AccountsList'] });
       setIsDeleteModalOpen(false);
       setAccountToDelete(null);
     },
-    onError: () => {
-      toast.error('Error al eliminar la cuenta');
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: [{ _id: 'v1AccountsList' }] });
     }
   });
 

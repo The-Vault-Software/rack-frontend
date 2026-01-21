@@ -87,14 +87,46 @@ export default function SalesHistory({ customerId }: { customerId?: string }) {
 
   const { mutate: deleteSale, isPending: isDeleting } = useMutation({
     ...v1SalesDestroyMutation(),
+    onMutate: async (variables) => {
+      const saleId = variables.path.id;
+      // Cancel any outgoing refetches for the sales list so they don't overwrite our optimistic update
+      await queryClient.cancelQueries({ queryKey: [{ _id: 'v1SalesList' }] });
+
+      // Snapshot the previous value
+      const previousSales = queryClient.getQueriesData({ queryKey: [{ _id: 'v1SalesList' }] });
+
+      // Optimistically update to the new value by removing the sale from all cached pages
+      queryClient.setQueriesData({ queryKey: [{ _id: 'v1SalesList' }] }, (oldData: unknown) => {
+        const data = oldData as { pages: { results: SaleList[] }[] };
+        if (!data || !data.pages) return oldData;
+        return {
+          ...data,
+          pages: data.pages.map((page) => ({
+            ...page,
+            results: page.results.filter((sale) => sale.id !== saleId),
+          })),
+        };
+      });
+
+      return { previousSales };
+    },
+    onError: (_err, _variables, context) => {
+      // Rollback to the previous value if the mutation fails
+      if (context?.previousSales) {
+        context.previousSales.forEach(([key, value]) => {
+          queryClient.setQueryData(key, value);
+        });
+      }
+      toast.error('Error al eliminar la venta');
+    },
     onSuccess: () => {
       toast.success('Venta eliminada correctamente');
-      queryClient.invalidateQueries({ queryKey: ['v1SalesList'] });
       setIsDeleteModalOpen(false);
       setSaleToDelete(null);
     },
-    onError: () => {
-      toast.error('Error al eliminar la venta');
+    onSettled: () => {
+      // Always refetch after error or success to throw away the optimistic update and ensure sync
+      queryClient.invalidateQueries({ queryKey: [{ _id: 'v1SalesList' }] });
     }
   });
 
