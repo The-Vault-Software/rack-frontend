@@ -297,7 +297,7 @@ export default function ProviderAccountsHistory({ providerId }: ProviderAccounts
         onClose={() => setIsDeleteModalOpen(false)}
         onConfirm={handleConfirmDelete}
         title={`¿Eliminar Cuenta #${accountToDelete?.seq_number}?`}
-        description="Esta acción invalidará la cuenta de forma permanente. El stock de los productos incluidos será descontado automáticamente. La cuenta quedará guardada en el historial como 'Invalidada' para fines contables."
+        description="Esta acción invalidará la cuenta de forma permanente. El stock de los productos incluidos será descontado automáticamente. La cuenta quedará guardada internamente en nuestro sistema como 'Invalidada' para fines contables."
         confirmText={isDeleting ? "Eliminando..." : "Eliminar Cuenta"}
         cancelText="Cancelar"
         variant="danger"

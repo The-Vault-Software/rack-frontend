@@ -286,7 +286,7 @@ export default function SalesHistory({ customerId }: { customerId?: string }) {
         onClose={() => setIsDeleteModalOpen(false)}
         onConfirm={handleConfirmDelete}
         title={`¿Eliminar Venta #${saleToDelete?.seq_number}?`}
-        description="Esta acción invalidará la venta de forma permanente. El stock de los productos incluidos será restaurado automáticamente. La venta quedará guardada en el historial como 'Invalidada' para fines contables."
+        description="Esta acción invalidará la venta de forma permanente. El stock de los productos incluidos será restaurado automáticamente. La venta quedará guardada internamente en nuestro sistema como 'Invalidada' para fines contables."
         confirmText={isDeleting ? "Eliminando..." : "Eliminar Venta"}
         cancelText="Cancelar"
         variant="danger"
