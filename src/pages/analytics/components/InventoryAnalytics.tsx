@@ -16,9 +16,11 @@ interface InventoryAnalysisResult {
     currentStock: number;
     dailyDemand: number;
     qAsterisk: number;
-    sAsterisk: number;
+    sAsterisk: number; // Max shortage for low rotation
+    safetyStock: number; // Safety stock for high rotation
     daysUntilEmpty: number;
     restockInDays: number;
+    rotationType: 'high' | 'low';
 }
 
 export default function InventoryAnalytics() {
@@ -75,8 +77,8 @@ export default function InventoryAnalytics() {
       const maxDate = Math.max(...dates);
       const daysDiff = Math.max(1, differenceInDays(maxDate, minDate));
 
-      // 5. Calculate Model for Top Products
-      const results: InventoryAnalysisResult[] = Object.entries(productSummary)
+      // 5. Calculate Model for All Products and Categorize
+      const allResults: InventoryAnalysisResult[] = Object.entries(productSummary)
         .map(([id, info]) => {
           const d = info.qty / daysDiff; // daily demand
           const D = d * 365; // annual demand
@@ -84,21 +86,36 @@ export default function InventoryAnalytics() {
           // Constants for model
           const S = 10; // Setup cost
           const H = 2;  // Holding cost annual
-          const B = 20; // Shortage cost annual (very high to prevent too much deficit)
+          const B = 20; // Shortage cost annual (for low rotation)
 
-          // EOQ with Shortages
-          const qAsterisk = Math.sqrt(((2 * D * S) / H) * ((H + B) / B));
-          const sAsterisk = qAsterisk * (H / (H + B));
+          const isHighRotation = d > 0.5; // Heuristic: more than 0.5 units per day is high rotation
           
+          let qAsterisk = 0;
+          let sAsterisk = 0;
+          let safetyStock = 0;
+          let restockInDays = 0;
+
           const currentStockObj = stockData.find(s => s.product_id === id);
           const currentStock = currentStockObj ? parseFloat(currentStockObj.stock) : 0;
-          
           const daysUntilEmpty = d > 0 ? currentStock / d : 999;
-          
-          // Simplified restock time: When stock hits Reorder Point
-          // In EOQ with shortages, we ideally allow it to hit 0, then go into shortage up to S*, then restock.
-          // Restock point is technically "Time until 0 + Time of Shortage".
-          const restockInDays = daysUntilEmpty + (d > 0 ? sAsterisk / d : 0);
+
+          if (isHighRotation) {
+            // EOQ Standard
+            qAsterisk = Math.sqrt((2 * D * S) / H);
+            // Robust Safety Stock: Heuristic (e.g., 3 days of demand + 10% of Q*)
+            safetyStock = (d * 3) + (qAsterisk * 0.1);
+            
+            // For high rotation, we restock when we reach Safety Stock
+            const stockAboveSafety = Math.max(0, currentStock - safetyStock);
+            restockInDays = d > 0 ? stockAboveSafety / d : 999;
+          } else {
+            // EOQ with Shortages (Backorders)
+            qAsterisk = Math.sqrt(((2 * D * S) / H) * ((H + B) / B));
+            sAsterisk = qAsterisk * (H / (H + B));
+            
+            // Restock point: Time until 0 + Time of Shortage
+            restockInDays = daysUntilEmpty + (d > 0 ? sAsterisk / d : 0);
+          }
 
           return {
             productId: id,
@@ -107,14 +124,15 @@ export default function InventoryAnalytics() {
             dailyDemand: d,
             qAsterisk,
             sAsterisk,
+            safetyStock,
             daysUntilEmpty,
-            restockInDays
+            restockInDays,
+            rotationType: (isHighRotation ? 'high' : 'low') as 'high' | 'low'
           };
         })
-        .sort((a, b) => b.dailyDemand - a.dailyDemand)
-        .slice(0, 5); // Top 5
+        .sort((a, b) => b.dailyDemand - a.dailyDemand);
 
-      setAnalysisResults(results);
+      setAnalysisResults(allResults);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Ocurrió un error al procesar el análisis.");
     } finally {
@@ -162,54 +180,164 @@ export default function InventoryAnalytics() {
     );
   }
 
-  return (
-    <div className="space-y-8">
-      {/* Overview Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-        {analysisResults?.map((res, idx) => (
-          <div key={res.productId} className="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm transition-all hover:shadow-md">
-            <div className="flex justify-between items-start mb-4">
-              <span className="text-[10px] font-extrabold uppercase tracking-tighter text-blue-500 bg-blue-50 px-2 py-0.5 rounded-lg">TOP {idx + 1}</span>
-              <Package className="h-4 w-4 text-gray-300" />
-            </div>
-            <h4 className="font-bold text-gray-900 truncate mb-1" title={res.productName}>{res.productName}</h4>
-            <div className="space-y-2 mt-4">
-               <div>
-                <p className="text-[10px] text-gray-400 font-bold uppercase">Reponer en</p>
-                <p className={`text-xl font-extrabold ${res.restockInDays < 7 ? 'text-rose-500' : 'text-emerald-500'}`}>
-                    {Math.max(0, Math.floor(res.restockInDays))} días
-                </p>
-               </div>
-               <div className="w-full bg-gray-100 h-1.5 rounded-full overflow-hidden">
-                  <div 
-                    className={`h-full transition-all duration-1000 ${res.restockInDays < 7 ? 'bg-rose-500' : 'bg-emerald-500'}`} 
-                    style={{ width: `${Math.min(100, (res.currentStock / (res.qAsterisk || 1)) * 100)}%` }}
-                  ></div>
-               </div>
-            </div>
-          </div>
-        ))}
-      </div>
+  const highRotation = analysisResults?.filter(r => r.rotationType === 'high') || [];
+  const lowRotation = analysisResults?.filter(r => r.rotationType === 'low') || [];
 
-      {/* Main Chart */}
-      <div className="bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-sm">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-10">
+  return (
+    <div className="space-y-12">
+      {/* High Rotation Section */}
+      <section className="space-y-6">
+        <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-2xl font-bold text-gray-900 tracking-tight">Proyección de Agotamiento de Stock</h3>
-            <p className="text-gray-500 text-sm">Día estimado de reposición óptima (incluyendo déficit planificado)</p>
+            <h2 className="text-3xl font-black text-gray-900 tracking-tight">Alta Rotación</h2>
+            <p className="text-gray-500 font-medium">Modelado con EOQ Estándar + Stock de Seguridad Robusto</p>
           </div>
-          <button 
-            onClick={handleStartAnalysis}
-            className="flex items-center gap-2 text-xs font-bold text-gray-500 hover:text-blue-600 transition-colors cursor-pointer"
-          >
-            <History className="h-3 w-3" />
-            Recalcular con datos frescos
-          </button>
+          <div className="flex items-center gap-2 bg-emerald-50 text-emerald-600 px-4 py-2 rounded-2xl border border-emerald-100">
+            <TrendingUp className="h-5 w-5" />
+            <span className="text-sm font-bold uppercase tracking-wider">Alta Disponibilidad</span>
+          </div>
+        </div>
+
+        <div className="bg-white p-8 rounded-[3rem] border border-gray-100 shadow-sm">
+          <div className="flex items-start gap-6 mb-8">
+            <div className="bg-blue-50 p-4 rounded-3xl">
+              <Info className="h-8 w-8 text-blue-500" />
+            </div>
+            <div className="max-w-3xl">
+              <h4 className="text-xl font-bold text-gray-900 mb-2">Estrategia de Alta Disponibilidad</h4>
+              <p className="text-gray-600 leading-relaxed">
+                Para estos productos, el objetivo primordial es <strong>evitar el quiebre de stock</strong>. 
+                Utilizamos el modelo de <span className="font-bold text-blue-600">Lote Económico Estándar (EOQ)</span> sumado a un 
+                <span className="font-bold text-orange-600"> Stock de Seguridad Robusto</span>. Esto garantiza que siempre 
+                tengas unidades suficientes para cubrir la demanda variable y las demoras de proveedores.
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {highRotation.slice(0, 6).map((res) => (
+              <div key={res.productId} className="bg-gray-50/50 p-6 rounded-4xl border border-gray-100 transition-all hover:scale-[1.02] hover:bg-white hover:shadow-xl group">
+                <div className="flex justify-between items-start mb-4">
+                  <span className="text-[10px] font-extrabold uppercase tracking-widest text-blue-500 bg-blue-50 px-3 py-1 rounded-full">ESTRATEGIA A</span>
+                  <Package className="h-5 w-5 text-gray-300 group-hover:text-blue-400 transition-colors" />
+                </div>
+                <h4 className="font-bold text-gray-900 text-lg mb-1 truncate" title={res.productName}>{res.productName}</h4>
+                
+                <div className="mt-6 space-y-4">
+                  <div className="flex justify-between items-end">
+                    <div>
+                      <p className="text-[10px] text-gray-400 font-bold uppercase tracking-tighter">Reponer en</p>
+                      <p className={`text-2xl font-black ${res.restockInDays < 3 ? 'text-rose-500' : 'text-emerald-500'}`}>
+                        {Math.max(0, Math.floor(res.restockInDays))} días
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-[10px] text-gray-400 font-bold uppercase tracking-tighter">Pedido Sugerido</p>
+                      <p className="text-lg font-extrabold text-blue-600">{Math.ceil(res.qAsterisk)} uds.</p>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-1">
+                    <div className="flex justify-between items-center text-[10px] font-bold text-gray-400 uppercase">
+                      <span>Stock Actual: {res.currentStock}</span>
+                      <div className="flex items-center gap-1 group/info relative">
+                        <span>Seguridad: {Math.ceil(res.safetyStock)}</span>
+                        <Info className="h-3 w-3 text-blue-400 cursor-help" />
+                        <div className="absolute bottom-full mb-2 right-0 w-48 p-3 bg-gray-900 text-[9px] text-gray-200 rounded-xl opacity-0 group-hover/info:opacity-100 transition-opacity pointer-events-none z-50 normal-case shadow-2xl">
+                          <p className="font-bold text-white mb-1">Stock de Seguridad:</p>
+                          Es el colchón de inventario para cubrir variaciones en la demanda o retrasos del proveedor. <span className="text-blue-400 font-bold">El sistema sugiere reponer ANTES de tocar este nivel.</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="w-full bg-gray-200 h-2 rounded-full overflow-hidden">
+                      <div 
+                        className={`h-full transition-all duration-1000 ${res.restockInDays < 3 ? 'bg-rose-500' : 'bg-blue-500'}`} 
+                        style={{ width: `${Math.min(100, (res.currentStock / (res.qAsterisk + res.safetyStock)) * 100)}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+            {highRotation.length === 0 && (
+              <div className="col-span-full py-10 text-center text-gray-400 italic">No se detectaron productos de alta rotación significativos en el periodo.</div>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* Low Rotation Section */}
+      <section className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-3xl font-black text-gray-900 tracking-tight">Baja Rotación</h2>
+            <p className="text-gray-500 font-medium">Modelado con EOQ con Déficit Planificado</p>
+          </div>
+          <div className="flex items-center gap-2 bg-amber-50 text-amber-600 px-4 py-2 rounded-2xl border border-amber-100">
+            <AlertTriangle className="h-5 w-5" />
+            <span className="text-sm font-bold uppercase tracking-wider">Optimización de Costos</span>
+          </div>
+        </div>
+
+        <div className="bg-white p-8 rounded-[3rem] border border-gray-100 shadow-sm">
+          <div className="flex items-start gap-6 mb-8">
+            <div className="bg-amber-50 p-4 rounded-3xl">
+              <TrendingUp className="h-8 w-8 text-amber-500" />
+            </div>
+            <div className="max-w-3xl">
+              <h4 className="text-xl font-bold text-gray-900 mb-2">Estrategia de Optimización por Déficit</h4>
+              <p className="text-gray-600 leading-relaxed">
+                Para productos que se venden poco, mantener stock físico es costoso. Aplicamos un modelo de 
+                <span className="font-bold text-amber-600"> Lote Económico con Déficit</span> donde permitimos que el stock llegue a cero 
+                y se acumule una pequeña deuda de tiempo antes de pedir. Esto minimiza el costo total de almacenamiento.
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {lowRotation.slice(0, 6).map((res) => (
+              <div key={res.productId} className="bg-gray-50/50 p-6 rounded-4xl border border-gray-100 transition-all hover:scale-[1.02] hover:bg-white hover:shadow-xl">
+                <div className="flex justify-between items-start mb-4">
+                  <span className="text-[10px] font-extrabold uppercase tracking-widest text-amber-500 bg-amber-50 px-3 py-1 rounded-full">ESTRATEGIA B</span>
+                  <History className="h-5 w-5 text-gray-300" />
+                </div>
+                <h4 className="font-bold text-gray-900 text-lg mb-1 truncate" title={res.productName}>{res.productName}</h4>
+                
+                <div className="mt-6 space-y-4">
+                  <div className="flex justify-between items-end">
+                    <div>
+                      <p className="text-[10px] text-gray-400 font-bold uppercase tracking-tighter">Pedido Óptimo en</p>
+                      <p className="text-2xl font-black text-amber-600">
+                        {Math.max(0, Math.floor(res.restockInDays))} días
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-[10px] text-gray-400 font-bold uppercase tracking-tighter">Lote (Q*)</p>
+                      <p className="text-lg font-extrabold text-gray-700">{Math.ceil(res.qAsterisk)} uds.</p>
+                    </div>
+                  </div>
+                  
+                  <div className="p-3 bg-white rounded-xl border border-gray-100 shadow-sm">
+                    <p className="text-[10px] text-gray-400 font-bold uppercase mb-1">Déficit Máximo Permitido</p>
+                    <p className="font-bold text-rose-500">{Math.ceil(res.sAsterisk)} unidades</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Visual Analytics Summary */}
+      <section className="bg-white p-8 rounded-[3rem] border border-gray-100 shadow-sm">
+        <div className="mb-8">
+          <h3 className="text-2xl font-bold text-gray-900 tracking-tight">Reporte Gráfico de Reposición</h3>
+          <p className="text-gray-500 text-sm italic">Vista comparativa de días restantes para los top productos de ambas categorías</p>
         </div>
 
         <div className="h-[400px] w-full">
             <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={analysisResults || []} margin={{ top: 20, right: 30, left: 20, bottom: 60 }}>
+                <BarChart data={analysisResults?.slice(0, 8) || []} margin={{ top: 20, right: 30, left: 20, bottom: 60 }}>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                     <XAxis 
                         dataKey="productName" 
@@ -219,65 +347,95 @@ export default function InventoryAnalytics() {
                         tick={{fill: '#64748b', fontSize: 10, fontWeight: 700}}
                         dy={20}
                     />
-                    <YAxis label={{ value: 'Días restantes', angle: -90, position: 'insideLeft', style: {fontWeight: 700, fill: '#94a3b8', fontSize: 12} }} />
+                    <YAxis label={{ value: 'Días para pedir', angle: -90, position: 'insideLeft', style: {fontWeight: 700, fill: '#94a3b8', fontSize: 12} }} />
                     <Tooltip 
                         contentStyle={{ borderRadius: '24px', border: 'none', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)' }}
                         formatter={(value: number | undefined, name: string | undefined) => [
                           value !== undefined ? `${Math.floor(value)} días` : 'N/A', 
-                          name || 'N/A'
+                          name || ''
                         ]}
                     />
-                    <Bar dataKey="daysUntilEmpty" name="Stock Agotado" radius={[8, 8, 0, 0]}>
-                        {analysisResults?.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={entry.daysUntilEmpty < 5 ? '#f43f5e' : '#94a3b8'} opacity={0.3} />
+                    <Bar dataKey="daysUntilEmpty" name="Stock Agotado (Días)" radius={[8, 8, 0, 0]}>
+                        {analysisResults?.slice(0, 8).map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={entry.rotationType === 'high' ? '#3b82f6' : '#f59e0b'} opacity={0.2} />
                         ))}
                     </Bar>
-                    <Bar dataKey="restockInDays" name="Fecha de Reposición" radius={[8, 8, 0, 0]}>
-                        {analysisResults?.map((entry, index) => (
-                            <Cell key={`cell2-${index}`} fill={entry.restockInDays < 7 ? '#f43f5e' : '#3b82f6'} />
+                    <Bar dataKey="restockInDays" name="Momento de Pedido (Días)" radius={[8, 8, 0, 0]}>
+                        {analysisResults?.slice(0, 8).map((entry, index) => (
+                            <Cell key={`cell2-${index}`} fill={entry.rotationType === 'high' ? '#3b82f6' : '#f59e0b'} />
                         ))}
                     </Bar>
                 </BarChart>
             </ResponsiveContainer>
         </div>
-      </div>
-
-      {/* Info Panel */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-linear-to-br from-gray-900 to-gray-800 p-8 rounded-[2.5rem] text-white shadow-xl shadow-gray-200">
-           <div className="flex items-center gap-3 mb-6">
-             <Info className="h-6 w-6 text-blue-400" />
-             <h4 className="text-lg font-bold">¿Cómo leer este análisis?</h4>
-           </div>
-           <div className="space-y-4 text-sm text-gray-300 leading-relaxed">
-              <p>
-                El modelo de <span className="text-white font-bold">Lote Económico con Déficit</span> asume que es más rentable permitir faltantes temporales que mantener stock excesivo para productos de alta rotación.
-              </p>
-              <ul className="list-disc list-inside space-y-2">
-                <li><span className="text-white font-bold">Barra Gris Clara:</span> Indica cuándo tu stock físico llegará a cero.</li>
-                <li><span className="text-white font-bold">Barra Azul/Roja:</span> Indica el día óptimo para reponer, considerando el déficit máximo permitido por el modelo estadístico.</li>
-                <li><span className="text-white font-bold">Q* Sugerido:</span> Es la cantidad que deberías pedir para minimizar tus costos de mantenimiento y pedido simultáneamente.</li>
-              </ul>
-           </div>
+        <div className="flex justify-center gap-6 mt-4">
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+            <span className="text-[10px] font-bold text-gray-500 uppercase">Alta Rotación (Foco Disponibilidad)</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 bg-amber-500 rounded-full"></div>
+            <span className="text-[10px] font-bold text-gray-500 uppercase">Baja Rotación (Foco Costo/Déficit)</span>
+          </div>
         </div>
+      </section>
 
-        <div className="bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-sm">
-            <h4 className="text-lg font-bold text-gray-900 mb-6 flex items-center gap-2">
-                <TrendingUp className="h-5 w-5 text-emerald-500" />
-                Cantidades de Pedido Sugeridas (Q*)
-            </h4>
-            <div className="space-y-4">
-                {analysisResults?.map(res => (
-                    <div key={res.productId} className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl border border-gray-100">
-                        <span className="font-bold text-gray-700 truncate mr-4">{res.productName}</span>
-                        <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-xl border border-gray-200 shadow-xs">
-                             <span className="text-xs font-bold text-gray-400">PEDIR:</span>
-                             <span className="font-extrabold text-blue-600">{Math.ceil(res.qAsterisk)} uds.</span>
-                        </div>
-                    </div>
-                ))}
+      {/* Technical Methodology Section */}
+      <section className="bg-slate-900 p-10 rounded-[3rem] text-white overflow-hidden relative group">
+        <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-20 transition-opacity">
+          <TrendingUp className="h-40 w-40 text-blue-400 rotate-12" />
+        </div>
+        
+        <div className="relative z-10">
+          <div className="flex items-center gap-3 mb-8">
+            <div className="bg-blue-500/20 p-3 rounded-2xl border border-blue-500/30">
+              <Info className="h-6 w-6 text-blue-400" />
             </div>
+            <h3 className="text-2xl font-black tracking-tight">Fundamentos Matemáticos del Análisis</h3>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+            <div className="space-y-4">
+              <h4 className="text-blue-400 font-bold uppercase tracking-widest text-xs">Modelo para Alta Rotación (EOQ Estándar)</h4>
+              <div className="p-6 bg-white/5 rounded-3xl border border-white/10 backdrop-blur-sm">
+                <code className="text-sm font-mono text-blue-300">Q* = √[2DS/H]</code>
+                <p className="mt-4 text-sm text-gray-400 leading-relaxed">
+                   Este modelo calcula el <span className="text-white font-bold">Lote Económico de Pedido</span> ideal para minimizar los costos totales sin admitir faltantes. 
+                   Se aplica a productos de alta venta para garantizar que el stock nunca se agote, manteniendo un flujo constante y niveles de servicio máximos.
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <h4 className="text-amber-400 font-bold uppercase tracking-widest text-xs">Modelo para Baja Rotación (EOQ con Déficit)</h4>
+              <div className="p-6 bg-amber-500/10 rounded-3xl border border-amber-500/20 backdrop-blur-sm relative overflow-hidden">
+                <code className="text-sm font-mono text-amber-300">Q* = √[(2DS/H) * ((H+B)/B)]</code>
+                <p className="mt-4 text-sm text-gray-300 leading-relaxed">
+                  Para productos con menos movimiento, el costo de mantener inventario es superior al "costo de oportunidad" de no tenerlo inmediatamente. 
+                  Esta fórmula permite <span className="text-amber-400 font-bold">faltantes planificados</span>, permitiendo que el sistema ahorre dinero al no almacenar productos que rotan lentamente.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-10 pt-8 border-t border-white/5 flex flex-wrap gap-x-8 gap-y-2 justify-center">
+            <div className="flex gap-2 text-[10px] font-bold text-gray-500"><span className="text-gray-400">D:</span> Demanda Anual</div>
+            <div className="flex gap-2 text-[10px] font-bold text-gray-500"><span className="text-gray-400">S:</span> Costo de Preparación</div>
+            <div className="flex gap-2 text-[10px] font-bold text-gray-500"><span className="text-gray-400">H:</span> Costo de Almacenamiento</div>
+            <div className="flex gap-2 text-[10px] font-bold text-gray-500"><span className="text-gray-400">B:</span> Costo de Faltante</div>
+          </div>
         </div>
+      </section>
+
+      {/* Recalculate Button */}
+      <div className="flex justify-center py-8">
+        <button 
+          onClick={handleStartAnalysis}
+          className="group flex items-center gap-3 bg-gray-900 text-white px-8 py-4 rounded-2xl font-bold hover:bg-black transition-all hover:scale-105 active:scale-95 shadow-xl shadow-gray-200 cursor-pointer"
+        >
+          <History className="h-5 w-5" />
+          Actualizar Análisis Completo
+        </button>
       </div>
     </div>
   );
