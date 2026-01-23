@@ -61,7 +61,7 @@ export default function PaymentForm({ type, id, onSuccess, pendingAmount }: Paym
     onError: () => toast.error('Error al registrar el cobro')
   });
 
-  const onSubmit = (data: PaymentFormValues) => {
+  const onSubmit = async (data: PaymentFormValues) => {
     // Asegurarse de enviar el descuento si es USD y está activo
     const finalDiscount = (currency === 'USD' && adjustmentType !== 'off') ? data.discount : '0.00';
 
@@ -72,7 +72,7 @@ export default function PaymentForm({ type, id, onSuccess, pendingAmount }: Paym
         payment_method: data.payment_method,
         REF: data.REF,
       };
-      accountMutation.mutate({
+      return accountMutation.mutateAsync({
         path: { account_id: id },
         body
       });
@@ -83,7 +83,7 @@ export default function PaymentForm({ type, id, onSuccess, pendingAmount }: Paym
         payment_method: data.payment_method,
         discount: finalDiscount || '0.00'
       };
-      saleMutation.mutate({
+      return saleMutation.mutateAsync({
         path: { sale_id: id },
         body
       });
@@ -110,10 +110,10 @@ export default function PaymentForm({ type, id, onSuccess, pendingAmount }: Paym
         </button>
         <button
           type="submit"
-          disabled={isSubmitting}
+          disabled={isSubmitting || accountMutation.isPending || saleMutation.isPending}
           className="flex-2 px-4 py-3 bg-blue-600 text-white rounded-xl text-sm font-bold shadow-lg shadow-blue-200 hover:bg-blue-700 disabled:opacity-50 transition-all flex items-center justify-center gap-2 cursor-pointer"
         >
-          {isSubmitting ? (
+          {isSubmitting || accountMutation.isPending || saleMutation.isPending ? (
             <motion.div
               animate={{ rotate: 360 }}
               transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}

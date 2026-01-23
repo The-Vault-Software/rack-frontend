@@ -1,9 +1,10 @@
-import { useQuery } from '@tanstack/react-query';
-import { v1AccountsListOptions } from '../../../client/@tanstack/react-query.gen';
+import { useInfiniteQuery } from '@tanstack/react-query';
+import { v1AccountsListInfiniteOptions } from '../../../client/@tanstack/react-query.gen';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { CreditCard, AlertCircle, Calendar, Hash, User } from 'lucide-react';
-import { useState } from 'react';
+import { CreditCard, AlertCircle, Calendar, Hash, User, Loader2 } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { useInView } from 'react-intersection-observer';
 import Modal from '../../../components/ui/Modal';
 import ActionConfirmationModal from '../../../components/ui/ActionConfirmationModal';
 import PaymentForm from './PaymentForm';
@@ -11,6 +12,15 @@ import type { AccountList } from '../../../client/types.gen';
 import { useBranch } from '../../../context/BranchContext';
 import { useMediaQuery } from '../../../hooks/useMediaQuery';
 import { cn } from '../../../lib/utils';
+import type { Options } from '../../../client/client/types.gen';
+import type { V1AccountsListData } from '../../../client/types.gen';
+
+type AccountsListOptions = Options<V1AccountsListData> & {
+  query: {
+    branch?: string;
+    payment_status?: string;
+  };
+};
 
 export default function AccountsPayable() {
   const { selectedBranch } = useBranch();
@@ -18,15 +28,41 @@ export default function AccountsPayable() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isConfirmCloseOpen, setIsConfirmCloseOpen] = useState(false);
   const isMobile = useMediaQuery('(max-width: 768px)');
-  const { data: accountsData, isLoading } = useQuery({
-    ...v1AccountsListOptions({
-      // @ts-expect-error - Query params might not be fully typed
-      query: { branch: selectedBranch?.id }
-    }),
-    enabled: !!selectedBranch?.id
+  const { ref, inView } = useInView();
+
+  const { 
+    data, 
+    isLoading, 
+    fetchNextPage, 
+    hasNextPage, 
+    isFetchingNextPage 
+  } = useInfiniteQuery({
+    ...v1AccountsListInfiniteOptions({
+      query: { 
+        branch: selectedBranch?.id,
+        payment_status: 'PENDING,PARTIALLY_PAID'
+      }
+    } as AccountsListOptions),
+    enabled: !!selectedBranch?.id,
+    getNextPageParam: (lastPage) => {
+      // @ts-expect-error - Backend response has links.next but types say 'next'
+      if (lastPage.links?.next) {
+        // @ts-expect-error - Backend response has current_page but types don't
+        return lastPage.current_page + 1;
+      }
+      return undefined;
+    },
+    initialPageParam: 1,
   });
 
-  const accounts = accountsData?.results || [];
+  // Fetch next page when scrolled to bottom
+  useEffect(() => {
+    if (inView && hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+  }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
+
+  const accounts = data?.pages.flatMap(page => page.results) || [];
   const pendingAccounts = accounts.filter(
     (acc) => acc.payment_status !== 'PAID'
   );
@@ -202,6 +238,23 @@ export default function AccountsPayable() {
           </table>
         </div>
       )}
+
+      {/* Infinite Scroll Trigger */}
+      <div ref={ref} className="py-8 flex justify-center">
+        {isFetchingNextPage ? (
+          <div className="flex flex-col items-center gap-2 text-blue-600">
+            <Loader2 className="h-6 w-6 animate-spin" />
+            <span className="text-xs font-semibold">Cargando más cuentas...</span>
+          </div>
+        ) : hasNextPage ? (
+          <div className="h-4" /> // Spacing for intersection observer
+        ) : pendingAccounts.length > 0 ? (
+          <div className="flex flex-col items-center gap-2 text-gray-400">
+            <div className="h-px w-12 bg-gray-200" />
+            <span className="text-[10px] font-bold uppercase tracking-wider">Fin de la lista</span>
+          </div>
+        ) : null}
+      </div>
 
       <Modal
         isOpen={isModalOpen}

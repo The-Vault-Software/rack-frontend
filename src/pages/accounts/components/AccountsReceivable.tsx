@@ -12,6 +12,14 @@ import type { SaleList } from '../../../client/types.gen';
 import { useBranch } from '../../../context/BranchContext';
 import { useMediaQuery } from '../../../hooks/useMediaQuery';
 import { cn } from '../../../lib/utils';
+import type { Options } from '../../../client/client/types.gen';
+import type { V1SalesListData } from '../../../client/types.gen';
+
+type SalesListOptions = Options<V1SalesListData> & {
+  query: {
+    branch?: string;
+  };
+};
 
 export default function AccountsReceivable() {
   const { selectedBranch } = useBranch();
@@ -29,9 +37,8 @@ export default function AccountsReceivable() {
     isFetchingNextPage
   } = useInfiniteQuery({
     ...v1SalesListInfiniteOptions({
-      // @ts-expect-error - Query params might not be fully typed
       query: { branch: selectedBranch?.id }
-    }),
+    } as SalesListOptions),
     enabled: !!selectedBranch?.id,
     getNextPageParam: (lastPage) => {
       // @ts-expect-error - Backend response has links.next
