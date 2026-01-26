@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback, memo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { 
@@ -27,6 +27,62 @@ import { useMediaQuery } from '../../hooks/useMediaQuery';
 import MobileProductList from '../../components/inventory/MobileProductList';
 import MobileCategoryList from '../../components/inventory/MobileCategoryList';
 import MobileUnitList from '../../components/inventory/MobileUnitList';
+
+const ProductRow = memo(({
+  product,
+  categoryName,
+  unitName,
+  stock,
+  rates,
+  onEdit,
+  onDelete
+}: {
+  product: ProductMaster;
+  categoryName: string;
+  unitName: string;
+  stock: string;
+  rates: { bcv_rate: string; parallel_rate: string } | undefined;
+  onEdit: (p: ProductMaster) => void;
+  onDelete: (p: ProductMaster) => void;
+}) => {
+  const basePrice = parseFloat(product.cost_price_usd) * (1 + parseFloat(product.profit_margin || '0') / 100);
+  const finalPriceUsd = product.IVA ? basePrice * 1.16 : basePrice;
+
+  return (
+    <tr>
+      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{product.name}</td>
+      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{categoryName}</td>
+      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{unitName}</td>
+      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${product.IVA ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}>
+          {product.IVA ? 'Sí (16%)' : 'Exento'}
+        </span>
+      </td>
+      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${product.cost_price_usd}</td>
+      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+        ${finalPriceUsd.toFixed(2)}
+      </td>
+      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+        {rates ? `Bs. ${(finalPriceUsd * parseFloat(rates.bcv_rate)).toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '-'}
+      </td>
+      <td className="px-6 py-4 whitespace-nowrap text-sm font-bold">
+          <span className={parseFloat(stock) > 0 ? 'text-green-600' : 'text-red-600'}>
+              {stock}
+          </span>
+      </td>
+      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+        <button
+          onClick={() => onEdit(product)}
+          className="text-blue-600 hover:text-blue-900 mr-4 cursor-pointer"
+        >
+          <Edit2 className="h-4 w-4" />
+        </button>
+        <button onClick={() => onDelete(product)} className="text-red-600 hover:text-red-900 cursor-pointer"><Trash2 className="h-4 w-4" /></button>
+      </td>
+    </tr>
+  );
+});
+ProductRow.displayName = 'ProductRow';
 
 export default function InventoryPage() {
   const [activeTab, setActiveTab] = useState<'products' | 'categories' | 'units'>('products');
@@ -136,58 +192,89 @@ export default function InventoryPage() {
     return data.filter(u => u.name.toLowerCase().includes(searchTerm.toLowerCase()));
   }, [unitsData, searchTerm]);
 
-  const handleCreate = () => {
+  // Optimization: O(1) lookups
+  const categoriesMap = useMemo(() => {
+    const map = new Map<string, string>();
+    if (Array.isArray(categoriesData)) {
+      categoriesData.forEach(c => map.set(c.id, c.name));
+    }
+    return map;
+  }, [categoriesData]);
+
+  const unitsMap = useMemo(() => {
+    const map = new Map<string, string>();
+    if (Array.isArray(unitsData)) {
+      unitsData.forEach(u => map.set(u.id, u.name));
+    }
+    return map;
+  }, [unitsData]);
+
+  const stockMap = useMemo(() => {
+    const map = new Map<string, string>();
+    if (Array.isArray(stockData)) {
+      stockData.forEach(s => map.set(s.product_id, s.stock));
+    }
+    return map;
+  }, [stockData]);
+
+  const handleCreate = useCallback(() => {
     setEditingData(null);
     if (activeTab === 'products') setModalType('product');
     if (activeTab === 'categories') setModalType('category');
     if (activeTab === 'units') setModalType('unit');
     setIsModalOpen(true);
-  };
+  }, [activeTab]);
 
-  const handleEdit = (type: 'product' | 'category' | 'unit', data: ProductMaster | Category | MeasurementUnit) => {
+  const handleEdit = useCallback((type: 'product' | 'category' | 'unit', data: ProductMaster | Category | MeasurementUnit) => {
     setEditingData(data);
     setModalType(type);
     setIsModalOpen(true);
-  };
+  }, []);
 
-  const closeModal = () => {
+  const closeModal = useCallback(() => {
     setIsModalOpen(false);
     setModalType(null);
     setEditingData(null);
-  };
+  }, []);
 
-  const openConfirm = (title: string, description: string, onConfirm: () => void) => {
+  const openConfirm = useCallback((title: string, description: string, onConfirm: () => void) => {
     setConfirmState({
       isOpen: true,
       title,
       description,
       onConfirm
     });
-  };
+  }, []);
 
-  const closeConfirm = () => {
+  const closeConfirm = useCallback(() => {
     setConfirmState(prev => ({ ...prev, isOpen: false }));
-  };
+  }, []);
 
-  const getCategoryName = (id?: string | null) => {
+  const getCategoryName = useCallback((id?: string | null) => {
     if (!id) return '-';
-    const allCategories = Array.isArray(categoriesData) ? categoriesData : [];
-    const cat = allCategories.find((c: Category) => c.id === id);
-    return cat ? cat.name : id;
-  };
+    return categoriesMap.get(id) || id;
+  }, [categoriesMap]);
 
-  const getStock = (productId: string) => {
-    if (!stockData) return '0';
-    const stockItem = stockData.find(s => s.product_id === productId);
-    return stockItem ? stockItem.stock : '0';
-  };
+  const getStock = useCallback((productId: string) => {
+    return stockMap.get(productId) || '0';
+  }, [stockMap]);
 
-  const getUnitName = (id?: string | null) => {
+  const getUnitName = useCallback((id?: string | null) => {
     if (!id) return '-';
-    const allUnits = Array.isArray(unitsData) ? unitsData : [];
-    const unit = allUnits.find((u: MeasurementUnit) => u.id === id);
-    return unit ? unit.name : id;
-  };
+    return unitsMap.get(id) || id;
+  }, [unitsMap]);
+
+  const handleEditProduct = useCallback((product: ProductMaster) => {
+    handleEdit('product', product);
+  }, [handleEdit]);
+
+  const handleDeleteProduct = useCallback((product: ProductMaster) => {
+    openConfirm(
+      'Eliminar Producto',
+      `¿Estás seguro de que deseas eliminar el producto "${product.name}"? Esta acción no se puede deshacer.`,
+      () => deleteProduct.mutate({ path: { id: product.id } })
+    );
+  }, [openConfirm, deleteProduct]);
 
   return (
     <div className="space-y-6">
@@ -300,12 +387,8 @@ export default function InventoryPage() {
                    getUnitName={getUnitName}
                    getStock={getStock}
                    rates={rates}
-                   onEdit={(p) => handleEdit('product', p)}
-                   onDelete={(p) => openConfirm(
-                     'Eliminar Producto',
-                     `¿Estás seguro de que deseas eliminar el producto "${p.name}"? Esta acción no se puede deshacer.`,
-                     () => deleteProduct.mutate({ path: { id: p.id } })
-                   )}
+                   onEdit={handleEditProduct}
+                   onDelete={handleDeleteProduct}
                  />
                ) : (
             <table className="min-w-full divide-y divide-gray-200">
@@ -326,47 +409,17 @@ export default function InventoryPage() {
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {products.map((product: ProductMaster) => {
-                  const basePrice = parseFloat(product.cost_price_usd) * (1 + parseFloat(product.profit_margin || '0') / 100);
-                  const finalPriceUsd = product.IVA ? basePrice * 1.16 : basePrice;
-                  
                   return (
-                  <tr key={product.id}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{product.name}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{getCategoryName(product.category)}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{getUnitName(product.measurement_unit)}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${product.IVA ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}>
-                        {product.IVA ? 'Sí (16%)' : 'Exento'}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${product.cost_price_usd}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      ${finalPriceUsd.toFixed(2)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {rates ? `Bs. ${(finalPriceUsd * parseFloat(rates.bcv_rate)).toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '-'}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-bold">
-                        <span className={parseFloat(getStock(product.id)) > 0 ? 'text-green-600' : 'text-red-600'}>
-                            {getStock(product.id)}
-                        </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <button 
-                        onClick={() => handleEdit('product', product)}
-                        className="text-blue-600 hover:text-blue-900 mr-4 cursor-pointer"
-                      >
-                        <Edit2 className="h-4 w-4" />
-                      </button>
-                      <button onClick={() => {
-                          openConfirm(
-                            'Eliminar Producto',
-                            `¿Estás seguro de que deseas eliminar el producto "${product.name}"? Esta acción no se puede deshacer.`,
-                            () => deleteProduct.mutate({ path: { id: product.id } })
-                          );
-                      }} className="text-red-600 hover:text-red-900 cursor-pointer"><Trash2 className="h-4 w-4" /></button>
-                    </td>
-                  </tr>
+                    <ProductRow
+                      key={product.id}
+                      product={product}
+                      categoryName={getCategoryName(product.category)}
+                      unitName={getUnitName(product.measurement_unit)}
+                      stock={getStock(product.id)}
+                      rates={rates}
+                      onEdit={handleEditProduct}
+                      onDelete={handleDeleteProduct}
+                    />
                   );
                 })}
                 {products.length === 0 && (
@@ -532,4 +585,3 @@ export default function InventoryPage() {
 const tabButtonBaseClass = "group inline-flex items-center py-4 px-1 border-b-2 font-medium text-sm cursor-pointer";
 const tabButtonActiveClass = "border-blue-500 text-blue-600";
 const tabButtonInactiveClass = "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300";
-
