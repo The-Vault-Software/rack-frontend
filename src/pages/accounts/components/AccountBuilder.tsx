@@ -3,10 +3,10 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { 
   v1ProductListOptions, 
   v1ProvidersListOptions,
-  v1ExchangeRatesTodayRetrieveOptions,
   v1MeasurementListOptions,
   v1ProductRetrieveOptions
 } from '../../../client/@tanstack/react-query.gen';
+import { useExchangeRates } from '../../../hooks/useExchangeRates';
 import { useBranch } from '../../../context/BranchContext';
 import { ShoppingCart, Plus, Minus, Trash2, Search, Truck, Edit2, ArrowRight, Layers, Check, ChevronsUpDown, UserPlus } from 'lucide-react';
 import { toast } from 'sonner';
@@ -49,11 +49,7 @@ export default function AccountBuilder() {
 
   const { data: products = [] } = useQuery(v1ProductListOptions());
   const { data: providers = [], isLoading: loadingProviders } = useQuery(v1ProvidersListOptions());
-  const { data: ratesData } = useQuery({
-    ...v1ExchangeRatesTodayRetrieveOptions(),
-    staleTime: 1000 * 60 * 30, // 30 minutes
-  });
-  const rates = ratesData as { bcv_rate: string; parallel_rate: string } | undefined;
+  const { rates } = useExchangeRates();
   const { data: measurementUnits = [] } = useQuery(v1MeasurementListOptions());
   const { branches, isLoading: loadingBranches } = useBranch();
 
