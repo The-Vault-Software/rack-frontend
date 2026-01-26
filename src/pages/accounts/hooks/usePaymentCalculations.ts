@@ -1,7 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useWatch, type UseFormReturn } from 'react-hook-form';
-import { useQuery } from '@tanstack/react-query';
-import { v1ExchangeRatesTodayRetrieveOptions } from '../../../client/@tanstack/react-query.gen';
+import { useExchangeRates } from '../../../hooks/useExchangeRates';
 
 export type PaymentFormValues = {
   currency: string;
@@ -17,12 +16,7 @@ export function usePaymentCalculations(
 ) {
   const { control, setValue } = form;
 
-  const { data: ratesData } = useQuery({
-    ...v1ExchangeRatesTodayRetrieveOptions(),
-    staleTime: 1000 * 60 * 30, // 30 minutes
-  });
-
-  const rates = ratesData as { bcv_rate: string; parallel_rate: string } | undefined;
+  const { rates } = useExchangeRates();
   
   // 'auto': aplica la fórmula, 'manual': usuario editó, 'off': sin ajuste
   const [adjustmentType, setAdjustmentType] = useState<'auto' | 'manual' | 'off'>('off');
