@@ -164,24 +164,42 @@ export default function InventoryPage() {
     setConfirmState(prev => ({ ...prev, isOpen: false }));
   };
 
+  // Optimization: Create lookup maps for O(1) access during render loops
+  // This avoids O(N) find() operations for every row in the product list
+  const categoryMap = useMemo(() => {
+    const map = new Map<string, string>();
+    const allCategories = Array.isArray(categoriesData) ? categoriesData : [];
+    allCategories.forEach((c: Category) => map.set(c.id, c.name));
+    return map;
+  }, [categoriesData]);
+
+  const unitMap = useMemo(() => {
+    const map = new Map<string, string>();
+    const allUnits = Array.isArray(unitsData) ? unitsData : [];
+    allUnits.forEach((u: MeasurementUnit) => map.set(u.id, u.name));
+    return map;
+  }, [unitsData]);
+
+  const stockMap = useMemo(() => {
+    const map = new Map<string, string>();
+    if (Array.isArray(stockData)) {
+      stockData.forEach((s) => map.set(s.product_id, s.stock));
+    }
+    return map;
+  }, [stockData]);
+
   const getCategoryName = (id?: string | null) => {
     if (!id) return '-';
-    const allCategories = Array.isArray(categoriesData) ? categoriesData : [];
-    const cat = allCategories.find((c: Category) => c.id === id);
-    return cat ? cat.name : id;
+    return categoryMap.get(id) || id;
   };
 
   const getStock = (productId: string) => {
-    if (!stockData) return '0';
-    const stockItem = stockData.find(s => s.product_id === productId);
-    return stockItem ? stockItem.stock : '0';
+    return stockMap.get(productId) || '0';
   };
 
   const getUnitName = (id?: string | null) => {
     if (!id) return '-';
-    const allUnits = Array.isArray(unitsData) ? unitsData : [];
-    const unit = allUnits.find((u: MeasurementUnit) => u.id === id);
-    return unit ? unit.name : id;
+    return unitMap.get(id) || id;
   };
 
   return (
