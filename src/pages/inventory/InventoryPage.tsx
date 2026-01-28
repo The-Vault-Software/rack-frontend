@@ -131,6 +131,29 @@ export default function InventoryPage() {
     return data.filter(u => u.name.toLowerCase().includes(searchTerm.toLowerCase()));
   }, [unitsData, searchTerm]);
 
+  // Performance optimization: Pre-compute lookups to avoid O(N^2) searches in render loop
+  const categoryMap = useMemo(() => {
+    const map = new Map<string, string>();
+    const data = Array.isArray(categoriesData) ? categoriesData : [];
+    data.forEach(c => map.set(c.id, c.name));
+    return map;
+  }, [categoriesData]);
+
+  const unitMap = useMemo(() => {
+    const map = new Map<string, string>();
+    const data = Array.isArray(unitsData) ? unitsData : [];
+    data.forEach(u => map.set(u.id, u.name));
+    return map;
+  }, [unitsData]);
+
+  const stockMap = useMemo(() => {
+    const map = new Map<string, string>();
+    if (stockData) {
+      stockData.forEach(s => map.set(s.product_id, s.stock));
+    }
+    return map;
+  }, [stockData]);
+
   const handleCreate = () => {
     setEditingData(null);
     if (activeTab === 'products') setModalType('product');
@@ -166,22 +189,16 @@ export default function InventoryPage() {
 
   const getCategoryName = (id?: string | null) => {
     if (!id) return '-';
-    const allCategories = Array.isArray(categoriesData) ? categoriesData : [];
-    const cat = allCategories.find((c: Category) => c.id === id);
-    return cat ? cat.name : id;
+    return categoryMap.get(id) || id;
   };
 
   const getStock = (productId: string) => {
-    if (!stockData) return '0';
-    const stockItem = stockData.find(s => s.product_id === productId);
-    return stockItem ? stockItem.stock : '0';
+    return stockMap.get(productId) || '0';
   };
 
   const getUnitName = (id?: string | null) => {
     if (!id) return '-';
-    const allUnits = Array.isArray(unitsData) ? unitsData : [];
-    const unit = allUnits.find((u: MeasurementUnit) => u.id === id);
-    return unit ? unit.name : id;
+    return unitMap.get(id) || id;
   };
 
   return (
