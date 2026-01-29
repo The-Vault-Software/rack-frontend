@@ -16,7 +16,9 @@ import {
 } from '../../client/@tanstack/react-query.gen';
 import { useBranch } from '../../context/BranchContext';
 import type { Category, MeasurementUnit, ProductMaster } from '../../client/types.gen';
-import { Plus, Trash2, Edit2, Search, Package, Tag, Scale, Filter, FileSpreadsheet } from 'lucide-react';
+import { Plus, Trash2, Edit2, Search, Package, Tag, Scale, Filter, FileSpreadsheet, Download } from 'lucide-react';
+import * as XLSX from 'xlsx';
+import { format } from 'date-fns';
 import ProductForm from '../../components/inventory/ProductForm';
 import CategoryForm from '../../components/inventory/CategoryForm';
 import UnitForm from '../../components/inventory/UnitForm';
@@ -27,6 +29,8 @@ import { useMediaQuery } from '../../hooks/useMediaQuery';
 import MobileProductList from '../../components/inventory/MobileProductList';
 import MobileCategoryList from '../../components/inventory/MobileCategoryList';
 import MobileUnitList from '../../components/inventory/MobileUnitList';
+import { AlertTriangle, TrendingUp, DollarSign, Anchor } from 'lucide-react';
+import Tooltip from '../../components/ui/Tooltip';
 
 export default function InventoryPage() {
   const [activeTab, setActiveTab] = useState<'products' | 'categories' | 'units'>('products');
@@ -136,6 +140,37 @@ export default function InventoryPage() {
     return data.filter(u => u.name.toLowerCase().includes(searchTerm.toLowerCase()));
   }, [unitsData, searchTerm]);
 
+  const inventoryStats = useMemo(() => {
+    const allProducts = Array.isArray(productsData) ? productsData : [];
+    let totalCost = 0;
+    let totalSale = 0;
+    let lowStockCount = 0;
+
+    allProducts.forEach(product => {
+      const stockItem = stockData?.find(s => s.product_id === product.id);
+      const stockValue = stockItem ? parseFloat(stockItem.stock) : 0;
+      
+      const cost = parseFloat(product.cost_price_usd);
+      const margin = parseFloat(product.profit_margin || '0');
+      const basePrice = cost * (1 + margin / 100);
+      const salePrice = product.IVA ? basePrice * 1.16 : basePrice;
+
+      totalCost += cost * stockValue;
+      totalSale += salePrice * stockValue;
+      
+      if (stockValue < 5) {
+        lowStockCount++;
+      }
+    });
+
+    return {
+      totalCost,
+      totalSale,
+      totalProfit: totalSale - totalCost,
+      lowStockCount
+    };
+  }, [productsData, stockData]);
+
   const handleCreate = () => {
     setEditingData(null);
     if (activeTab === 'products') setModalType('product');
@@ -179,7 +214,9 @@ export default function InventoryPage() {
   const getStock = (productId: string) => {
     if (!stockData) return '0';
     const stockItem = stockData.find(s => s.product_id === productId);
-    return stockItem ? stockItem.stock : '0';
+    if (!stockItem) return '0';
+    const stockValue = parseFloat(stockItem.stock);
+    return stockValue === 0 ? '0' : stockValue.toFixed(2);
   };
 
   const getUnitName = (id?: string | null) => {
@@ -189,19 +226,79 @@ export default function InventoryPage() {
     return unit ? unit.name : id;
   };
 
+  const handleExport = () => {
+    try {
+      const dataToExport = products.map(product => {
+        const basePrice = parseFloat(product.cost_price_usd) * (1 + parseFloat(product.profit_margin || '0') / 100);
+        const finalPriceUsd = product.IVA ? basePrice * 1.16 : basePrice;
+        const finalPriceBs = rates ? (finalPriceUsd * parseFloat(rates.bcv_rate)) : 0;
+
+        return {
+          'Nombre': product.name,
+          'Categoría': getCategoryName(product.category),
+          'Unidad': getUnitName(product.measurement_unit),
+          'IVA': product.IVA ? 'Sí (16%)' : 'Exento',
+          'Precio Costo (USD)': parseFloat(product.cost_price_usd),
+          'Precio Venta (USD)': parseFloat(finalPriceUsd.toFixed(2)),
+          'Precio Venta (Bs)': finalPriceBs ? parseFloat(finalPriceBs.toFixed(2)) : 0,
+          'Stock': parseFloat(getStock(product.id)),
+          'Descripción': product.description || ''
+        };
+      });
+
+      const ws = XLSX.utils.json_to_sheet(dataToExport);
+
+      // Definir anchos de columna para mejor visualización
+      ws['!cols'] = [
+        { wch: 40 }, // Nombre
+        { wch: 25 }, // Categoría
+        { wch: 15 }, // Unidad
+        { wch: 15 }, // IVA
+        { wch: 20 }, // Precio Costo (USD)
+        { wch: 20 }, // Precio Venta (USD)
+        { wch: 20 }, // Precio Venta (Bs)
+        { wch: 10 }, // Stock
+        { wch: 50 }  // Descripción
+      ];
+
+      // Agregar filtros automáticos y congelar encabezado
+      if (dataToExport.length > 0) {
+        ws['!autofilter'] = { ref: `A1:I${dataToExport.length + 1}` };
+        ws['!views'] = [{ state: 'frozen', ySplit: 1 }];
+      }
+
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'Productos');
+      XLSX.writeFile(wb, `Inventario_Productos_${format(new Date(), 'dd-MM-yyyy')}.xlsx`);
+      toast.success('Inventario exportado correctamente');
+    } catch (error) {
+      console.error('Error al exportar inventario:', error);
+      toast.error('Error al exportar el inventario');
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className={isMobile ? 'text-xl font-bold text-gray-900' : 'text-2xl font-bold text-gray-900'}>Gestión de Inventario</h1>
         <div className="flex items-center gap-3">
           {activeTab === 'products' && (
-            <button
-              onClick={() => setIsImportModalOpen(true)}
-              className="inline-flex cursor-pointer items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-            >
-              <FileSpreadsheet className="h-4 w-4 mr-2 text-green-600" />
-              Importar
-            </button>
+            <>
+              <button
+                onClick={() => setIsImportModalOpen(true)}
+                className="inline-flex cursor-pointer items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              >
+                <FileSpreadsheet className="h-4 w-4 mr-2 text-green-600" />
+                Importar
+              </button>
+              <button
+                onClick={handleExport}
+                className="inline-flex cursor-pointer items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              >
+                <Download className="h-4 w-4 mr-2 text-blue-600" />
+                Exportar
+              </button>
+            </>
           )}
           <button
             onClick={handleCreate}
@@ -212,6 +309,39 @@ export default function InventoryPage() {
           </button>
         </div>
       </div>
+
+      {activeTab === 'products' && (
+        <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <SummaryCard 
+            title="Costo Total" 
+            value={`$${inventoryStats.totalCost.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+            subtitle="Valor de inversión"
+            icon={Anchor}
+            color="slate"
+          />
+          <SummaryCard 
+            title="Precio Venta Total" 
+            value={`$${inventoryStats.totalSale.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+            subtitle="Ingreso estimado"
+            icon={DollarSign}
+            color="emerald"
+          />
+          <SummaryCard 
+            title="Beneficios Totales" 
+            value={`$${inventoryStats.totalProfit.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+            subtitle={`Utilidad proyectada`}
+            icon={TrendingUp}
+            color="blue"
+          />
+          <SummaryCard 
+            title="Stock Bajo" 
+            value={inventoryStats.lowStockCount.toString()}
+            subtitle="Menos de 5 unidades"
+            icon={AlertTriangle}
+            color={inventoryStats.lowStockCount > 0 ? 'rose' : 'emerald'}
+          />
+        </section>
+      )}
 
       <div className="flex flex-col sm:flex-row gap-4">
         <div className="relative flex-1">
@@ -347,9 +477,16 @@ export default function InventoryPage() {
                       {rates ? `Bs. ${(finalPriceUsd * parseFloat(rates.bcv_rate)).toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '-'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-bold">
-                        <span className={parseFloat(getStock(product.id)) > 0 ? 'text-green-600' : 'text-red-600'}>
-                            {getStock(product.id)}
-                        </span>
+                        <div className="flex items-center gap-2">
+                          <span className={parseFloat(getStock(product.id)) > 0 ? (parseFloat(getStock(product.id)) < 5 ? 'text-orange-600' : 'text-green-600') : 'text-red-600'}>
+                              {getStock(product.id)}
+                          </span>
+                          {parseFloat(getStock(product.id)) < 5 && (
+                            <Tooltip content="Stock Bajo.">
+                              <AlertTriangle className="h-4 w-4 text-orange-500 animate-pulse cursor-help" />
+                            </Tooltip>
+                          )}
+                        </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <button 
@@ -532,4 +669,35 @@ export default function InventoryPage() {
 const tabButtonBaseClass = "group inline-flex items-center py-4 px-1 border-b-2 font-medium text-sm cursor-pointer";
 const tabButtonActiveClass = "border-blue-500 text-blue-600";
 const tabButtonInactiveClass = "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300";
+
+interface SummaryCardProps {
+  title: string;
+  value: string;
+  subtitle: string;
+  icon: React.ElementType;
+  color: 'blue' | 'emerald' | 'rose' | 'slate' | 'orange';
+}
+
+function SummaryCard({ title, value, subtitle, icon: Icon, color }: SummaryCardProps) {
+  const themes = {
+    blue: 'bg-blue-50 text-blue-600 border-blue-100',
+    emerald: 'bg-emerald-50 text-emerald-600 border-emerald-100',
+    rose: 'bg-rose-50 text-rose-600 border-rose-100',
+    slate: 'bg-slate-50 text-slate-600 border-slate-100',
+    orange: 'bg-orange-50 text-orange-600 border-orange-100',
+  };
+
+  return (
+    <div className={`p-8 rounded-[3rem] border border-gray-100/50 bg-white shadow-[0_20px_40px_-15px_rgba(0,0,0,0.05)] transition-all hover:shadow-[0_30px_60px_-12px_rgba(0,0,0,0.08)] hover:-translate-y-1`}>
+      <div className="flex justify-between items-start mb-4">
+        <div className={`p-3 rounded-2xl ${themes[color].split(' ')[0]} ${themes[color].split(' ')[1]}`}>
+          <Icon className="h-5 w-5" />
+        </div>
+      </div>
+      <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">{title}</p>
+      <h3 className="text-2xl font-black text-gray-900 mt-1">{value}</h3>
+      <p className="text-xs font-bold text-gray-500 mt-1">{subtitle}</p>
+    </div>
+  );
+}
 

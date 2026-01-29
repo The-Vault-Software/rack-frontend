@@ -1,7 +1,7 @@
 
 import React from 'react';
 import type { ProductMaster } from '../../client/types.gen';
-import { Edit2, Trash2 } from 'lucide-react';
+import { Edit2, Trash2, AlertTriangle } from 'lucide-react';
 
 interface MobileProductListProps {
   products: ProductMaster[];
@@ -65,9 +65,14 @@ const MobileProductList: React.FC<MobileProductListProps> = ({
               </div>
               <div>
                  <span className="block text-gray-500 text-xs">Stock</span>
-                 <span className={`font-bold ${parseFloat(getStock(product.id)) > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                    {getStock(product.id)} {getUnitName(product.measurement_unit)}
-                 </span>
+                 <div className="flex items-center gap-1.5">
+                    <span className={`font-bold ${parseFloat(getStock(product.id)) > 0 ? (parseFloat(getStock(product.id)) < 5 ? 'text-orange-600' : 'text-green-600') : 'text-red-600'}`}>
+                       {getStock(product.id)} {getUnitName(product.measurement_unit)}
+                    </span>
+                    {parseFloat(getStock(product.id)) < 5 && (
+                      <AlertTriangle className="h-4 w-4 text-orange-500 animate-pulse" />
+                    )}
+                 </div>
               </div>
             </div>
 

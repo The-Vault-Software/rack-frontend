@@ -1,12 +1,19 @@
 import { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { v1SalesListOptions, v1SalesRetrieveOptions, v1ProductBranchStockListOptions } from '../../../client/@tanstack/react-query.gen';
+import { 
+  v1SalesListOptions, 
+  v1SalesRetrieveOptions, 
+  v1ProductBranchStockListOptions, 
+  v1ProductListOptions 
+} from '../../../client/@tanstack/react-query.gen';
+import type { ProductMaster } from '../../../client/types.gen';
 import { useBranch } from '../../../context/BranchContext';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell
 } from 'recharts';
 import { 
-  Package, Info, AlertTriangle, Play, Loader2, TrendingUp, History
+  Package, Info, AlertTriangle, Play, Loader2, TrendingUp, History,
+  DollarSign, BarChart2, Target, Zap, Anchor
 } from 'lucide-react';
 import { differenceInDays } from 'date-fns';
 
@@ -21,6 +28,10 @@ interface InventoryAnalysisResult {
     daysUntilEmpty: number;
     restockInDays: number;
     rotationType: 'high' | 'low';
+    costPrice: number;
+    profitMargin: number;
+    totalCostValue: number;
+    totalSaleValue: number;
 }
 
 export default function InventoryAnalytics() {
@@ -28,6 +39,14 @@ export default function InventoryAnalytics() {
   const queryClient = useQueryClient();
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisResults, setAnalysisResults] = useState<InventoryAnalysisResult[] | null>(null);
+  const [summaryStats, setSummaryStats] = useState<{
+    totalCostValue: number;
+    totalSaleValue: number;
+    potentialProfit: number;
+    criticalCount: number;
+    deadStockCount: number;
+    avgTurnover: number;
+  } | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const handleStartAnalysis = async () => {
@@ -46,13 +65,20 @@ export default function InventoryAnalytics() {
         throw new Error("No hay suficientes ventas para realizar un análisis estadístico.");
       }
 
-      // 2. Fetch details for each sale concurrently
       const detailsPromises = salesList.results.map(sale => 
         queryClient.fetchQuery(v1SalesRetrieveOptions({ path: { id: sale.id } }))
       );
       const salesWithDetails = await Promise.all(detailsPromises);
 
-      // 3. Fetch current stock
+      // 3. Fetch all products (for valuation and dead stock)
+      const productsData = await queryClient.fetchQuery(
+        v1ProductListOptions({
+          // @ts-expect-error - pagination might be needed but current type is Array
+          query: { page_size: 1000 }
+        })
+      );
+
+      // 4. Fetch current stock
       const stockData = await queryClient.fetchQuery(
         v1ProductBranchStockListOptions({
            // @ts-expect-error - Branch query
@@ -60,7 +86,7 @@ export default function InventoryAnalytics() {
         })
       );
 
-      // 4. Aggregate Demand
+      // 5. Aggregate Demand
       const productSummary: Record<string, { name: string, qty: number }> = {};
       salesWithDetails.forEach(sale => {
         sale.sale_details.forEach(detail => {
@@ -77,18 +103,31 @@ export default function InventoryAnalytics() {
       const maxDate = Math.max(...dates);
       const daysDiff = Math.max(1, differenceInDays(maxDate, minDate));
 
-      // 5. Calculate Model for All Products and Categorize
-      const allResults: InventoryAnalysisResult[] = Object.entries(productSummary)
-        .map(([id, info]) => {
+      // 6. Calculate Model for All Products and Categorize
+      let totalCostValue = 0;
+      let totalSaleValue = 0;
+      let criticalCount = 0;
+      let deadStockCount = 0;
+
+      const allResults: InventoryAnalysisResult[] = (productsData as ProductMaster[])
+        .map((product: ProductMaster) => {
+          const id = product.id;
+          const info = productSummary[id] || { name: product.name, qty: 0 };
+          const costPrice = parseFloat(product.cost_price_usd);
+          const profitMargin = parseFloat(product.profit_margin);
+          const salePrice = costPrice * (1 + profitMargin / 100);
+
           const d = info.qty / daysDiff; // daily demand
           const D = d * 365; // annual demand
           
+          if (info.qty === 0) deadStockCount++;
+
           // Constants for model
           const S = 10; // Setup cost
-          const H = 2;  // Holding cost annual
-          const B = 20; // Shortage cost annual (for low rotation)
+          const H = Math.max(0.5, costPrice * 0.2);  // Holding cost approx 20% of value
+          const B = costPrice * 2; // Shortage cost
 
-          const isHighRotation = d > 0.5; // Heuristic: more than 0.5 units per day is high rotation
+          const isHighRotation = d > 0.1; // Lowered threshold to catch more products
           
           let qAsterisk = 0;
           let sAsterisk = 0;
@@ -99,27 +138,29 @@ export default function InventoryAnalytics() {
           const currentStock = currentStockObj ? parseFloat(currentStockObj.stock) : 0;
           const daysUntilEmpty = d > 0 ? currentStock / d : 999;
 
+          totalCostValue += currentStock * costPrice;
+          totalSaleValue += currentStock * salePrice;
+
           if (isHighRotation) {
             // EOQ Standard
             qAsterisk = Math.sqrt((2 * D * S) / H);
-            // Robust Safety Stock: Heuristic (e.g., 3 days of demand + 10% of Q*)
-            safetyStock = (d * 3) + (qAsterisk * 0.1);
+            // Safety Stock: 3 days of demand
+            safetyStock = (d * 3);
             
-            // For high rotation, we restock when we reach Safety Stock
             const stockAboveSafety = Math.max(0, currentStock - safetyStock);
             restockInDays = d > 0 ? stockAboveSafety / d : 999;
           } else {
             // EOQ with Shortages (Backorders)
             qAsterisk = Math.sqrt(((2 * D * S) / H) * ((H + B) / B));
             sAsterisk = qAsterisk * (H / (H + B));
-            
-            // Restock point: Time until 0 + Time of Shortage
             restockInDays = daysUntilEmpty + (d > 0 ? sAsterisk / d : 0);
           }
 
+          if (currentStock <= safetyStock && d > 0) criticalCount++;
+
           return {
             productId: id,
-            productName: info.name,
+            productName: product.name,
             currentStock,
             dailyDemand: d,
             qAsterisk,
@@ -127,11 +168,24 @@ export default function InventoryAnalytics() {
             safetyStock,
             daysUntilEmpty,
             restockInDays,
-            rotationType: (isHighRotation ? 'high' : 'low') as 'high' | 'low'
+            rotationType: (isHighRotation ? 'high' : 'low') as 'high' | 'low',
+            costPrice,
+            profitMargin,
+            totalCostValue: currentStock * costPrice,
+            totalSaleValue: currentStock * salePrice
           };
         })
-        .sort((a, b) => b.dailyDemand - a.dailyDemand);
+        .filter((r: InventoryAnalysisResult) => r.totalCostValue > 0 || r.dailyDemand > 0) // Filter out irrelevant items
+        .sort((a: InventoryAnalysisResult, b: InventoryAnalysisResult) => b.dailyDemand - a.dailyDemand);
 
+      setSummaryStats({
+        totalCostValue,
+        totalSaleValue,
+        potentialProfit: totalSaleValue - totalCostValue,
+        criticalCount,
+        deadStockCount,
+        avgTurnover: totalCostValue > 0 ? (allResults.reduce((acc: number, r: InventoryAnalysisResult) => acc + (r.dailyDemand * 30 * r.costPrice), 0) / totalCostValue) : 0
+      });
       setAnalysisResults(allResults);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Ocurrió un error al procesar el análisis.");
@@ -185,6 +239,83 @@ export default function InventoryAnalytics() {
 
   return (
     <div className="space-y-12">
+      {/* KPI Overlays */}
+      {summaryStats && (
+        <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <SummaryCard 
+            title="Capital en Mercancía" 
+            value={`$${summaryStats.totalCostValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+            subtitle="Valor Total a Costo"
+            icon={Anchor}
+            color="slate"
+          />
+          <SummaryCard 
+            title="Valor de Venta" 
+            value={`$${summaryStats.totalSaleValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+            subtitle="Estimado de Ingreso"
+            icon={DollarSign}
+            color="emerald"
+          />
+          <SummaryCard 
+            title="Utilidad Potencial" 
+            value={`$${summaryStats.potentialProfit.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+            subtitle={`Margen: ${((summaryStats.potentialProfit / summaryStats.totalSaleValue) * 100).toFixed(1)}%`}
+            icon={TrendingUp}
+            color="blue"
+          />
+          <SummaryCard 
+            title="Salud de Stock" 
+            value={summaryStats.criticalCount.toString()}
+            subtitle="Productos Críticos"
+            icon={AlertTriangle}
+            color={summaryStats.criticalCount > 0 ? 'rose' : 'emerald'}
+          />
+        </section>
+      )}
+
+      {/* Advanced Insights Row */}
+      {summaryStats && (
+        <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="bg-white p-6 rounded-[2.5rem] border border-gray-100 shadow-sm flex items-center gap-5">
+            <div className="bg-orange-50 p-4 rounded-2xl">
+              <Zap className="h-6 w-6 text-orange-500" />
+            </div>
+            <div>
+              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Rotación Mensual</p>
+              <h4 className="text-xl font-black text-gray-900">{summaryStats.avgTurnover.toFixed(1)}x</h4>
+              <p className="text-[10px] text-gray-500">Ciclos de stock por mes</p>
+            </div>
+          </div>
+
+          <div className="bg-white p-6 rounded-[2.5rem] border border-gray-100 shadow-sm flex items-center gap-5">
+            <div className="bg-purple-50 p-4 rounded-2xl">
+              <Target className="h-6 w-6 text-purple-500" />
+            </div>
+            <div>
+              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Stock Muerto</p>
+              <h4 className="text-xl font-black text-gray-900">{summaryStats.deadStockCount}</h4>
+              <p className="text-[10px] text-gray-500">Sin ventas en la muestra</p>
+            </div>
+          </div>
+
+          <div className="bg-white p-6 rounded-[2.5rem] border border-gray-100 shadow-sm flex items-center gap-5">
+            <div className="bg-blue-50 p-4 rounded-2xl">
+              <BarChart2 className="h-6 w-6 text-blue-500" />
+            </div>
+            <div>
+              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Efectividad Pareto</p>
+              <h4 className="text-xl font-black text-gray-900">
+                {analysisResults && analysisResults.length > 0 ? (
+                  (analysisResults.slice(0, Math.ceil(analysisResults.length * 0.2)).reduce((acc, r) => acc + r.dailyDemand, 0) / 
+                   analysisResults.reduce((acc, r) => acc + r.dailyDemand, 0) * 100 || 0).toFixed(0)
+                ) : '0'}%
+              </h4>
+              <p className="text-[10px] text-gray-500">Ventas en el top 20% productos</p>
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* High Rotation Section */}
       <section className="space-y-6">
         <div className="flex items-center justify-between">
@@ -437,6 +568,37 @@ export default function InventoryAnalytics() {
           Actualizar Análisis Completo
         </button>
       </div>
+    </div>
+  );
+}
+
+interface SummaryCardProps {
+  title: string;
+  value: string;
+  subtitle: string;
+  icon: React.ElementType;
+  color: 'blue' | 'emerald' | 'rose' | 'slate' | 'orange';
+}
+
+function SummaryCard({ title, value, subtitle, icon: Icon, color }: SummaryCardProps) {
+  const themes = {
+    blue: 'bg-blue-50 text-blue-600 border-blue-100',
+    emerald: 'bg-emerald-50 text-emerald-600 border-emerald-100',
+    rose: 'bg-rose-50 text-rose-600 border-rose-100',
+    slate: 'bg-slate-50 text-slate-600 border-slate-100',
+    orange: 'bg-orange-50 text-orange-600 border-orange-100',
+  };
+
+  return (
+    <div className={`p-6 rounded-[2.5rem] border bg-white shadow-sm transition-all hover:shadow-md`}>
+      <div className="flex justify-between items-start mb-4">
+        <div className={`p-3 rounded-2xl ${themes[color].split(' ')[0]} ${themes[color].split(' ')[1]}`}>
+          <Icon className="h-5 w-5" />
+        </div>
+      </div>
+      <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">{title}</p>
+      <h3 className="text-2xl font-black text-gray-900 mt-1">{value}</h3>
+      <p className="text-xs font-bold text-gray-500 mt-1">{subtitle}</p>
     </div>
   );
 }
