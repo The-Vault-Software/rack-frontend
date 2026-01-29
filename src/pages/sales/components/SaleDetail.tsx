@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { v1SalesRetrieveOptions, v1SalesPaymentsListOptions, v1ExchangeRatesRetrieveOptions, v1ExchangeRatesTodayRetrieveOptions, v1ProductListOptions } from '../../../client/@tanstack/react-query.gen';
+import { v1SalesRetrieveOptions, v1SalesPaymentsListOptions, v1ExchangeRatesRetrieveOptions, v1ProductListOptions } from '../../../client/@tanstack/react-query.gen';
+import { useExchangeRates } from '../../../hooks/useExchangeRates';
 import { Package, User, Calendar, CreditCard, Receipt, Search, Info, Wallet } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -120,12 +121,7 @@ export default function SaleDetail({ saleId }: SaleDetailProps) {
     enabled: showPaymentsModal
   });
 
-  const { data: ratesData } = useQuery({
-    ...v1ExchangeRatesTodayRetrieveOptions(),
-    staleTime: 1000 * 60 * 30, // 30 minutes
-  });
-
-  const rates = ratesData as { bcv_rate: string; parallel_rate: string } | undefined;
+  const { rates } = useExchangeRates();
 
   if (isLoading) {
     return (

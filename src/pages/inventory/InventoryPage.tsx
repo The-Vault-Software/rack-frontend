@@ -12,8 +12,8 @@ import {
   v1MeasurementDestroyMutation,
   v1ProductDestroyMutation,
   v1ProductBranchStockListOptions,
-  v1ExchangeRatesTodayRetrieveOptions
 } from '../../client/@tanstack/react-query.gen';
+import { useExchangeRates } from '../../hooks/useExchangeRates';
 import { useBranch } from '../../context/BranchContext';
 import type { Category, MeasurementUnit, ProductMaster } from '../../client/types.gen';
 import { Plus, Trash2, Edit2, Search, Package, Tag, Scale, Filter, FileSpreadsheet, Download } from 'lucide-react';
@@ -70,12 +70,7 @@ export default function InventoryPage() {
     enabled: !!selectedBranch?.id
   });
 
-  const { data: ratesData } = useQuery({
-    ...v1ExchangeRatesTodayRetrieveOptions(),
-    staleTime: 1000 * 60 * 30, // 30 minutes
-  });
-
-  const rates = ratesData as { bcv_rate: string; parallel_rate: string } | undefined;
+  const { rates } = useExchangeRates();
 
   const deleteProduct = useMutation({
     ...v1ProductDestroyMutation(),

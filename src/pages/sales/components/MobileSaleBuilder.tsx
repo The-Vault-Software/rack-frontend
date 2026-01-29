@@ -7,10 +7,10 @@ import {
   v1SalesListQueryKey,
   v1ProductBranchStockListQueryKey,
   v1CustomersListOptions,
-  v1ExchangeRatesTodayRetrieveOptions,
   v1MeasurementListOptions,
   v1ProductRetrieveOptions
 } from '../../../client/@tanstack/react-query.gen';
+import { useExchangeRates } from '../../../hooks/useExchangeRates';
 import { useBranch } from '../../../context/BranchContext';
 import { 
   ShoppingCart, Plus, Minus, Trash2, Search, User, 
@@ -64,12 +64,7 @@ export default function MobileSaleBuilder() {
     enabled: !!selectedBranch?.id
   });
 
-  const { data: ratesData } = useQuery({
-    ...v1ExchangeRatesTodayRetrieveOptions(),
-    staleTime: 1000 * 60 * 30,
-  });
-
-  const rates = ratesData as { bcv_rate: string; parallel_rate: string } | undefined;
+  const { rates } = useExchangeRates();
   const { data: measurementUnits = [] } = useQuery(v1MeasurementListOptions());
 
   const createSaleMutation = useMutation({

@@ -4,10 +4,10 @@ import {
   v1ProductListOptions, 
   v1ProductBranchStockListOptions,
   v1CustomersListOptions,
-  v1ExchangeRatesTodayRetrieveOptions,
   v1MeasurementListOptions,
   v1ProductRetrieveOptions
 } from '../../../client/@tanstack/react-query.gen';
+import { useExchangeRates } from '../../../hooks/useExchangeRates';
 import { useBranch } from '../../../context/BranchContext';
 import { ShoppingCart, Plus, Minus, Trash2, Search, User, ArrowRight, Edit2, Layers, UserPlus, Check, ChevronsUpDown, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
@@ -60,12 +60,7 @@ export default function SaleBuilder() {
     enabled: !!selectedBranch?.id
   });
 
-  const { data: ratesData } = useQuery({
-    ...v1ExchangeRatesTodayRetrieveOptions(),
-    staleTime: 1000 * 60 * 30, // 30 minutes
-  });
-
-  const rates = ratesData as { bcv_rate: string; parallel_rate: string } | undefined;
+  const { rates } = useExchangeRates();
 
   const { data: measurementUnits = [] } = useQuery(v1MeasurementListOptions());
   const { branches, isLoading: loadingBranches } = useBranch();

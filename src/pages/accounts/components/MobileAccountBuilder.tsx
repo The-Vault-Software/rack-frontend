@@ -5,10 +5,10 @@ import {
   v1ProvidersListOptions,
   v1AccountsCreateMutation,
   v1AccountsListQueryKey,
-  v1ExchangeRatesTodayRetrieveOptions,
   v1MeasurementListOptions,
   v1ProductRetrieveOptions
 } from '../../../client/@tanstack/react-query.gen';
+import { useExchangeRates } from '../../../hooks/useExchangeRates';
 import { useBranch } from '../../../context/BranchContext';
 import { 
   ShoppingCart, Plus, Minus, Trash2, Search, Truck, 
@@ -58,12 +58,7 @@ export default function MobileAccountBuilder() {
   const { data: products = [] } = useQuery(v1ProductListOptions());
   const { data: providers = [] } = useQuery(v1ProvidersListOptions());
   
-  const { data: ratesData } = useQuery({
-    ...v1ExchangeRatesTodayRetrieveOptions(),
-    staleTime: 1000 * 60 * 30,
-  });
-
-  const rates = ratesData as { bcv_rate: string; parallel_rate: string } | undefined;
+  const { rates } = useExchangeRates();
   const { data: measurementUnits = [] } = useQuery(v1MeasurementListOptions());
 
   const createAccountMutation = useMutation({
