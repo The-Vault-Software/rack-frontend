@@ -274,33 +274,33 @@ export default function InventoryPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <h1 className={isMobile ? 'text-xl font-bold text-gray-900' : 'text-2xl font-bold text-gray-900'}>Gestión de Inventario</h1>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3 w-full sm:w-auto">
           {activeTab === 'products' && (
-            <>
+            <div className="flex flex-1 sm:flex-none gap-2">
               <button
                 onClick={() => setIsImportModalOpen(true)}
-                className="inline-flex cursor-pointer items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                className="flex-1 sm:flex-none inline-flex cursor-pointer items-center justify-center px-3 py-2 border border-gray-300 shadow-sm text-xs sm:text-sm font-medium rounded-xl text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 whitespace-nowrap"
               >
-                <FileSpreadsheet className="h-4 w-4 mr-2 text-green-600" />
-                Importar
+                <FileSpreadsheet className="h-4 w-4 mr-1.5 sm:mr-2 text-green-600" />
+                <span className="sm:inline">Importar</span>
               </button>
               <button
                 onClick={handleExport}
-                className="inline-flex cursor-pointer items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                className="flex-1 sm:flex-none inline-flex cursor-pointer items-center justify-center px-3 py-2 border border-gray-300 shadow-sm text-xs sm:text-sm font-medium rounded-xl text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 whitespace-nowrap"
               >
-                <Download className="h-4 w-4 mr-2 text-blue-600" />
-                Exportar
+                <Download className="h-4 w-4 mr-1.5 sm:mr-2 text-blue-600" />
+                <span className="sm:inline">Exportar</span>
               </button>
-            </>
+            </div>
           )}
           <button
             onClick={handleCreate}
-            className="inline-flex cursor-pointer items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            className="flex-1 sm:flex-none inline-flex cursor-pointer items-center justify-center px-4 py-2 border border-transparent text-xs sm:text-sm font-medium rounded-xl shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 whitespace-nowrap"
           >
-            <Plus className="h-4 w-4 mr-2" />
-            Crear {activeTab === 'products' ? 'Producto' : activeTab === 'categories' ? 'Categoría' : 'Unidad'}
+            <Plus className="h-4 w-4 mr-1.5 sm:mr-2" />
+            Crear {activeTab === 'products' ? (isMobile ? 'Prod.' : 'Producto') : activeTab === 'categories' ? (isMobile ? 'Cat.' : 'Categoría') : (isMobile ? 'Unid.' : 'Unidad')}
           </button>
         </div>
       </div>
@@ -683,7 +683,7 @@ function SummaryCard({ title, value, subtitle, icon: Icon, color }: SummaryCardP
   };
 
   return (
-    <div className={`p-8 rounded-[3rem] border border-gray-100/50 bg-white shadow-[0_20px_40px_-15px_rgba(0,0,0,0.05)] transition-all hover:shadow-[0_30px_60px_-12px_rgba(0,0,0,0.08)] hover:-translate-y-1`}>
+    <div className={`p-6 sm:p-8 rounded-[2rem] sm:rounded-[3rem] border border-gray-100/50 bg-white shadow-[0_20px_40px_-15px_rgba(0,0,0,0.05)] transition-all hover:shadow-[0_30px_60px_-12px_rgba(0,0,0,0.08)] hover:-translate-y-1`}>
       <div className="flex justify-between items-start mb-4">
         <div className={`p-3 rounded-2xl ${themes[color].split(' ')[0]} ${themes[color].split(' ')[1]}`}>
           <Icon className="h-5 w-5" />
