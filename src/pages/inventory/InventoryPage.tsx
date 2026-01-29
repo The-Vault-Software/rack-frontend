@@ -164,24 +164,46 @@ export default function InventoryPage() {
     setConfirmState(prev => ({ ...prev, isOpen: false }));
   };
 
+  const categoryMap = useMemo(() => {
+    const map = new Map<string, string>();
+    const data = Array.isArray(categoriesData) ? categoriesData : [];
+    for (const cat of data) {
+      map.set(cat.id, cat.name);
+    }
+    return map;
+  }, [categoriesData]);
+
+  const unitMap = useMemo(() => {
+    const map = new Map<string, string>();
+    const data = Array.isArray(unitsData) ? unitsData : [];
+    for (const unit of data) {
+      map.set(unit.id, unit.name);
+    }
+    return map;
+  }, [unitsData]);
+
+  const stockMap = useMemo(() => {
+    const map = new Map<string, string>();
+    if (stockData) {
+      for (const stock of stockData) {
+        map.set(stock.product_id, stock.stock);
+      }
+    }
+    return map;
+  }, [stockData]);
+
   const getCategoryName = (id?: string | null) => {
     if (!id) return '-';
-    const allCategories = Array.isArray(categoriesData) ? categoriesData : [];
-    const cat = allCategories.find((c: Category) => c.id === id);
-    return cat ? cat.name : id;
+    return categoryMap.get(id) || id;
   };
 
   const getStock = (productId: string) => {
-    if (!stockData) return '0';
-    const stockItem = stockData.find(s => s.product_id === productId);
-    return stockItem ? stockItem.stock : '0';
+    return stockMap.get(productId) || '0';
   };
 
   const getUnitName = (id?: string | null) => {
     if (!id) return '-';
-    const allUnits = Array.isArray(unitsData) ? unitsData : [];
-    const unit = allUnits.find((u: MeasurementUnit) => u.id === id);
-    return unit ? unit.name : id;
+    return unitMap.get(id) || id;
   };
 
   return (
