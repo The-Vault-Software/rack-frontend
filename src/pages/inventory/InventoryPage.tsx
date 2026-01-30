@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { 
@@ -15,7 +15,7 @@ import {
 } from '../../client/@tanstack/react-query.gen';
 import { useExchangeRates } from '../../hooks/useExchangeRates';
 import { useBranch } from '../../context/BranchContext';
-import type { Category, MeasurementUnit, ProductMaster } from '../../client/types.gen';
+import type { Category, MeasurementUnit, ProductMaster, ProductStockSale } from '../../client/types.gen';
 import { Plus, Trash2, Edit2, Search, Package, Tag, Scale, Filter, FileSpreadsheet, Download } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { format } from 'date-fns';
@@ -71,6 +71,29 @@ export default function InventoryPage() {
   });
 
   const { rates } = useExchangeRates();
+
+  // Optimization: Create Maps for O(1) lookups
+  const stockMap = useMemo(() => {
+    const map = new Map<string, ProductStockSale>();
+    if (stockData) {
+      stockData.forEach(s => map.set(s.product_id, s));
+    }
+    return map;
+  }, [stockData]);
+
+  const categoryMap = useMemo(() => {
+    const map = new Map<string, string>();
+    const data = Array.isArray(categoriesData) ? categoriesData : [];
+    data.forEach(c => map.set(c.id, c.name));
+    return map;
+  }, [categoriesData]);
+
+  const unitMap = useMemo(() => {
+    const map = new Map<string, string>();
+    const data = Array.isArray(unitsData) ? unitsData : [];
+    data.forEach(u => map.set(u.id, u.name));
+    return map;
+  }, [unitsData]);
 
   const deleteProduct = useMutation({
     ...v1ProductDestroyMutation(),
@@ -142,7 +165,7 @@ export default function InventoryPage() {
     let lowStockCount = 0;
 
     allProducts.forEach(product => {
-      const stockItem = stockData?.find(s => s.product_id === product.id);
+      const stockItem = stockMap.get(product.id);
       const stockValue = stockItem ? parseFloat(stockItem.stock) : 0;
       
       const cost = parseFloat(product.cost_price_usd);
@@ -164,7 +187,7 @@ export default function InventoryPage() {
       totalProfit: totalSale - totalCost,
       lowStockCount
     };
-  }, [productsData, stockData]);
+  }, [productsData, stockMap]);
 
   const handleCreate = () => {
     setEditingData(null);
@@ -199,27 +222,22 @@ export default function InventoryPage() {
     setConfirmState(prev => ({ ...prev, isOpen: false }));
   };
 
-  const getCategoryName = (id?: string | null) => {
+  const getCategoryName = useCallback((id?: string | null) => {
     if (!id) return '-';
-    const allCategories = Array.isArray(categoriesData) ? categoriesData : [];
-    const cat = allCategories.find((c: Category) => c.id === id);
-    return cat ? cat.name : id;
-  };
+    return categoryMap.get(id) || id;
+  }, [categoryMap]);
 
-  const getStock = (productId: string) => {
-    if (!stockData) return '0';
-    const stockItem = stockData.find(s => s.product_id === productId);
+  const getStock = useCallback((productId: string) => {
+    const stockItem = stockMap.get(productId);
     if (!stockItem) return '0';
     const stockValue = parseFloat(stockItem.stock);
     return stockValue === 0 ? '0' : stockValue.toFixed(2);
-  };
+  }, [stockMap]);
 
-  const getUnitName = (id?: string | null) => {
+  const getUnitName = useCallback((id?: string | null) => {
     if (!id) return '-';
-    const allUnits = Array.isArray(unitsData) ? unitsData : [];
-    const unit = allUnits.find((u: MeasurementUnit) => u.id === id);
-    return unit ? unit.name : id;
-  };
+    return unitMap.get(id) || id;
+  }, [unitMap]);
 
   const handleExport = () => {
     try {
@@ -695,4 +713,3 @@ function SummaryCard({ title, value, subtitle, icon: Icon, color }: SummaryCardP
     </div>
   );
 }
-
