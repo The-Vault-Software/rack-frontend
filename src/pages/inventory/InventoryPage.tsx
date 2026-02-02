@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { 
@@ -16,7 +16,7 @@ import {
 import { useExchangeRates } from '../../hooks/useExchangeRates';
 import { useBranch } from '../../context/BranchContext';
 import type { Category, MeasurementUnit, ProductMaster } from '../../client/types.gen';
-import { Plus, Trash2, Edit2, Search, Package, Tag, Scale, Filter, FileSpreadsheet, Download } from 'lucide-react';
+import { Plus, Trash2, Edit2, Search, Package, Tag, Scale, Filter, FileSpreadsheet, Download, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { format } from 'date-fns';
 import ProductForm from '../../components/inventory/ProductForm';
@@ -41,6 +41,8 @@ export default function InventoryPage() {
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [modalType, setModalType] = useState<'product' | 'category' | 'unit' | null>(null);
   const [editingData, setEditingData] = useState<ProductMaster | Category | MeasurementUnit | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(25);
 
   const [confirmState, setConfirmState] = useState<{
     isOpen: boolean;
@@ -165,6 +167,19 @@ export default function InventoryPage() {
       lowStockCount
     };
   }, [productsData, stockData]);
+
+
+  const paginatedProducts = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    return products.slice(startIndex, startIndex + itemsPerPage);
+  }, [products, currentPage, itemsPerPage]);
+
+  const totalPages = Math.ceil(products.length / itemsPerPage);
+
+  // Reset page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, filterCategory, filterUnit, activeTab]);
 
   const handleCreate = () => {
     setEditingData(null);
@@ -452,7 +467,7 @@ export default function InventoryPage() {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {products.map((product: ProductMaster) => {
+                {paginatedProducts.map((product: ProductMaster) => {
                   const basePrice = parseFloat(product.cost_price_usd) * (1 + parseFloat(product.profit_margin || '0') / 100);
                   const finalPriceUsd = product.IVA ? basePrice * 1.16 : basePrice;
                   
@@ -524,8 +539,91 @@ export default function InventoryPage() {
                 )}
               </tbody>
             </table>
-               )
+             )
              )}
+            
+            {!isMobile && products.length > 0 && (
+                <div className="px-6 py-4 flex items-center justify-between border-t border-gray-200 bg-gray-50">
+                  <div className="flex-1 flex justify-between sm:hidden">
+                    <button
+                      onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                      disabled={currentPage === 1}
+                      className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Anterior
+                    </button>
+                    <button
+                      onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                      disabled={currentPage === totalPages}
+                      className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Siguiente
+                    </button>
+                  </div>
+                  <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                    <div className="flex gap-x-4 items-center">
+                      <p className="text-sm text-gray-700">
+                        Mostrando <span className="font-medium">{(currentPage - 1) * itemsPerPage + 1}</span> a <span className="font-medium">{Math.min(currentPage * itemsPerPage, products.length)}</span> de <span className="font-medium">{products.length}</span> resultados
+                      </p>
+                       <select
+                          value={itemsPerPage}
+                          onChange={(e) => setItemsPerPage(Number(e.target.value))}
+                          className="block w-full pl-3 pr-10 py-1.5 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
+                        >
+                          <option value={10}>10 por página</option>
+                          <option value={20}>20 por página</option>
+                          <option value={25}>25 por página</option>
+                          <option value={50}>50 por página</option>
+                          <option value={100}>100 por página</option>
+                        </select>
+                    </div>
+                    <div>
+                      <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                        <button
+                          onClick={() => setCurrentPage(1)}
+                          disabled={currentPage === 1}
+                          className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          <span className="sr-only">Primera</span>
+                          <ChevronsLeft className="h-5 w-5" aria-hidden="true" />
+                        </button>
+                        <button
+                          onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                          disabled={currentPage === 1}
+                          className="relative inline-flex items-center px-2 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          <span className="sr-only">Anterior</span>
+                          <ChevronLeft className="h-5 w-5" aria-hidden="true" />
+                        </button>
+                        
+                        <div className="flex items-center px-4 border-t border-b border-gray-300 bg-white">
+                            <span className="text-sm text-gray-700">
+                              Página {currentPage} de {totalPages}
+                            </span>
+                        </div>
+
+                        <button
+                          onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                          disabled={currentPage === totalPages}
+                          className="relative inline-flex items-center px-2 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          <span className="sr-only">Siguiente</span>
+                          <ChevronRight className="h-5 w-5" aria-hidden="true" />
+                        </button>
+                        <button
+                          onClick={() => setCurrentPage(totalPages)}
+                          disabled={currentPage === totalPages}
+                          className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          <span className="sr-only">Última</span>
+                          <ChevronsRight className="h-5 w-5" aria-hidden="true" />
+                        </button>
+                      </nav>
+                    </div>
+                  </div>
+                </div>
+              )}
+
           </div>
         )}
 
