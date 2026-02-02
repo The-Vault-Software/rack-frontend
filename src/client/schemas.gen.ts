@@ -941,6 +941,11 @@ export const PatchedProductWriteDetailRequestSchema = {
             format: 'uuid',
             nullable: true
         },
+        sku: {
+            type: 'string',
+            nullable: true,
+            maxLength: 100
+        },
         selling_units: {
             type: 'array',
             items: {
@@ -1057,6 +1062,11 @@ export const ProductMasterSchema = {
             type: 'string',
             format: 'uuid',
             nullable: true
+        },
+        sku: {
+            type: 'string',
+            nullable: true,
+            maxLength: 100
         }
     },
     required: [
@@ -1182,6 +1192,11 @@ export const ProductWriteDetailSchema = {
             format: 'uuid',
             nullable: true
         },
+        sku: {
+            type: 'string',
+            nullable: true,
+            maxLength: 100
+        },
         selling_units: {
             type: 'array',
             items: {
@@ -1232,6 +1247,11 @@ export const ProductWriteDetailRequestSchema = {
             type: 'string',
             format: 'uuid',
             nullable: true
+        },
+        sku: {
+            type: 'string',
+            nullable: true,
+            maxLength: 100
         },
         selling_units: {
             type: 'array',
@@ -2132,6 +2152,11 @@ export const ProductMasterWritableSchema = {
             type: 'string',
             format: 'uuid',
             nullable: true
+        },
+        sku: {
+            type: 'string',
+            nullable: true,
+            maxLength: 100
         }
     },
     required: [
@@ -2189,6 +2214,11 @@ export const ProductWriteDetailWritableSchema = {
             type: 'string',
             format: 'uuid',
             nullable: true
+        },
+        sku: {
+            type: 'string',
+            nullable: true,
+            maxLength: 100
         },
         selling_units: {
             type: 'array',

@@ -80,7 +80,8 @@ export default function MobileAccountBuilder() {
   const filteredProducts = useMemo(() => {
     if (!searchTerm) return products.slice(0, 20);
     return products.filter((p: ProductMaster) => 
-      p.name.toLowerCase().includes(searchTerm.toLowerCase())
+      p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      p.sku?.toLowerCase().includes(searchTerm.toLowerCase())
     ).slice(0, 50);
   }, [products, searchTerm]);
 
@@ -244,6 +245,7 @@ export default function MobileAccountBuilder() {
             >
               <div className="flex-1 min-w-0 mr-4">
                 <h3 className="font-bold text-gray-900 truncate">{product.name}</h3>
+                {product.sku && <p className="text-[10px] text-gray-400 font-mono -mt-0.5 mb-0.5">SKU: {product.sku}</p>}
                 <div className="flex items-center gap-2 mt-1">
                   <span className="text-gray-500 text-xs uppercase font-bold tracking-widest">Costo:</span>
                   <span className="text-blue-600 font-extrabold">${costPrice.toFixed(2)}</span>

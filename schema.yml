@@ -11,53 +11,53 @@ paths:
         List all accounts (purchases) or create a new account.
         Supports nested creation of account details.
       parameters:
-      - name: page
-        required: false
-        in: query
-        description: A page number within the paginated result set.
-        schema:
-          type: integer
-      - name: page_size
-        required: false
-        in: query
-        description: Number of results to return per page.
-        schema:
-          type: integer
+        - name: page
+          required: false
+          in: query
+          description: A page number within the paginated result set.
+          schema:
+            type: integer
+        - name: page_size
+          required: false
+          in: query
+          description: Number of results to return per page.
+          schema:
+            type: integer
       tags:
-      - v1
+        - v1
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PaginatedAccountListList'
-          description: ''
+                $ref: "#/components/schemas/PaginatedAccountListList"
+          description: ""
     post:
       operationId: v1_accounts_create
       description: |-
         List all accounts (purchases) or create a new account.
         Supports nested creation of account details.
       tags:
-      - v1
+        - v1
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AccountRequest'
+              $ref: "#/components/schemas/AccountRequest"
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/AccountRequest'
+              $ref: "#/components/schemas/AccountRequest"
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/AccountRequest'
+              $ref: "#/components/schemas/AccountRequest"
         required: true
       responses:
-        '201':
+        "201":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Account'
-          description: ''
+                $ref: "#/components/schemas/Account"
+          description: ""
   /v1/accounts/{account_id}/payments/:
     get:
       operationId: v1_accounts_payments_list
@@ -65,54 +65,54 @@ paths:
         List payments for an account or create a new payment.
         Nested under /accounts/<account_id>/payments/
       parameters:
-      - in: path
-        name: account_id
-        schema:
-          type: string
-        required: true
+        - in: path
+          name: account_id
+          schema:
+            type: string
+          required: true
       tags:
-      - v1
+        - v1
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/AccountPayment'
-          description: ''
+                  $ref: "#/components/schemas/AccountPayment"
+          description: ""
     post:
       operationId: v1_accounts_payments_create
       description: |-
         List payments for an account or create a new payment.
         Nested under /accounts/<account_id>/payments/
       parameters:
-      - in: path
-        name: account_id
-        schema:
-          type: string
-        required: true
+        - in: path
+          name: account_id
+          schema:
+            type: string
+          required: true
       tags:
-      - v1
+        - v1
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AccountPaymentRequest'
+              $ref: "#/components/schemas/AccountPaymentRequest"
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/AccountPaymentRequest'
+              $ref: "#/components/schemas/AccountPaymentRequest"
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/AccountPaymentRequest'
+              $ref: "#/components/schemas/AccountPaymentRequest"
         required: true
       responses:
-        '201':
+        "201":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AccountPayment'
-          description: ''
+                $ref: "#/components/schemas/AccountPayment"
+          description: ""
   /v1/accounts/{id}/:
     get:
       operationId: v1_accounts_retrieve
@@ -124,20 +124,20 @@ paths:
         complex stock adjustments. Consider implementing specific
         update logic if needed.
       parameters:
-      - in: path
-        name: id
-        schema:
-          type: string
-        required: true
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
       tags:
-      - v1
+        - v1
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Account'
-          description: ''
+                $ref: "#/components/schemas/Account"
+          description: ""
     put:
       operationId: v1_accounts_update
       description: |-
@@ -148,32 +148,32 @@ paths:
         complex stock adjustments. Consider implementing specific
         update logic if needed.
       parameters:
-      - in: path
-        name: id
-        schema:
-          type: string
-        required: true
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
       tags:
-      - v1
+        - v1
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AccountRequest'
+              $ref: "#/components/schemas/AccountRequest"
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/AccountRequest'
+              $ref: "#/components/schemas/AccountRequest"
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/AccountRequest'
+              $ref: "#/components/schemas/AccountRequest"
         required: true
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Account'
-          description: ''
+                $ref: "#/components/schemas/Account"
+          description: ""
     patch:
       operationId: v1_accounts_partial_update
       description: |-
@@ -184,31 +184,31 @@ paths:
         complex stock adjustments. Consider implementing specific
         update logic if needed.
       parameters:
-      - in: path
-        name: id
-        schema:
-          type: string
-        required: true
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
       tags:
-      - v1
+        - v1
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PatchedAccountRequest'
+              $ref: "#/components/schemas/PatchedAccountRequest"
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/PatchedAccountRequest'
+              $ref: "#/components/schemas/PatchedAccountRequest"
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/PatchedAccountRequest'
+              $ref: "#/components/schemas/PatchedAccountRequest"
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Account'
-          description: ''
+                $ref: "#/components/schemas/Account"
+          description: ""
     delete:
       operationId: v1_accounts_destroy
       description: |-
@@ -219,915 +219,915 @@ paths:
         complex stock adjustments. Consider implementing specific
         update logic if needed.
       parameters:
-      - in: path
-        name: id
-        schema:
-          type: string
-        required: true
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
       tags:
-      - v1
+        - v1
       responses:
-        '204':
+        "204":
           description: No response body
   /v1/branch/:
     get:
       operationId: v1_branch_list
       tags:
-      - v1
+        - v1
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Branch'
-          description: ''
+                  $ref: "#/components/schemas/Branch"
+          description: ""
     post:
       operationId: v1_branch_create
       tags:
-      - v1
+        - v1
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/BranchRequest'
+              $ref: "#/components/schemas/BranchRequest"
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/BranchRequest'
+              $ref: "#/components/schemas/BranchRequest"
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/BranchRequest'
+              $ref: "#/components/schemas/BranchRequest"
         required: true
       responses:
-        '201':
+        "201":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Branch'
-          description: ''
+                $ref: "#/components/schemas/Branch"
+          description: ""
   /v1/branch/{id}/:
     get:
       operationId: v1_branch_retrieve
       parameters:
-      - in: path
-        name: id
-        schema:
-          type: string
-        required: true
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
       tags:
-      - v1
+        - v1
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Branch'
-          description: ''
+                $ref: "#/components/schemas/Branch"
+          description: ""
     put:
       operationId: v1_branch_update
       parameters:
-      - in: path
-        name: id
-        schema:
-          type: string
-        required: true
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
       tags:
-      - v1
+        - v1
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/BranchRequest'
+              $ref: "#/components/schemas/BranchRequest"
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/BranchRequest'
+              $ref: "#/components/schemas/BranchRequest"
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/BranchRequest'
+              $ref: "#/components/schemas/BranchRequest"
         required: true
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Branch'
-          description: ''
+                $ref: "#/components/schemas/Branch"
+          description: ""
     patch:
       operationId: v1_branch_partial_update
       parameters:
-      - in: path
-        name: id
-        schema:
-          type: string
-        required: true
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
       tags:
-      - v1
+        - v1
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PatchedBranchRequest'
+              $ref: "#/components/schemas/PatchedBranchRequest"
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/PatchedBranchRequest'
+              $ref: "#/components/schemas/PatchedBranchRequest"
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/PatchedBranchRequest'
+              $ref: "#/components/schemas/PatchedBranchRequest"
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Branch'
-          description: ''
+                $ref: "#/components/schemas/Branch"
+          description: ""
     delete:
       operationId: v1_branch_destroy
       parameters:
-      - in: path
-        name: id
-        schema:
-          type: string
-        required: true
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
       tags:
-      - v1
+        - v1
       responses:
-        '204':
+        "204":
           description: No response body
   /v1/category/:
     get:
       operationId: v1_category_list
       tags:
-      - v1
+        - v1
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Category'
-          description: ''
+                  $ref: "#/components/schemas/Category"
+          description: ""
     post:
       operationId: v1_category_create
       tags:
-      - v1
+        - v1
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CategoryRequest'
+              $ref: "#/components/schemas/CategoryRequest"
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/CategoryRequest'
+              $ref: "#/components/schemas/CategoryRequest"
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/CategoryRequest'
+              $ref: "#/components/schemas/CategoryRequest"
         required: true
       responses:
-        '201':
+        "201":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Category'
-          description: ''
+                $ref: "#/components/schemas/Category"
+          description: ""
   /v1/category/{id}/:
     get:
       operationId: v1_category_retrieve
       parameters:
-      - in: path
-        name: id
-        schema:
-          type: string
-        required: true
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
       tags:
-      - v1
+        - v1
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Category'
-          description: ''
+                $ref: "#/components/schemas/Category"
+          description: ""
     put:
       operationId: v1_category_update
       parameters:
-      - in: path
-        name: id
-        schema:
-          type: string
-        required: true
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
       tags:
-      - v1
+        - v1
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CategoryRequest'
+              $ref: "#/components/schemas/CategoryRequest"
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/CategoryRequest'
+              $ref: "#/components/schemas/CategoryRequest"
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/CategoryRequest'
+              $ref: "#/components/schemas/CategoryRequest"
         required: true
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Category'
-          description: ''
+                $ref: "#/components/schemas/Category"
+          description: ""
     patch:
       operationId: v1_category_partial_update
       parameters:
-      - in: path
-        name: id
-        schema:
-          type: string
-        required: true
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
       tags:
-      - v1
+        - v1
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PatchedCategoryRequest'
+              $ref: "#/components/schemas/PatchedCategoryRequest"
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/PatchedCategoryRequest'
+              $ref: "#/components/schemas/PatchedCategoryRequest"
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/PatchedCategoryRequest'
+              $ref: "#/components/schemas/PatchedCategoryRequest"
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Category'
-          description: ''
+                $ref: "#/components/schemas/Category"
+          description: ""
     delete:
       operationId: v1_category_destroy
       parameters:
-      - in: path
-        name: id
-        schema:
-          type: string
-        required: true
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
       tags:
-      - v1
+        - v1
       responses:
-        '204':
+        "204":
           description: No response body
   /v1/company/:
     get:
       operationId: v1_company_retrieve
       tags:
-      - v1
+        - v1
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Company'
-          description: ''
+                $ref: "#/components/schemas/Company"
+          description: ""
     post:
       operationId: v1_company_create
       tags:
-      - v1
+        - v1
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CompanyRequest'
+              $ref: "#/components/schemas/CompanyRequest"
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/CompanyRequest'
+              $ref: "#/components/schemas/CompanyRequest"
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/CompanyRequest'
+              $ref: "#/components/schemas/CompanyRequest"
         required: true
       security:
-      - {}
+        - {}
       responses:
-        '201':
+        "201":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Company'
-          description: ''
+                $ref: "#/components/schemas/Company"
+          description: ""
     put:
       operationId: v1_company_update
       tags:
-      - v1
+        - v1
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CompanyRequest'
+              $ref: "#/components/schemas/CompanyRequest"
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/CompanyRequest'
+              $ref: "#/components/schemas/CompanyRequest"
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/CompanyRequest'
+              $ref: "#/components/schemas/CompanyRequest"
         required: true
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Company'
-          description: ''
+                $ref: "#/components/schemas/Company"
+          description: ""
     patch:
       operationId: v1_company_partial_update
       tags:
-      - v1
+        - v1
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PatchedCompanyRequest'
+              $ref: "#/components/schemas/PatchedCompanyRequest"
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/PatchedCompanyRequest'
+              $ref: "#/components/schemas/PatchedCompanyRequest"
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/PatchedCompanyRequest'
+              $ref: "#/components/schemas/PatchedCompanyRequest"
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Company'
-          description: ''
+                $ref: "#/components/schemas/Company"
+          description: ""
   /v1/customers/:
     get:
       operationId: v1_customers_list
       tags:
-      - v1
+        - v1
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Customer'
-          description: ''
+                  $ref: "#/components/schemas/Customer"
+          description: ""
     post:
       operationId: v1_customers_create
       tags:
-      - v1
+        - v1
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CustomerRequest'
+              $ref: "#/components/schemas/CustomerRequest"
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/CustomerRequest'
+              $ref: "#/components/schemas/CustomerRequest"
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/CustomerRequest'
+              $ref: "#/components/schemas/CustomerRequest"
         required: true
       responses:
-        '201':
+        "201":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Customer'
-          description: ''
+                $ref: "#/components/schemas/Customer"
+          description: ""
   /v1/customers/{id}/:
     get:
       operationId: v1_customers_retrieve
       parameters:
-      - in: path
-        name: id
-        schema:
-          type: string
-        required: true
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
       tags:
-      - v1
+        - v1
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Customer'
-          description: ''
+                $ref: "#/components/schemas/Customer"
+          description: ""
     put:
       operationId: v1_customers_update
       parameters:
-      - in: path
-        name: id
-        schema:
-          type: string
-        required: true
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
       tags:
-      - v1
+        - v1
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CustomerRequest'
+              $ref: "#/components/schemas/CustomerRequest"
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/CustomerRequest'
+              $ref: "#/components/schemas/CustomerRequest"
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/CustomerRequest'
+              $ref: "#/components/schemas/CustomerRequest"
         required: true
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Customer'
-          description: ''
+                $ref: "#/components/schemas/Customer"
+          description: ""
     patch:
       operationId: v1_customers_partial_update
       parameters:
-      - in: path
-        name: id
-        schema:
-          type: string
-        required: true
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
       tags:
-      - v1
+        - v1
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PatchedCustomerRequest'
+              $ref: "#/components/schemas/PatchedCustomerRequest"
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/PatchedCustomerRequest'
+              $ref: "#/components/schemas/PatchedCustomerRequest"
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/PatchedCustomerRequest'
+              $ref: "#/components/schemas/PatchedCustomerRequest"
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Customer'
-          description: ''
+                $ref: "#/components/schemas/Customer"
+          description: ""
     delete:
       operationId: v1_customers_destroy
       parameters:
-      - in: path
-        name: id
-        schema:
-          type: string
-        required: true
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
       tags:
-      - v1
+        - v1
       responses:
-        '204':
+        "204":
           description: No response body
   /v1/exchange-rates/{id}/:
     get:
       operationId: v1_exchange_rates_retrieve
       parameters:
-      - in: path
-        name: id
-        schema:
-          type: string
-        required: true
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
       tags:
-      - v1
+        - v1
       security:
-      - {}
+        - {}
       responses:
-        '200':
+        "200":
           description: No response body
   /v1/exchange-rates/history/:
     get:
       operationId: v1_exchange_rates_history_retrieve
       tags:
-      - v1
+        - v1
       security:
-      - {}
+        - {}
       responses:
-        '200':
+        "200":
           description: No response body
   /v1/exchange-rates/today/:
     get:
       operationId: v1_exchange_rates_today_retrieve
       tags:
-      - v1
+        - v1
       security:
-      - {}
+        - {}
       responses:
-        '200':
+        "200":
           description: No response body
   /v1/login/:
     post:
       operationId: v1_login_create
       tags:
-      - v1
+        - v1
       security:
-      - {}
+        - {}
       responses:
-        '200':
+        "200":
           description: No response body
   /v1/logout/:
     post:
       operationId: v1_logout_create
       tags:
-      - v1
+        - v1
       responses:
-        '200':
+        "200":
           description: No response body
   /v1/measurement/:
     get:
       operationId: v1_measurement_list
       tags:
-      - v1
+        - v1
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/MeasurementUnit'
-          description: ''
+                  $ref: "#/components/schemas/MeasurementUnit"
+          description: ""
     post:
       operationId: v1_measurement_create
       tags:
-      - v1
+        - v1
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/MeasurementUnitRequest'
+              $ref: "#/components/schemas/MeasurementUnitRequest"
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/MeasurementUnitRequest'
+              $ref: "#/components/schemas/MeasurementUnitRequest"
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/MeasurementUnitRequest'
+              $ref: "#/components/schemas/MeasurementUnitRequest"
         required: true
       responses:
-        '201':
+        "201":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/MeasurementUnit'
-          description: ''
+                $ref: "#/components/schemas/MeasurementUnit"
+          description: ""
   /v1/measurement/{id}/:
     get:
       operationId: v1_measurement_retrieve
       parameters:
-      - in: path
-        name: id
-        schema:
-          type: string
-        required: true
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
       tags:
-      - v1
+        - v1
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/MeasurementUnit'
-          description: ''
+                $ref: "#/components/schemas/MeasurementUnit"
+          description: ""
     put:
       operationId: v1_measurement_update
       parameters:
-      - in: path
-        name: id
-        schema:
-          type: string
-        required: true
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
       tags:
-      - v1
+        - v1
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/MeasurementUnitRequest'
+              $ref: "#/components/schemas/MeasurementUnitRequest"
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/MeasurementUnitRequest'
+              $ref: "#/components/schemas/MeasurementUnitRequest"
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/MeasurementUnitRequest'
+              $ref: "#/components/schemas/MeasurementUnitRequest"
         required: true
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/MeasurementUnit'
-          description: ''
+                $ref: "#/components/schemas/MeasurementUnit"
+          description: ""
     patch:
       operationId: v1_measurement_partial_update
       parameters:
-      - in: path
-        name: id
-        schema:
-          type: string
-        required: true
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
       tags:
-      - v1
+        - v1
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PatchedMeasurementUnitRequest'
+              $ref: "#/components/schemas/PatchedMeasurementUnitRequest"
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/PatchedMeasurementUnitRequest'
+              $ref: "#/components/schemas/PatchedMeasurementUnitRequest"
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/PatchedMeasurementUnitRequest'
+              $ref: "#/components/schemas/PatchedMeasurementUnitRequest"
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/MeasurementUnit'
-          description: ''
+                $ref: "#/components/schemas/MeasurementUnit"
+          description: ""
     delete:
       operationId: v1_measurement_destroy
       parameters:
-      - in: path
-        name: id
-        schema:
-          type: string
-        required: true
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
       tags:
-      - v1
+        - v1
       responses:
-        '204':
+        "204":
           description: No response body
   /v1/product/:
     get:
       operationId: v1_product_list
       tags:
-      - v1
+        - v1
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/ProductMaster'
-          description: ''
+                  $ref: "#/components/schemas/ProductMaster"
+          description: ""
     post:
       operationId: v1_product_create
       tags:
-      - v1
+        - v1
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ProductWriteDetailRequest'
+              $ref: "#/components/schemas/ProductWriteDetailRequest"
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/ProductWriteDetailRequest'
+              $ref: "#/components/schemas/ProductWriteDetailRequest"
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/ProductWriteDetailRequest'
+              $ref: "#/components/schemas/ProductWriteDetailRequest"
         required: true
       responses:
-        '201':
+        "201":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProductWriteDetail'
-          description: ''
+                $ref: "#/components/schemas/ProductWriteDetail"
+          description: ""
   /v1/product-branch-stock/:
     get:
       operationId: v1_product_branch_stock_list
       tags:
-      - v1
+        - v1
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/ProductStockSale'
-          description: ''
+                  $ref: "#/components/schemas/ProductStockSale"
+          description: ""
   /v1/product/{id}/:
     get:
       operationId: v1_product_retrieve
       parameters:
-      - in: path
-        name: id
-        schema:
-          type: string
-        required: true
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
       tags:
-      - v1
+        - v1
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProductWriteDetail'
-          description: ''
+                $ref: "#/components/schemas/ProductWriteDetail"
+          description: ""
     put:
       operationId: v1_product_update
       parameters:
-      - in: path
-        name: id
-        schema:
-          type: string
-        required: true
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
       tags:
-      - v1
+        - v1
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ProductWriteDetailRequest'
+              $ref: "#/components/schemas/ProductWriteDetailRequest"
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/ProductWriteDetailRequest'
+              $ref: "#/components/schemas/ProductWriteDetailRequest"
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/ProductWriteDetailRequest'
+              $ref: "#/components/schemas/ProductWriteDetailRequest"
         required: true
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProductWriteDetail'
-          description: ''
+                $ref: "#/components/schemas/ProductWriteDetail"
+          description: ""
     patch:
       operationId: v1_product_partial_update
       parameters:
-      - in: path
-        name: id
-        schema:
-          type: string
-        required: true
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
       tags:
-      - v1
+        - v1
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PatchedProductWriteDetailRequest'
+              $ref: "#/components/schemas/PatchedProductWriteDetailRequest"
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/PatchedProductWriteDetailRequest'
+              $ref: "#/components/schemas/PatchedProductWriteDetailRequest"
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/PatchedProductWriteDetailRequest'
+              $ref: "#/components/schemas/PatchedProductWriteDetailRequest"
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProductWriteDetail'
-          description: ''
+                $ref: "#/components/schemas/ProductWriteDetail"
+          description: ""
     delete:
       operationId: v1_product_destroy
       parameters:
-      - in: path
-        name: id
-        schema:
-          type: string
-        required: true
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
       tags:
-      - v1
+        - v1
       responses:
-        '204':
+        "204":
           description: No response body
   /v1/providers/:
     get:
       operationId: v1_providers_list
       tags:
-      - v1
+        - v1
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Provider'
-          description: ''
+                  $ref: "#/components/schemas/Provider"
+          description: ""
     post:
       operationId: v1_providers_create
       tags:
-      - v1
+        - v1
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ProviderRequest'
+              $ref: "#/components/schemas/ProviderRequest"
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/ProviderRequest'
+              $ref: "#/components/schemas/ProviderRequest"
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/ProviderRequest'
+              $ref: "#/components/schemas/ProviderRequest"
         required: true
       responses:
-        '201':
+        "201":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Provider'
-          description: ''
+                $ref: "#/components/schemas/Provider"
+          description: ""
   /v1/providers/{id}/:
     get:
       operationId: v1_providers_retrieve
       parameters:
-      - in: path
-        name: id
-        schema:
-          type: string
-        required: true
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
       tags:
-      - v1
+        - v1
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Provider'
-          description: ''
+                $ref: "#/components/schemas/Provider"
+          description: ""
     put:
       operationId: v1_providers_update
       parameters:
-      - in: path
-        name: id
-        schema:
-          type: string
-        required: true
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
       tags:
-      - v1
+        - v1
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ProviderRequest'
+              $ref: "#/components/schemas/ProviderRequest"
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/ProviderRequest'
+              $ref: "#/components/schemas/ProviderRequest"
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/ProviderRequest'
+              $ref: "#/components/schemas/ProviderRequest"
         required: true
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Provider'
-          description: ''
+                $ref: "#/components/schemas/Provider"
+          description: ""
     patch:
       operationId: v1_providers_partial_update
       parameters:
-      - in: path
-        name: id
-        schema:
-          type: string
-        required: true
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
       tags:
-      - v1
+        - v1
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PatchedProviderRequest'
+              $ref: "#/components/schemas/PatchedProviderRequest"
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/PatchedProviderRequest'
+              $ref: "#/components/schemas/PatchedProviderRequest"
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/PatchedProviderRequest'
+              $ref: "#/components/schemas/PatchedProviderRequest"
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Provider'
-          description: ''
+                $ref: "#/components/schemas/Provider"
+          description: ""
     delete:
       operationId: v1_providers_destroy
       parameters:
-      - in: path
-        name: id
-        schema:
-          type: string
-        required: true
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
       tags:
-      - v1
+        - v1
       responses:
-        '204':
+        "204":
           description: No response body
   /v1/refresh/:
     post:
@@ -1136,54 +1136,54 @@ paths:
         Takes a refresh type JSON web token and returns an access type JSON web
         token if the refresh token is valid.
       tags:
-      - v1
+        - v1
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/TokenRefreshRequest'
+              $ref: "#/components/schemas/TokenRefreshRequest"
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/TokenRefreshRequest'
+              $ref: "#/components/schemas/TokenRefreshRequest"
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/TokenRefreshRequest'
+              $ref: "#/components/schemas/TokenRefreshRequest"
         required: true
       security:
-      - {}
+        - {}
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TokenRefresh'
-          description: ''
+                $ref: "#/components/schemas/TokenRefresh"
+          description: ""
   /v1/register/:
     post:
       operationId: v1_register_create
       tags:
-      - v1
+        - v1
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/RegisterUserRequest'
+              $ref: "#/components/schemas/RegisterUserRequest"
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/RegisterUserRequest'
+              $ref: "#/components/schemas/RegisterUserRequest"
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/RegisterUserRequest'
+              $ref: "#/components/schemas/RegisterUserRequest"
         required: true
       security:
-      - {}
+        - {}
       responses:
-        '201':
+        "201":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/RegisterUser'
-          description: ''
+                $ref: "#/components/schemas/RegisterUser"
+          description: ""
   /v1/sales/:
     get:
       operationId: v1_sales_list
@@ -1191,53 +1191,53 @@ paths:
         List all sales or create a new sale.
         Supports nested creation of sale details.
       parameters:
-      - name: page
-        required: false
-        in: query
-        description: A page number within the paginated result set.
-        schema:
-          type: integer
-      - name: page_size
-        required: false
-        in: query
-        description: Number of results to return per page.
-        schema:
-          type: integer
+        - name: page
+          required: false
+          in: query
+          description: A page number within the paginated result set.
+          schema:
+            type: integer
+        - name: page_size
+          required: false
+          in: query
+          description: Number of results to return per page.
+          schema:
+            type: integer
       tags:
-      - v1
+        - v1
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PaginatedSaleListList'
-          description: ''
+                $ref: "#/components/schemas/PaginatedSaleListList"
+          description: ""
     post:
       operationId: v1_sales_create
       description: |-
         List all sales or create a new sale.
         Supports nested creation of sale details.
       tags:
-      - v1
+        - v1
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/SaleRequest'
+              $ref: "#/components/schemas/SaleRequest"
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/SaleRequest'
+              $ref: "#/components/schemas/SaleRequest"
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/SaleRequest'
+              $ref: "#/components/schemas/SaleRequest"
         required: true
       responses:
-        '201':
+        "201":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Sale'
-          description: ''
+                $ref: "#/components/schemas/Sale"
+          description: ""
   /v1/sales/{id}/:
     get:
       operationId: v1_sales_retrieve
@@ -1245,98 +1245,98 @@ paths:
         Retrieve, update, or delete a sale.
         Delete operation is soft delete (sets state=False).
       parameters:
-      - in: path
-        name: id
-        schema:
-          type: string
-        required: true
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
       tags:
-      - v1
+        - v1
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Sale'
-          description: ''
+                $ref: "#/components/schemas/Sale"
+          description: ""
     put:
       operationId: v1_sales_update
       description: |-
         Retrieve, update, or delete a sale.
         Delete operation is soft delete (sets state=False).
       parameters:
-      - in: path
-        name: id
-        schema:
-          type: string
-        required: true
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
       tags:
-      - v1
+        - v1
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/SaleRequest'
+              $ref: "#/components/schemas/SaleRequest"
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/SaleRequest'
+              $ref: "#/components/schemas/SaleRequest"
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/SaleRequest'
+              $ref: "#/components/schemas/SaleRequest"
         required: true
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Sale'
-          description: ''
+                $ref: "#/components/schemas/Sale"
+          description: ""
     patch:
       operationId: v1_sales_partial_update
       description: |-
         Retrieve, update, or delete a sale.
         Delete operation is soft delete (sets state=False).
       parameters:
-      - in: path
-        name: id
-        schema:
-          type: string
-        required: true
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
       tags:
-      - v1
+        - v1
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PatchedSaleRequest'
+              $ref: "#/components/schemas/PatchedSaleRequest"
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/PatchedSaleRequest'
+              $ref: "#/components/schemas/PatchedSaleRequest"
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/PatchedSaleRequest'
+              $ref: "#/components/schemas/PatchedSaleRequest"
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Sale'
-          description: ''
+                $ref: "#/components/schemas/Sale"
+          description: ""
     delete:
       operationId: v1_sales_destroy
       description: |-
         Retrieve, update, or delete a sale.
         Delete operation is soft delete (sets state=False).
       parameters:
-      - in: path
-        name: id
-        schema:
-          type: string
-        required: true
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
       tags:
-      - v1
+        - v1
       responses:
-        '204':
+        "204":
           description: No response body
   /v1/sales/{sale_id}/payments/:
     get:
@@ -1345,126 +1345,126 @@ paths:
         List payments for a sale or create a new payment.
         Nested under /sales/<sale_id>/payments/
       parameters:
-      - in: path
-        name: sale_id
-        schema:
-          type: string
-        required: true
+        - in: path
+          name: sale_id
+          schema:
+            type: string
+          required: true
       tags:
-      - v1
+        - v1
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/SalePayment'
-          description: ''
+                  $ref: "#/components/schemas/SalePayment"
+          description: ""
     post:
       operationId: v1_sales_payments_create
       description: |-
         List payments for a sale or create a new payment.
         Nested under /sales/<sale_id>/payments/
       parameters:
-      - in: path
-        name: sale_id
-        schema:
-          type: string
-        required: true
+        - in: path
+          name: sale_id
+          schema:
+            type: string
+          required: true
       tags:
-      - v1
+        - v1
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/SalePaymentRequest'
+              $ref: "#/components/schemas/SalePaymentRequest"
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/SalePaymentRequest'
+              $ref: "#/components/schemas/SalePaymentRequest"
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/SalePaymentRequest'
+              $ref: "#/components/schemas/SalePaymentRequest"
         required: true
       responses:
-        '201':
+        "201":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SalePayment'
-          description: ''
+                $ref: "#/components/schemas/SalePayment"
+          description: ""
   /v1/user-branches/:
     get:
       operationId: v1_user_branches_retrieve
       tags:
-      - v1
+        - v1
       responses:
-        '200':
+        "200":
           description: No response body
     put:
       operationId: v1_user_branches_update
       tags:
-      - v1
+        - v1
       responses:
-        '200':
+        "200":
           description: No response body
   /v1/user-info/:
     get:
       operationId: v1_user_info_retrieve
       tags:
-      - v1
+        - v1
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CustomUser'
-          description: ''
+                $ref: "#/components/schemas/CustomUser"
+          description: ""
     put:
       operationId: v1_user_info_update
       tags:
-      - v1
+        - v1
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CustomUserRequest'
+              $ref: "#/components/schemas/CustomUserRequest"
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/CustomUserRequest'
+              $ref: "#/components/schemas/CustomUserRequest"
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/CustomUserRequest'
+              $ref: "#/components/schemas/CustomUserRequest"
         required: true
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CustomUser'
-          description: ''
+                $ref: "#/components/schemas/CustomUser"
+          description: ""
     patch:
       operationId: v1_user_info_partial_update
       tags:
-      - v1
+        - v1
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PatchedCustomUserRequest'
+              $ref: "#/components/schemas/PatchedCustomUserRequest"
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/PatchedCustomUserRequest'
+              $ref: "#/components/schemas/PatchedCustomUserRequest"
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/PatchedCustomUserRequest'
+              $ref: "#/components/schemas/PatchedCustomUserRequest"
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CustomUser'
-          description: ''
+                $ref: "#/components/schemas/CustomUser"
+          description: ""
 components:
   schemas:
     Account:
@@ -1499,7 +1499,7 @@ components:
           readOnly: true
         payment_status:
           allOf:
-          - $ref: '#/components/schemas/PaymentStatus0cfEnum'
+            - $ref: "#/components/schemas/PaymentStatus0cfEnum"
           readOnly: true
         seq_number:
           type: integer
@@ -1507,7 +1507,7 @@ components:
         account_details:
           type: array
           items:
-            $ref: '#/components/schemas/AccountDetail'
+            $ref: "#/components/schemas/AccountDetail"
           readOnly: true
         total_paid:
           type: string
@@ -1521,17 +1521,17 @@ components:
           format: date-time
           readOnly: true
       required:
-      - account_details
-      - branch
-      - branch_name
-      - created_at
-      - id
-      - payment_status
-      - provider_name
-      - seq_number
-      - total_amount_usd
-      - total_paid
-      - updated_at
+        - account_details
+        - branch
+        - branch_name
+        - created_at
+        - id
+        - payment_status
+        - provider_name
+        - seq_number
+        - total_amount_usd
+        - total_paid
+        - updated_at
     AccountDetail:
       type: object
       description: |-
@@ -1558,11 +1558,11 @@ components:
           pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
           readOnly: true
       required:
-      - id
-      - product
-      - product_name
-      - quantity
-      - unit_price
+        - id
+        - product
+        - product_name
+        - quantity
+        - unit_price
     AccountDetailRequest:
       type: object
       description: |-
@@ -1577,8 +1577,8 @@ components:
           format: decimal
           pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
       required:
-      - product
-      - quantity
+        - product
+        - quantity
     AccountList:
       type: object
       description: |-
@@ -1607,7 +1607,7 @@ components:
           readOnly: true
         payment_status:
           allOf:
-          - $ref: '#/components/schemas/PaymentStatus0cfEnum'
+            - $ref: "#/components/schemas/PaymentStatus0cfEnum"
           readOnly: true
         branch:
           type: string
@@ -1629,17 +1629,17 @@ components:
           type: string
           readOnly: true
       required:
-      - branch
-      - branch_name
-      - created_at
-      - id
-      - payment_status
-      - provider
-      - provider_name
-      - seq_number
-      - total_amount_usd
-      - total_paid
-      - updated_at
+        - branch
+        - branch_name
+        - created_at
+        - id
+        - payment_status
+        - provider
+        - provider_name
+        - seq_number
+        - total_amount_usd
+        - total_paid
+        - updated_at
     AccountPayment:
       type: object
       description: |-
@@ -1683,14 +1683,14 @@ components:
           format: date-time
           readOnly: true
       required:
-      - created_at
-      - currency
-      - exchange_rate
-      - id
-      - payment_date
-      - payment_method
-      - total_amount_usd
-      - total_amount_ves
+        - created_at
+        - currency
+        - exchange_rate
+        - id
+        - payment_date
+        - payment_method
+        - total_amount_usd
+        - total_amount_ves
     AccountPaymentRequest:
       type: object
       description: |-
@@ -1715,9 +1715,9 @@ components:
           writeOnly: true
           description: Payment amount in the specified currency
       required:
-      - amount
-      - currency
-      - payment_method
+        - amount
+        - currency
+        - payment_method
     AccountRequest:
       type: object
       description: |-
@@ -1738,11 +1738,12 @@ components:
             type: object
             additionalProperties: {}
           writeOnly: true
-          description: List of account details with 'product' (ULID) and 'quantity'
+          description:
+            List of account details with 'product' (ULID) and 'quantity'
             fields
       required:
-      - branch
-      - details
+        - branch
+        - details
     Branch:
       type: object
       properties:
@@ -1767,8 +1768,8 @@ components:
           format: uuid
           readOnly: true
       required:
-      - id
-      - name
+        - id
+        - name
     BranchRequest:
       type: object
       properties:
@@ -1790,7 +1791,7 @@ components:
           nullable: true
           maxLength: 200
       required:
-      - name
+        - name
     Category:
       type: object
       properties:
@@ -1802,8 +1803,8 @@ components:
           format: uuid
           readOnly: true
       required:
-      - id
-      - name
+        - id
+        - name
     CategoryRequest:
       type: object
       properties:
@@ -1812,7 +1813,7 @@ components:
           minLength: 1
           maxLength: 200
       required:
-      - name
+        - name
     Company:
       type: object
       properties:
@@ -1835,11 +1836,11 @@ components:
           format: uuid
           readOnly: true
       required:
-      - email
-      - id
-      - license_date
-      - max_branches
-      - name
+        - email
+        - id
+        - license_date
+        - max_branches
+        - name
     CompanyRequest:
       type: object
       properties:
@@ -1860,10 +1861,10 @@ components:
           type: string
           format: date
       required:
-      - email
-      - license_date
-      - max_branches
-      - name
+        - email
+        - license_date
+        - max_branches
+        - name
     CustomUser:
       type: object
       properties:
@@ -1886,8 +1887,8 @@ components:
             type: string
             format: uuid
       required:
-      - company_id
-      - email
+        - company_id
+        - email
     CustomUserRequest:
       type: object
       properties:
@@ -1911,8 +1912,8 @@ components:
             type: string
             format: uuid
       required:
-      - company_id
-      - email
+        - company_id
+        - email
     Customer:
       type: object
       properties:
@@ -1922,7 +1923,7 @@ components:
           readOnly: true
         company:
           allOf:
-          - $ref: '#/components/schemas/Company'
+            - $ref: "#/components/schemas/Company"
           readOnly: true
         created_at:
           type: string
@@ -1948,10 +1949,10 @@ components:
           type: integer
           nullable: true
       required:
-      - company
-      - created_at
-      - id
-      - name
+        - company
+        - created_at
+        - id
+        - name
     CustomerRequest:
       type: object
       properties:
@@ -1976,7 +1977,7 @@ components:
           type: integer
           nullable: true
       required:
-      - name
+        - name
     MeasurementUnit:
       type: object
       properties:
@@ -1990,8 +1991,8 @@ components:
           format: uuid
           readOnly: true
       required:
-      - id
-      - name
+        - id
+        - name
     MeasurementUnitRequest:
       type: object
       properties:
@@ -2002,12 +2003,12 @@ components:
         decimals:
           type: boolean
       required:
-      - name
+        - name
     PaginatedAccountListList:
       type: object
       required:
-      - count
-      - results
+        - count
+        - results
       properties:
         count:
           type: integer
@@ -2025,12 +2026,12 @@ components:
         results:
           type: array
           items:
-            $ref: '#/components/schemas/AccountList'
+            $ref: "#/components/schemas/AccountList"
     PaginatedSaleListList:
       type: object
       required:
-      - count
-      - results
+        - count
+        - results
       properties:
         count:
           type: integer
@@ -2048,7 +2049,7 @@ components:
         results:
           type: array
           items:
-            $ref: '#/components/schemas/SaleList'
+            $ref: "#/components/schemas/SaleList"
     PatchedAccountRequest:
       type: object
       description: |-
@@ -2069,7 +2070,8 @@ components:
             type: object
             additionalProperties: {}
           writeOnly: true
-          description: List of account details with 'product' (ULID) and 'quantity'
+          description:
+            List of account details with 'product' (ULID) and 'quantity'
             fields
     PatchedBranchRequest:
       type: object
@@ -2200,10 +2202,14 @@ components:
           type: string
           format: uuid
           nullable: true
+        sku:
+          type: string
+          nullable: true
+          maxLength: 100
         selling_units:
           type: array
           items:
-            $ref: '#/components/schemas/ProductSellingUnitRequest'
+            $ref: "#/components/schemas/ProductSellingUnitRequest"
     PatchedProviderRequest:
       type: object
       properties:
@@ -2249,9 +2255,9 @@ components:
           description: List of sale details with 'product' (ULID) and 'quantity' fields
     PaymentStatus0cfEnum:
       enum:
-      - PENDING
-      - PARTIALLY_PAID
-      - PAID
+        - PENDING
+        - PARTIALLY_PAID
+        - PAID
       type: string
       description: |-
         * `PENDING` - Pending
@@ -2259,10 +2265,10 @@ components:
         * `PAID` - Paid
     PaymentStatusC54Enum:
       enum:
-      - PENDING
-      - PARTIALLY_PAID
-      - PAID
-      - OVERPAID
+        - PENDING
+        - PARTIALLY_PAID
+        - PAID
+        - OVERPAID
       type: string
       description: |-
         * `PENDING` - Pending
@@ -2301,11 +2307,15 @@ components:
           type: string
           format: uuid
           nullable: true
+        sku:
+          type: string
+          nullable: true
+          maxLength: 100
       required:
-      - cost_price_usd
-      - id
-      - name
-      - profit_margin
+        - cost_price_usd
+        - id
+        - name
+        - profit_margin
     ProductSellingUnit:
       type: object
       properties:
@@ -2322,9 +2332,9 @@ components:
           type: string
           format: uuid
       required:
-      - measurement_unit
-      - name
-      - unit_conversion_factor
+        - measurement_unit
+        - name
+        - unit_conversion_factor
     ProductSellingUnitRequest:
       type: object
       properties:
@@ -2343,9 +2353,9 @@ components:
           type: string
           format: uuid
       required:
-      - measurement_unit
-      - name
-      - unit_conversion_factor
+        - measurement_unit
+        - name
+        - unit_conversion_factor
     ProductStockSale:
       type: object
       properties:
@@ -2357,8 +2367,8 @@ components:
           format: decimal
           pattern: ^-?\d{0,6}(?:\.\d{0,10})?$
       required:
-      - product_id
-      - stock
+        - product_id
+        - stock
     ProductWriteDetail:
       type: object
       description: Serializador completo para Creación, Edición y Detalle
@@ -2391,15 +2401,19 @@ components:
           type: string
           format: uuid
           nullable: true
+        sku:
+          type: string
+          nullable: true
+          maxLength: 100
         selling_units:
           type: array
           items:
-            $ref: '#/components/schemas/ProductSellingUnit'
+            $ref: "#/components/schemas/ProductSellingUnit"
       required:
-      - cost_price_usd
-      - id
-      - name
-      - profit_margin
+        - cost_price_usd
+        - id
+        - name
+        - profit_margin
     ProductWriteDetailRequest:
       type: object
       description: Serializador completo para Creación, Edición y Detalle
@@ -2429,14 +2443,18 @@ components:
           type: string
           format: uuid
           nullable: true
+        sku:
+          type: string
+          nullable: true
+          maxLength: 100
         selling_units:
           type: array
           items:
-            $ref: '#/components/schemas/ProductSellingUnitRequest'
+            $ref: "#/components/schemas/ProductSellingUnitRequest"
       required:
-      - cost_price_usd
-      - name
-      - profit_margin
+        - cost_price_usd
+        - name
+        - profit_margin
     Provider:
       type: object
       properties:
@@ -2446,7 +2464,7 @@ components:
           readOnly: true
         company:
           allOf:
-          - $ref: '#/components/schemas/Company'
+            - $ref: "#/components/schemas/Company"
           readOnly: true
         created_at:
           type: string
@@ -2472,10 +2490,10 @@ components:
           type: integer
           nullable: true
       required:
-      - company
-      - created_at
-      - id
-      - name
+        - company
+        - created_at
+        - id
+        - name
     ProviderRequest:
       type: object
       properties:
@@ -2500,7 +2518,7 @@ components:
           type: integer
           nullable: true
       required:
-      - name
+        - name
     RegisterUser:
       type: object
       properties:
@@ -2516,13 +2534,14 @@ components:
           maxLength: 150
         username:
           type: string
-          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+          description:
+            Required. 150 characters or fewer. Letters, digits and @/./+/-/_
             only.
           pattern: ^[\w.@+-]+$
           maxLength: 150
       required:
-      - email
-      - username
+        - email
+        - username
     RegisterUserRequest:
       type: object
       properties:
@@ -2556,15 +2575,16 @@ components:
         username:
           type: string
           minLength: 1
-          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+          description:
+            Required. 150 characters or fewer. Letters, digits and @/./+/-/_
             only.
           pattern: ^[\w.@+-]+$
           maxLength: 150
       required:
-      - company_id
-      - email
-      - password
-      - username
+        - company_id
+        - email
+        - password
+        - username
     Sale:
       type: object
       description: |-
@@ -2596,7 +2616,7 @@ components:
           readOnly: true
         payment_status:
           allOf:
-          - $ref: '#/components/schemas/PaymentStatusC54Enum'
+            - $ref: "#/components/schemas/PaymentStatusC54Enum"
           readOnly: true
         seq_number:
           type: integer
@@ -2604,7 +2624,7 @@ components:
         sale_details:
           type: array
           items:
-            $ref: '#/components/schemas/SaleDetail'
+            $ref: "#/components/schemas/SaleDetail"
           readOnly: true
         total_paid:
           type: string
@@ -2618,17 +2638,17 @@ components:
           format: date-time
           readOnly: true
       required:
-      - branch
-      - branch_name
-      - created_at
-      - customer_name
-      - id
-      - payment_status
-      - sale_details
-      - seq_number
-      - total_amount_usd
-      - total_paid
-      - updated_at
+        - branch
+        - branch_name
+        - created_at
+        - customer_name
+        - id
+        - payment_status
+        - sale_details
+        - seq_number
+        - total_amount_usd
+        - total_paid
+        - updated_at
     SaleDetail:
       type: object
       description: |-
@@ -2655,11 +2675,11 @@ components:
           pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
           readOnly: true
       required:
-      - id
-      - product
-      - product_name
-      - quantity
-      - unit_price
+        - id
+        - product
+        - product_name
+        - quantity
+        - unit_price
     SaleDetailRequest:
       type: object
       description: |-
@@ -2674,8 +2694,8 @@ components:
           format: decimal
           pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
       required:
-      - product
-      - quantity
+        - product
+        - quantity
     SaleList:
       type: object
       description: |-
@@ -2704,7 +2724,7 @@ components:
           readOnly: true
         payment_status:
           allOf:
-          - $ref: '#/components/schemas/PaymentStatusC54Enum'
+            - $ref: "#/components/schemas/PaymentStatusC54Enum"
           readOnly: true
         branch:
           type: string
@@ -2726,17 +2746,17 @@ components:
           type: string
           readOnly: true
       required:
-      - branch
-      - branch_name
-      - created_at
-      - customer
-      - customer_name
-      - id
-      - payment_status
-      - seq_number
-      - total_amount_usd
-      - total_paid
-      - updated_at
+        - branch
+        - branch_name
+        - created_at
+        - customer
+        - customer_name
+        - id
+        - payment_status
+        - seq_number
+        - total_amount_usd
+        - total_paid
+        - updated_at
     SalePayment:
       type: object
       description: |-
@@ -2780,14 +2800,14 @@ components:
           format: date-time
           readOnly: true
       required:
-      - created_at
-      - currency
-      - exchange_rate
-      - id
-      - payment_date
-      - payment_method
-      - total_amount_usd
-      - total_amount_ves
+        - created_at
+        - currency
+        - exchange_rate
+        - id
+        - payment_date
+        - payment_method
+        - total_amount_usd
+        - total_amount_ves
     SalePaymentRequest:
       type: object
       description: |-
@@ -2812,9 +2832,9 @@ components:
           writeOnly: true
           description: Payment amount in the specified currency
       required:
-      - amount
-      - currency
-      - payment_method
+        - amount
+        - currency
+        - payment_method
     SaleRequest:
       type: object
       description: |-
@@ -2836,8 +2856,8 @@ components:
           writeOnly: true
           description: List of sale details with 'product' (ULID) and 'quantity' fields
       required:
-      - branch
-      - details
+        - branch
+        - details
     TokenRefresh:
       type: object
       properties:
@@ -2845,7 +2865,7 @@ components:
           type: string
           readOnly: true
       required:
-      - access
+        - access
     TokenRefreshRequest:
       type: object
       properties:
@@ -2854,4 +2874,4 @@ components:
           writeOnly: true
           minLength: 1
       required:
-      - refresh
+        - refresh

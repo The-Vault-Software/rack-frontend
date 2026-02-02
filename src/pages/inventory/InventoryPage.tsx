@@ -230,6 +230,7 @@ export default function InventoryPage() {
 
         return {
           'Nombre': product.name,
+          'SKU': product.sku || '',
           'Categoría': getCategoryName(product.category),
           'Unidad': getUnitName(product.measurement_unit),
           'IVA': product.IVA ? 'Sí (16%)' : 'Exento',

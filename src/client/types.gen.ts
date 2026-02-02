@@ -258,6 +258,7 @@ export type PatchedProductWriteDetailRequest = {
     IVA?: boolean;
     category?: string | null;
     measurement_unit?: string | null;
+    sku?: string | null;
     selling_units?: Array<ProductSellingUnitRequest>;
 };
 
@@ -305,6 +306,7 @@ export type ProductMaster = {
     IVA?: boolean;
     category?: string | null;
     measurement_unit?: string | null;
+    sku?: string | null;
 };
 
 export type ProductSellingUnit = {
@@ -338,6 +340,7 @@ export type ProductWriteDetail = {
     IVA?: boolean;
     category?: string | null;
     measurement_unit?: string | null;
+    sku?: string | null;
     selling_units?: Array<ProductSellingUnit>;
 };
 
@@ -352,6 +355,7 @@ export type ProductWriteDetailRequest = {
     IVA?: boolean;
     category?: string | null;
     measurement_unit?: string | null;
+    sku?: string | null;
     selling_units?: Array<ProductSellingUnitRequest>;
 };
 
@@ -641,6 +645,7 @@ export type ProductMasterWritable = {
     IVA?: boolean;
     category?: string | null;
     measurement_unit?: string | null;
+    sku?: string | null;
 };
 
 export type ProductStockSaleWritable = {
@@ -658,6 +663,7 @@ export type ProductWriteDetailWritable = {
     IVA?: boolean;
     category?: string | null;
     measurement_unit?: string | null;
+    sku?: string | null;
     selling_units?: Array<ProductSellingUnit>;
 };
 

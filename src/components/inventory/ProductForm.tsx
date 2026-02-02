@@ -26,6 +26,7 @@ const sellingUnitSchema = z.object({
 // Define a custom schema in Spanish and more flexible with IDs
 const productFormSchema = z.object({
   name: z.string().min(1, 'El nombre es obligatorio').max(200, 'Máximo 200 caracteres'),
+  sku: z.string().nullable().optional(),
   description: z.string().nullable().optional(),
   cost_price_usd: z.string().min(1, 'El precio es obligatorio').regex(/^-?\d{0,8}(?:\.\d{0,2})?$/, 'Precio inválido (ej: 10.50)'),
   profit_margin: z.string().min(1, 'El margen es obligatorio').regex(/^-?\d{0,3}(?:\.\d{0,2})?$/, 'Margen inválido (ej: 30)'),
@@ -68,6 +69,7 @@ export default function ProductForm({ initialData, onSuccess }: ProductFormProps
     resolver: zodResolver(productFormSchema),
     defaultValues: {
       name: initialData?.name || '',
+      sku: initialData?.sku || '',
       description: initialData?.description || '',
       cost_price_usd: initialData?.cost_price_usd || '',
       profit_margin: initialData?.profit_margin || '',
@@ -94,6 +96,7 @@ export default function ProductForm({ initialData, onSuccess }: ProductFormProps
     if (fullProduct) {
       reset({
         name: fullProduct.name,
+        sku: fullProduct.sku,
         description: fullProduct.description,
         cost_price_usd: fullProduct.cost_price_usd,
         profit_margin: fullProduct.profit_margin,
@@ -206,17 +209,33 @@ export default function ProductForm({ initialData, onSuccess }: ProductFormProps
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 px-1">
         {activeTab === 'basic' ? (
           <div className="space-y-4 animate-in fade-in duration-300">
-            <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">Nombre del Producto</label>
-              <input
-                type="text"
-                id="name"
-                {...register('name')}
-                placeholder="Ej: Refresco de Cola 500ml"
-                className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2.5 outline-none transition-all"
-              />
-              {errors.name && <p className="mt-1 text-sm text-red-600 font-medium">{errors.name.message}</p>}
-            </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="md:col-span-2">
+                  <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">Nombre del Producto</label>
+                  <input
+                    type="text"
+                    id="name"
+                    {...register('name')}
+                    placeholder="Ej: Refresco de Cola 500ml"
+                    className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2.5 outline-none transition-all"
+                  />
+                  {errors.name && <p className="mt-1 text-sm text-red-600 font-medium">{errors.name.message}</p>}
+                </div>
+                <div>
+                  <label htmlFor="sku" className="block text-sm font-medium text-gray-700 mb-1">SKU (Código)</label>
+                  <div className="relative">
+                    <Package className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                    <input
+                      type="text"
+                      id="sku"
+                      {...register('sku')}
+                      placeholder="Ej: COD-12345"
+                      className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2.5 pl-9 outline-none transition-all"
+                    />
+                  </div>
+                  {errors.sku && <p className="mt-1 text-sm text-red-600 font-medium">{errors.sku.message}</p>}
+                </div>
+              </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>

@@ -42,6 +42,7 @@ const MobileProductList: React.FC<MobileProductListProps> = ({
               <div>
                 <h3 className="text-lg font-semibold text-gray-900">{product.name}</h3>
                 <p className="text-sm text-gray-500">{getCategoryName(product.category)}</p>
+                {product.sku && <p className="text-xs text-gray-400 font-mono mt-0.5">SKU: {product.sku}</p>}
               </div>
               <span className={`px-2 py-0.5 text-xs font-semibold rounded-full ${product.IVA ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}>
                 {product.IVA ? 'IVA (16%)' : 'Exento'}

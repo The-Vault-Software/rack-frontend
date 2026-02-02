@@ -404,6 +404,10 @@ export const zProductMaster = z.object({
     measurement_unit: z.union([
         z.string().uuid(),
         z.null()
+    ]).optional(),
+    sku: z.union([
+        z.string().max(100),
+        z.null()
     ]).optional()
 });
 
@@ -441,6 +445,10 @@ export const zPatchedProductWriteDetailRequest = z.object({
         z.string().uuid(),
         z.null()
     ]).optional(),
+    sku: z.union([
+        z.string().max(100),
+        z.null()
+    ]).optional(),
     selling_units: z.array(zProductSellingUnitRequest).optional()
 });
 
@@ -470,6 +478,10 @@ export const zProductWriteDetail = z.object({
         z.string().uuid(),
         z.null()
     ]).optional(),
+    sku: z.union([
+        z.string().max(100),
+        z.null()
+    ]).optional(),
     selling_units: z.array(zProductSellingUnit).optional()
 });
 
@@ -491,6 +503,10 @@ export const zProductWriteDetailRequest = z.object({
     ]).optional(),
     measurement_unit: z.union([
         z.string().uuid(),
+        z.null()
+    ]).optional(),
+    sku: z.union([
+        z.string().max(100),
         z.null()
     ]).optional(),
     selling_units: z.array(zProductSellingUnitRequest).optional()
@@ -866,6 +882,10 @@ export const zProductMasterWritable = z.object({
     measurement_unit: z.union([
         z.string().uuid(),
         z.null()
+    ]).optional(),
+    sku: z.union([
+        z.string().max(100),
+        z.null()
     ]).optional()
 });
 
@@ -891,6 +911,10 @@ export const zProductWriteDetailWritable = z.object({
     ]).optional(),
     measurement_unit: z.union([
         z.string().uuid(),
+        z.null()
+    ]).optional(),
+    sku: z.union([
+        z.string().max(100),
         z.null()
     ]).optional(),
     selling_units: z.array(zProductSellingUnit).optional()

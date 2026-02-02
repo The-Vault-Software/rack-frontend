@@ -21,6 +21,7 @@ interface ProductImportModalProps {
 interface ImportedRow {
   id: string; // Temporary ID for list rendering
   name: string;
+  sku?: string;
   categoryName: string;
   unitName: string;
   cost: string; // Keep as string for input parsing
@@ -81,6 +82,7 @@ export default function ProductImportModal({ isOpen, onClose }: ProductImportMod
       const headers = (jsonData[0] as unknown[]).map((h) => String(h || '').toLowerCase().trim());
       
       const nameIdx = headers.findIndex((h: string) => h.includes('nombre') || h.includes('name'));
+      const skuIdx = headers.findIndex((h: string) => h.includes('sku') || h.includes('código') || h.includes('codigo'));
       const catIdx = headers.findIndex((h: string) => h.includes('categor') || h.includes('category'));
       const unitIdx = headers.findIndex((h: string) => h.includes('unidad') || h.includes('unit'));
       const costIdx = headers.findIndex((h: string) => h.includes('cost') || h.includes('precio'));
@@ -103,6 +105,8 @@ export default function ProductImportModal({ isOpen, onClose }: ProductImportMod
 
         const name = String(row[nameIdx] || '').trim();
         if (!name) continue; // Skip empty names
+
+        const sku = skuIdx !== -1 ? String(row[skuIdx] || '').trim() : undefined;
 
         const categoryName = catIdx !== -1 ? String(row[catIdx] || '').trim() : '';
         const unitName = unitIdx !== -1 ? String(row[unitIdx] || '').trim() : '';
@@ -146,6 +150,7 @@ export default function ProductImportModal({ isOpen, onClose }: ProductImportMod
         rows.push({
           id: `row-${i}`,
           name,
+          sku,
           categoryName,
           unitName,
           cost: costPrice,
@@ -188,6 +193,7 @@ export default function ProductImportModal({ isOpen, onClose }: ProductImportMod
             await createProduct.mutateAsync({
                 body: {
                     name: row.name,
+                    sku: row.sku,
                     cost_price_usd: row.cost,
                     category: row.categoryId,
                     measurement_unit: row.unitId,
@@ -247,7 +253,7 @@ export default function ProductImportModal({ isOpen, onClose }: ProductImportMod
               </div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">Haz clic para subir tu Excel</h3>
               <p className="text-gray-500 text-sm max-w-sm">
-                Asegúrate de que tenga las columnas: Nombre, Categoría, Unidad y Costo.
+                Asegúrate de que tenga las columnas: Nombre, SKU, Categoría, Unidad y Costo.
               </p>
               <input 
                 ref={fileInputRef}
@@ -301,6 +307,7 @@ export default function ProductImportModal({ isOpen, onClose }: ProductImportMod
                                             <tr>
                                                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
                                                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nombre</th>
+                                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">SKU</th>
                                                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Categoría</th>
                                                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Unidad</th>
                                                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Costo (USD)</th>
@@ -318,6 +325,7 @@ export default function ProductImportModal({ isOpen, onClose }: ProductImportMod
                                                         )}
                                                     </td>
                                                     <td className="px-4 py-2 text-gray-900 font-medium">{row.name}</td>
+                                                    <td className="px-4 py-2 text-gray-500 font-mono text-xs">{row.sku || '-'}</td>
                                                     <td className="px-4 py-2">
                                                         <span className={row.categoryId ? 'text-green-700 bg-green-100 px-2 py-0.5 rounded-full text-xs' : 'text-gray-400 italic'}>
                                                             {row.categoryName || 'N/A'} {row.categoryId ? '(Existente)' : '(Sin asignar)'}
