@@ -25,13 +25,13 @@ interface ImportedRow {
   sku?: string;
   categoryName: string;
   unitName: string;
-  cost: string; // Keep as string for input parsing
+  cost?: string; // Keep as string for input parsing, optional if column missing
   // Validation status
   isValid: boolean;
   errors: string[];
   // Resolved data
-  categoryId: string | null;
-  unitId: string | null;
+  categoryId?: string | null;
+  unitId?: string | null;
   // Update logic
   isUpdate: boolean;
   existingProductId?: string;
@@ -121,65 +121,70 @@ export default function ProductImportModal({ isOpen, onClose }: ProductImportMod
         const name = String(row[nameIdx] || '').trim();
         if (!name) continue; // Skip empty names
 
-        const sku = skuIdx !== -1 ? String(row[skuIdx] || '').trim() : undefined;
-        const categoryName = catIdx !== -1 ? String(row[catIdx] || '').trim() : '';
-        const unitName = unitIdx !== -1 ? String(row[unitIdx] || '').trim() : '';
-        const costRaw = costIdx !== -1 ? row[costIdx] : '0';
-        
-        // Validation logic
+        // 1. Initialize variables
         const errors: string[] = [];
         let isValid = true;
         let isUpdate = false;
         let existingProductId: string | undefined = undefined;
         const changes: string[] = [];
 
-        // Parse Cost first
-        let costPrice = '0';
-        if (typeof costRaw === 'number') {
-            costPrice = costRaw.toString();
-        } else if (typeof costRaw === 'string') {
-            const parsed = parseFloat(costRaw.replace(',', '.')); // Handle potential comma decimals
-            if (isNaN(parsed) || parsed < 0) {
-               errors.push('Costo inválido');
-               isValid = false;
+        // 2. Extract basic values
+        const sku = skuIdx !== -1 ? String(row[skuIdx] || '').trim() : undefined;
+        const categoryName = catIdx !== -1 ? String(row[catIdx] || '').trim() : '';
+        const unitName = unitIdx !== -1 ? String(row[unitIdx] || '').trim() : '';
+        
+        // 3. Process Cost
+        let costPrice: string | undefined = undefined;
+        if (costIdx !== -1) {
+            const costRaw = row[costIdx];
+            if (costRaw === undefined || costRaw === null || String(costRaw).trim() === '') {
+                 costPrice = '0'; 
+            } else if (typeof costRaw === 'number') {
+                costPrice = costRaw.toString();
+            } else if (typeof costRaw === 'string') {
+                const parsed = parseFloat(costRaw.replace(',', '.'));
+                if (isNaN(parsed) || parsed < 0) {
+                   errors.push('Costo inválido');
+                   isValid = false;
+                } else {
+                   costPrice = parsed.toString();
+                }
             } else {
-               costPrice = parsed.toString();
+                 errors.push('Costo inválido');
+                 isValid = false;
             }
-        } else {
-             errors.push('Costo inválido');
-             isValid = false;
         }
 
-        // Resolve IDs
-        const categoryId = categoryName ? categoryMap.get(categoryName.toLowerCase()) || null : null;
-        const unitId = unitName ? unitMap.get(unitName.toLowerCase()) || null : null;
+        // 4. Resolve IDs
+        let categoryId: string | null | undefined = undefined;
+        if (catIdx !== -1) {
+             categoryId = categoryName ? categoryMap.get(categoryName.toLowerCase()) || null : null;
+        }
 
-        // Check if updating
+        let unitId: string | null | undefined = undefined;
+        if (unitIdx !== -1) {
+             unitId = unitName ? unitMap.get(unitName.toLowerCase()) || null : null;
+        }
+
+        // 5. Check Update status
         if (existingProductsMap.has(name.toLowerCase())) {
             const existing = existingProductsMap.get(name.toLowerCase())!;
             existingProductId = existing.id;
             
             // Check for changes
-            if ((existing.sku || '') !== (sku || '')) changes.push('SKU');
+            if (skuIdx !== -1 && (existing.sku || '') !== (sku || '')) changes.push('SKU');
+            if (catIdx !== -1 && existing.category !== categoryId) changes.push('Categoría');
+            if (unitIdx !== -1 && existing.measurement_unit !== unitId) changes.push('Unidad');
             
-            // Validate category change matches existing logic (null if not found/empty)
-            // Note: If CSV has blank category, it implies "remove category" or "no change"? 
-            // Usually imports overwrite. If CSV has value and it's different, it's a change.
-            // If CSV is empty but existing has value, for now let's assume overwriting to empty/null is intended behavior or just strict comparison.
-            // Let's assume strict comparison for now.
-            if (existing.category !== categoryId) changes.push('Categoría');
-            
-            if (existing.measurement_unit !== unitId) changes.push('Unidad');
-            
-            // Cost comparison (fuzzy float?)
-            const oldCost = parseFloat(existing.cost_price_usd);
-            const newCost = parseFloat(costPrice);
-            if (Math.abs(oldCost - newCost) > 0.0001) changes.push('Costo');
+            if (costIdx !== -1 && costPrice !== undefined) {
+                 const oldCost = parseFloat(existing.cost_price_usd);
+                 const newCost = parseFloat(costPrice);
+                 if (Math.abs(oldCost - newCost) > 0.0001) changes.push('Costo');
+            }
 
             if (changes.length > 0) {
                 isUpdate = true;
             } else {
-                // Duplicate but identical
                 errors.push('El producto ya existe y es idéntico');
                 isValid = false;
             }
@@ -194,8 +199,8 @@ export default function ProductImportModal({ isOpen, onClose }: ProductImportMod
           cost: costPrice,
           isValid,
           errors,
-          categoryId: categoryId || null,
-          unitId: unitId || null,
+          categoryId,
+          unitId,
           isUpdate,
           existingProductId,
           changes
@@ -240,28 +245,28 @@ export default function ProductImportModal({ isOpen, onClose }: ProductImportMod
                      await updateProduct.mutateAsync({
                         path: { id: row.existingProductId },
                         body: {
-                            ...existing, // Keep existing fields like description, profit_margin, IVA
-                            name: row.name,
-                            sku: row.sku, // Update SKU
-                            cost_price_usd: row.cost, // Update Cost
-                            category: row.categoryId, // Update Category
-                            measurement_unit: row.unitId, // Update Unit
+                            ...existing, // Keep existing fields
+                            name: row.name, // Name is always present
+                            // Only update fields if they were in the CSV (defined)
+                            sku: row.sku !== undefined ? row.sku : existing.sku,
+                            cost_price_usd: row.cost !== undefined ? row.cost : existing.cost_price_usd,
+                            category: row.categoryId !== undefined ? row.categoryId : existing.category,
+                            measurement_unit: row.unitId !== undefined ? row.unitId : existing.measurement_unit,
                         } as ProductMaster
                     });
                     updatedCount++;
                 } else {
-                    // Should not happen if logic is correct
                     failCount++;
                 }
             } else {
                 await createProduct.mutateAsync({
                     body: {
                         name: row.name,
-                        sku: row.sku,
-                        cost_price_usd: row.cost,
-                        category: row.categoryId,
-                        measurement_unit: row.unitId,
-                        profit_margin: "30", // Default profit margin
+                        sku: row.sku || '',
+                        cost_price_usd: row.cost || '0', // Default if missing
+                        category: row.categoryId || null,
+                        measurement_unit: row.unitId || null,
+                        profit_margin: "30",
                         IVA: false,
                         description: "Importado desde Excel"
                     }
@@ -404,15 +409,15 @@ export default function ProductImportModal({ isOpen, onClose }: ProductImportMod
                                                     <td className="px-4 py-2 text-gray-500 font-mono text-xs">{row.sku || '-'}</td>
                                                     <td className="px-4 py-2">
                                                         <span className={row.categoryId ? 'text-green-700 bg-green-100 px-2 py-0.5 rounded-full text-xs' : 'text-gray-400 italic'}>
-                                                            {row.categoryName || 'N/A'} {row.categoryId ? '(Existente)' : '(Sin asignar)'}
+                                                            {row.categoryId === undefined ? '-' : (row.categoryName || 'N/A')} {row.categoryId ? '(Existente)' : (row.categoryId === undefined ? '(Ignorar)' : '(Sin asignar)')}
                                                         </span>
                                                     </td>
                                                     <td className="px-4 py-2">
                                                         <span className={row.unitId ? 'text-green-700 bg-green-100 px-2 py-0.5 rounded-full text-xs' : 'text-gray-400 italic'}>
-                                                            {row.unitName || 'N/A'} {row.unitId ? '(Existente)' : '(Sin asignar)'}
+                                                            {row.unitId === undefined ? '-' : (row.unitName || 'N/A')} {row.unitId ? '(Existente)' : (row.unitId === undefined ? '(Ignorar)' : '(Sin asignar)')}
                                                         </span>
                                                     </td>
-                                                    <td className="px-4 py-2 text-gray-600">${row.cost}</td>
+                                                    <td className="px-4 py-2 text-gray-600">{row.cost !== undefined ? `$${row.cost}` : '-'}</td>
                                                     <td className="px-4 py-2">
                                                         {row.errors.length > 0 ? (
                                                             <span className="text-red-600 text-xs">{row.errors.join(', ')}</span>
