@@ -8,6 +8,7 @@ import {
   v1CategoryListOptions, 
   v1MeasurementListOptions,
   v1ProductCreateMutation,
+  v1ProductUpdateMutation,
   v1ProductListQueryKey
 } from '../../client/@tanstack/react-query.gen';
 import type { Category, MeasurementUnit, ProductMaster } from '../../client/types.gen';
@@ -31,6 +32,10 @@ interface ImportedRow {
   // Resolved data
   categoryId: string | null;
   unitId: string | null;
+  // Update logic
+  isUpdate: boolean;
+  existingProductId?: string;
+  changes?: string[];
 }
 
 export default function ProductImportModal({ isOpen, onClose }: ProductImportModalProps) {
@@ -54,6 +59,16 @@ export default function ProductImportModal({ isOpen, onClose }: ProductImportMod
     },
     onError: (error) => {
       console.error('Error creating product:', error);
+    }
+  });
+
+  const updateProduct = useMutation({
+    ...v1ProductUpdateMutation(),
+    onSuccess: () => {
+      // Manual handling
+    },
+    onError: (error) => {
+      console.error('Error updating product:', error);
     }
   });
 
@@ -94,7 +109,7 @@ export default function ProductImportModal({ isOpen, onClose }: ProductImportMod
       }
 
       const rows: ImportedRow[] = [];
-      const existingProductNames = new Set((products as ProductMaster[] || []).map(p => p.name.toLowerCase()));
+      const existingProductsMap = new Map((products as ProductMaster[] || []).map(p => [p.name.toLowerCase(), p]));
       const categoryMap = new Map((categories as Category[] || []).map(c => [c.name.toLowerCase(), c.id]));
       const unitMap = new Map((units as MeasurementUnit[] || []).map(u => [u.name.toLowerCase(), u.id]));
 
@@ -107,7 +122,6 @@ export default function ProductImportModal({ isOpen, onClose }: ProductImportMod
         if (!name) continue; // Skip empty names
 
         const sku = skuIdx !== -1 ? String(row[skuIdx] || '').trim() : undefined;
-
         const categoryName = catIdx !== -1 ? String(row[catIdx] || '').trim() : '';
         const unitName = unitIdx !== -1 ? String(row[unitIdx] || '').trim() : '';
         const costRaw = costIdx !== -1 ? row[costIdx] : '0';
@@ -115,14 +129,11 @@ export default function ProductImportModal({ isOpen, onClose }: ProductImportMod
         // Validation logic
         const errors: string[] = [];
         let isValid = true;
+        let isUpdate = false;
+        let existingProductId: string | undefined = undefined;
+        const changes: string[] = [];
 
-        // 1. Check duplicate name
-        if (existingProductNames.has(name.toLowerCase())) {
-            errors.push('El nombre ya existe');
-            isValid = false;
-        }
-
-        // 2. Check cost
+        // Parse Cost first
         let costPrice = '0';
         if (typeof costRaw === 'number') {
             costPrice = costRaw.toString();
@@ -139,13 +150,40 @@ export default function ProductImportModal({ isOpen, onClose }: ProductImportMod
              isValid = false;
         }
 
-        // 3. Resolve Category
+        // Resolve IDs
         const categoryId = categoryName ? categoryMap.get(categoryName.toLowerCase()) || null : null;
-        // Logic: "Verificar si existe una categoria con dicho nombre, si no, se deja sin asignar." -> Handled by null default
-
-        // 4. Resolve Unit
         const unitId = unitName ? unitMap.get(unitName.toLowerCase()) || null : null;
-         // Logic: "Verificar si existe una unidad de medida con dicho nombre, si no, se deja sin asignar." -> Handled by null default
+
+        // Check if updating
+        if (existingProductsMap.has(name.toLowerCase())) {
+            const existing = existingProductsMap.get(name.toLowerCase())!;
+            existingProductId = existing.id;
+            
+            // Check for changes
+            if ((existing.sku || '') !== (sku || '')) changes.push('SKU');
+            
+            // Validate category change matches existing logic (null if not found/empty)
+            // Note: If CSV has blank category, it implies "remove category" or "no change"? 
+            // Usually imports overwrite. If CSV has value and it's different, it's a change.
+            // If CSV is empty but existing has value, for now let's assume overwriting to empty/null is intended behavior or just strict comparison.
+            // Let's assume strict comparison for now.
+            if (existing.category !== categoryId) changes.push('Categoría');
+            
+            if (existing.measurement_unit !== unitId) changes.push('Unidad');
+            
+            // Cost comparison (fuzzy float?)
+            const oldCost = parseFloat(existing.cost_price_usd);
+            const newCost = parseFloat(costPrice);
+            if (Math.abs(oldCost - newCost) > 0.0001) changes.push('Costo');
+
+            if (changes.length > 0) {
+                isUpdate = true;
+            } else {
+                // Duplicate but identical
+                errors.push('El producto ya existe y es idéntico');
+                isValid = false;
+            }
+        }
 
         rows.push({
           id: `row-${i}`,
@@ -157,7 +195,10 @@ export default function ProductImportModal({ isOpen, onClose }: ProductImportMod
           isValid,
           errors,
           categoryId: categoryId || null,
-          unitId: unitId || null
+          unitId: unitId || null,
+          isUpdate,
+          existingProductId,
+          changes
         });
       }
 
@@ -185,33 +226,57 @@ export default function ProductImportModal({ isOpen, onClose }: ProductImportMod
 
     setIsImporting(true);
     setProgress(0);
-    let successCount = 0;
+    let createdCount = 0;
+    let updatedCount = 0;
     let failCount = 0;
+
+    const productsMap = new Map((products as ProductMaster[] || []).map(p => [p.id, p]));
 
     for (const row of validRows) {
         try {
-            await createProduct.mutateAsync({
-                body: {
-                    name: row.name,
-                    sku: row.sku,
-                    cost_price_usd: row.cost,
-                    category: row.categoryId,
-                    measurement_unit: row.unitId,
-                    profit_margin: "30", // Default profit margin
-                    IVA: false,
-                    description: "Importado desde Excel"
+            if (row.isUpdate && row.existingProductId) {
+                const existing = productsMap.get(row.existingProductId);
+                if (existing) {
+                     await updateProduct.mutateAsync({
+                        path: { id: row.existingProductId },
+                        body: {
+                            ...existing, // Keep existing fields like description, profit_margin, IVA
+                            name: row.name,
+                            sku: row.sku, // Update SKU
+                            cost_price_usd: row.cost, // Update Cost
+                            category: row.categoryId, // Update Category
+                            measurement_unit: row.unitId, // Update Unit
+                        } as ProductMaster
+                    });
+                    updatedCount++;
+                } else {
+                    // Should not happen if logic is correct
+                    failCount++;
                 }
-            });
-            successCount++;
+            } else {
+                await createProduct.mutateAsync({
+                    body: {
+                        name: row.name,
+                        sku: row.sku,
+                        cost_price_usd: row.cost,
+                        category: row.categoryId,
+                        measurement_unit: row.unitId,
+                        profit_margin: "30", // Default profit margin
+                        IVA: false,
+                        description: "Importado desde Excel"
+                    }
+                });
+                createdCount++;
+            }
         } catch (err) {
             failCount++;
-            console.error(`Failed to import ${row.name}`, err);
+            console.error(`Failed to process ${row.name}`, err);
         }
         setProgress(prev => prev + 1);
     }
 
     setIsImporting(false);
-    toast.success(`Importación completada: ${successCount} creados, ${failCount} fallidos.`);
+    toast.success(`Proceso completado: ${createdCount} creados, ${updatedCount} actualizados, ${failCount} fallidos.`);
     queryClient.invalidateQueries({ queryKey: v1ProductListQueryKey() });
     onClose();
     // Reset state
@@ -223,6 +288,7 @@ export default function ProductImportModal({ isOpen, onClose }: ProductImportMod
 
   const validCount = data.filter(d => d.isValid).length;
   const invalidCount = data.length - validCount;
+  const updateCount = data.filter(d => d.isUpdate).length;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
@@ -288,14 +354,18 @@ export default function ProductImportModal({ isOpen, onClose }: ProductImportMod
                      </div>
                  ) : (
                      <>
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-3 gap-4">
                             <div className="bg-green-50 p-4 rounded-lg border border-green-100 text-center">
-                                <p className="text-2xl font-bold text-green-700">{validCount}</p>
-                                <p className="text-sm text-green-600 font-medium">Válidos</p>
+                                <p className="text-2xl font-bold text-green-700">{validCount - updateCount}</p>
+                                <p className="text-sm text-green-600 font-medium">Nuevos</p>
+                            </div>
+                            <div className="bg-blue-50 p-4 rounded-lg border border-blue-100 text-center">
+                                <p className="text-2xl font-bold text-blue-700">{updateCount}</p>
+                                <p className="text-sm text-blue-600 font-medium">Actualizaciones</p>
                             </div>
                             <div className="bg-red-50 p-4 rounded-lg border border-red-100 text-center">
                                 <p className="text-2xl font-bold text-red-700">{invalidCount}</p>
-                                <p className="text-sm text-red-600 font-medium">Con errores</p>
+                                <p className="text-sm text-red-600 font-medium">Errores</p>
                             </div>
                         </div>
 
@@ -311,15 +381,21 @@ export default function ProductImportModal({ isOpen, onClose }: ProductImportMod
                                                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Categoría</th>
                                                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Unidad</th>
                                                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Costo (USD)</th>
-                                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Validación</th>
+                                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Información</th>
                                             </tr>
                                         </thead>
                                         <tbody className="bg-white divide-y divide-gray-200 text-sm">
                                             {data.slice(0, 100).map((row) => (
-                                                <tr key={row.id} className={!row.isValid ? 'bg-red-50/50' : ''}>
+                                                <tr key={row.id} className={!row.isValid ? 'bg-red-50/50' : row.isUpdate ? 'bg-blue-50/30' : ''}>
                                                     <td className="px-4 py-2 whitespace-nowrap">
                                                         {row.isValid ? (
-                                                            <CheckCircle className="text-green-500" size={18} />
+                                                            row.isUpdate ? (
+                                                                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                                                                    Actualizar
+                                                                </span>
+                                                            ) : (
+                                                                <CheckCircle className="text-green-500" size={18} />
+                                                            )
                                                         ) : (
                                                             <AlertCircle className="text-red-500" size={18} />
                                                         )}
@@ -340,8 +416,12 @@ export default function ProductImportModal({ isOpen, onClose }: ProductImportMod
                                                     <td className="px-4 py-2">
                                                         {row.errors.length > 0 ? (
                                                             <span className="text-red-600 text-xs">{row.errors.join(', ')}</span>
+                                                        ) : row.isUpdate ? (
+                                                             <span className="text-blue-600 text-xs font-medium">
+                                                                Cambios: {row.changes?.join(', ')}
+                                                             </span>
                                                         ) : (
-                                                            <span className="text-green-600 text-xs">Listo para crear</span>
+                                                            <span className="text-green-600 text-xs">Nuevo producto</span>
                                                         )}
                                                     </td>
                                                 </tr>
