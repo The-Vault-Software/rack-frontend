@@ -438,6 +438,7 @@ export default function InventoryPage() {
               <thead className="bg-gray-50">
                 <tr>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nombre</th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">SKU</th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Categoría</th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Unidad</th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">IVA</th>
@@ -457,7 +458,21 @@ export default function InventoryPage() {
                   
                   return (
                   <tr key={product.id}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{product.name}</td>
+                    <td className="px-6 py-4 text-sm font-medium text-gray-900">
+                      <div className="max-w-[220px] group relative">
+                        <div className="truncate" title={product.name}>
+                          {product.name}
+                        </div>
+                        {/* Bonus: CSS-only Tooltip */}
+                        <div className="absolute left-0 -top-8 hidden group-hover:block z-50 w-max max-w-xs">
+                           <div className="bg-gray-900 text-white text-xs rounded py-1 px-2 shadow-lg">
+                             {product.name}
+                             <div className="absolute top-full left-4 -mt-1 border-4 border-transparent border-t-gray-900"></div>
+                           </div>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{product.sku || '-'}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{getCategoryName(product.category)}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{getUnitName(product.measurement_unit)}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
