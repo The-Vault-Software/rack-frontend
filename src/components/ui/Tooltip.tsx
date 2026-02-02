@@ -12,11 +12,12 @@ interface TooltipProps {
   content: React.ReactNode;
   children?: React.ReactNode;
   className?: string;
+  triggerClassName?: string;
   icon?: boolean;
   delay?: number;
 }
 
-export default function Tooltip({ content, children, className, icon = false, delay = 0 }: TooltipProps) {
+export default function Tooltip({ content, children, className, triggerClassName, icon = false, delay = 0 }: TooltipProps) {
   const [isVisible, setIsVisible] = useState(false);
   const [coords, setCoords] = useState({ top: 0, left: 0 });
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -63,7 +64,7 @@ export default function Tooltip({ content, children, className, icon = false, de
   return (
     <div 
       ref={triggerRef}
-      className="relative inline-flex items-center group/tooltip"
+      className={cn("relative inline-flex items-center group/tooltip", triggerClassName)}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
