@@ -111,7 +111,11 @@ export default function InventoryPage() {
     let data = Array.isArray(productsData) ? productsData : [];
     
     if (searchTerm) {
-      data = data.filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase()));
+      const lowerSearch = searchTerm.toLowerCase();
+      data = data.filter(p => 
+        p.name.toLowerCase().includes(lowerSearch) || 
+        (p.sku && p.sku.toLowerCase().includes(lowerSearch))
+      );
     }
     
     if (filterCategory !== 'all') {
@@ -362,7 +366,7 @@ export default function InventoryPage() {
           <input
             type="text"
             className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-            placeholder={`Buscar por nombre en ${activeTab === 'products' ? 'productos' : activeTab === 'categories' ? 'categorías' : 'unidades'}...`}
+            placeholder={`Buscar por ${activeTab === 'products' ? 'nombre o SKU' : 'nombre'} en ${activeTab === 'products' ? 'productos' : activeTab === 'categories' ? 'categorías' : 'unidades'}...`}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />

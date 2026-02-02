@@ -206,7 +206,7 @@ export default function MobileAccountBuilder() {
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                 <input
                     type="text"
-                    placeholder="Buscar productos..."
+                    placeholder="Buscar productos por nombre o SKU..."
                     className="w-full pl-10 pr-4 py-3 bg-gray-100 border-none rounded-2xl focus:ring-2 focus:ring-blue-500 transition-all text-sm"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}

@@ -56,7 +56,10 @@ export default function AccountBuilder() {
 
 
   const filteredProducts = useMemo(() => {
-    return products.filter((p: ProductMaster) => p.name.toLowerCase().includes(searchTerm.toLowerCase()));
+    return products.filter((p: ProductMaster) => 
+      p.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+      (p.sku && p.sku.toLowerCase().includes(searchTerm.toLowerCase()))
+    );
   }, [products, searchTerm]);
 
   const filteredProviders = useMemo(() => {
@@ -263,7 +266,7 @@ export default function AccountBuilder() {
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <input
                   type="text"
-                  placeholder="Buscar productos..."
+                  placeholder="Buscar productos por nombre o SKU..."
                   className="w-full pl-10 pr-4 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
@@ -377,6 +380,7 @@ export default function AccountBuilder() {
             >
               <div className="flex justify-between items-start w-full">
                 <h4 className="font-semibold text-gray-900 truncate pr-8">{product.name}</h4>
+                {product.sku && <p className="text-xs text-gray-400 font-mono mt-0.5">SKU: {product.sku}</p>}
                 <button
                   onClick={(e) => handleEditProduct(e, product)}
                   className="absolute right-2 top-2 p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
