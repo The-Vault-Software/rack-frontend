@@ -105,6 +105,31 @@ export default function InventoryPage() {
     }
   });
 
+  // Optimize performance: Create lookups for O(1) access
+  const stockMap = useMemo(() => {
+    const map = new Map<string, string>();
+    if (stockData) {
+      stockData.forEach(s => map.set(s.product_id, s.stock));
+    }
+    return map;
+  }, [stockData]);
+
+  const categoryMap = useMemo(() => {
+    const map = new Map<string, string>();
+    if (Array.isArray(categoriesData)) {
+      categoriesData.forEach(c => map.set(c.id, c.name));
+    }
+    return map;
+  }, [categoriesData]);
+
+  const unitMap = useMemo(() => {
+    const map = new Map<string, string>();
+    if (Array.isArray(unitsData)) {
+      unitsData.forEach(u => map.set(u.id, u.name));
+    }
+    return map;
+  }, [unitsData]);
+
   const products = useMemo(() => {
     let data = Array.isArray(productsData) ? productsData : [];
     
@@ -142,8 +167,9 @@ export default function InventoryPage() {
     let lowStockCount = 0;
 
     allProducts.forEach(product => {
-      const stockItem = stockData?.find(s => s.product_id === product.id);
-      const stockValue = stockItem ? parseFloat(stockItem.stock) : 0;
+      // O(1) lookup
+      const stockValueStr = stockMap.get(product.id);
+      const stockValue = stockValueStr ? parseFloat(stockValueStr) : 0;
       
       const cost = parseFloat(product.cost_price_usd);
       const margin = parseFloat(product.profit_margin || '0');
@@ -164,7 +190,7 @@ export default function InventoryPage() {
       totalProfit: totalSale - totalCost,
       lowStockCount
     };
-  }, [productsData, stockData]);
+  }, [productsData, stockMap]);
 
   const handleCreate = () => {
     setEditingData(null);
@@ -201,24 +227,19 @@ export default function InventoryPage() {
 
   const getCategoryName = (id?: string | null) => {
     if (!id) return '-';
-    const allCategories = Array.isArray(categoriesData) ? categoriesData : [];
-    const cat = allCategories.find((c: Category) => c.id === id);
-    return cat ? cat.name : id;
+    return categoryMap.get(id) || id;
   };
 
   const getStock = (productId: string) => {
-    if (!stockData) return '0';
-    const stockItem = stockData.find(s => s.product_id === productId);
-    if (!stockItem) return '0';
-    const stockValue = parseFloat(stockItem.stock);
+    const stockStr = stockMap.get(productId);
+    if (!stockStr) return '0';
+    const stockValue = parseFloat(stockStr);
     return stockValue === 0 ? '0' : stockValue.toFixed(2);
   };
 
   const getUnitName = (id?: string | null) => {
     if (!id) return '-';
-    const allUnits = Array.isArray(unitsData) ? unitsData : [];
-    const unit = allUnits.find((u: MeasurementUnit) => u.id === id);
-    return unit ? unit.name : id;
+    return unitMap.get(id) || id;
   };
 
   const handleExport = () => {
