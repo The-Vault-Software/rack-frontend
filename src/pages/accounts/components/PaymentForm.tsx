@@ -20,9 +20,10 @@ interface PaymentFormProps {
   id: string;
   onSuccess: () => void;
   pendingAmount: number; // Siempre viene en USD desde el backend
+  onSubmitOverride?: (data: PaymentFormValues) => Promise<void>;
 }
 
-export default function PaymentForm({ type, id, onSuccess, pendingAmount }: PaymentFormProps) {
+export default function PaymentForm({ type, id, onSuccess, pendingAmount, onSubmitOverride }: PaymentFormProps) {
   const queryClient = useQueryClient();
   const schema = type === 'account' ? zAccountPaymentRequestWritable : zSalePaymentRequestWritable;
 
@@ -62,6 +63,16 @@ export default function PaymentForm({ type, id, onSuccess, pendingAmount }: Paym
   });
 
   const onSubmit = async (data: PaymentFormValues) => {
+    if (onSubmitOverride) {
+        try {
+            await onSubmitOverride(data);
+            onSuccess();
+        } catch (error) {
+            console.error(error);
+        }
+        return;
+    }
+
     // Asegurarse de enviar el descuento si es USD y está activo
     const finalDiscount = (currency === 'USD' && adjustmentType !== 'off') ? data.discount : '0.00';
 

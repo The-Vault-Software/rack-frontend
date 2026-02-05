@@ -14,7 +14,7 @@ import { Combobox, ComboboxButton, ComboboxInput, ComboboxOption, ComboboxOption
 import { motion, AnimatePresence } from 'framer-motion';
 import type { ProductMaster, Provider, MeasurementUnit } from '../../../client/types.gen';
 import Modal from '../../../components/ui/Modal';
-import Tooltip from '../../../components/ui/Tooltip';
+import SimpleTooltip from '../../../components/ui/SimpleTooltip';
 import ProductForm from '../../../components/inventory/ProductForm';
 import AccountProcessModal from './AccountProcessModal';
 import ProviderForm from '../../../components/providers/ProviderForm';
@@ -380,9 +380,11 @@ export default function AccountBuilder() {
               className="flex flex-col p-4 border rounded-lg hover:border-blue-500 hover:shadow-md transition-all text-left relative group"
             >
               <div className="flex justify-between items-start w-full">
-                <Tooltip content={product.name} triggerClassName="flex-1 min-w-0 pr-8">
-                  <h4 className="font-semibold text-gray-900 truncate text-left">{product.name}</h4>
-                </Tooltip>
+                <div className="flex-1 min-w-0 pr-8">
+                  <SimpleTooltip content={product.name} className="w-fit max-w-full">
+                    <h4 className="font-semibold text-gray-900 truncate text-left">{product.name}</h4>
+                  </SimpleTooltip>
+                </div>
                 {product.sku && <p className="text-xs text-gray-400 font-mono mt-0.5">SKU: {product.sku}</p>}
                 <button
                   onClick={(e) => handleEditProduct(e, product)}
