@@ -99,6 +99,10 @@ export const AccountDetailSchema = {
             type: 'string',
             readOnly: true
         },
+        product_sku: {
+            type: 'string',
+            readOnly: true
+        },
         quantity: {
             type: 'string',
             format: 'decimal',
@@ -115,6 +119,7 @@ export const AccountDetailSchema = {
         'id',
         'product',
         'product_name',
+        'product_sku',
         'quantity',
         'unit_price'
     ]
@@ -435,8 +440,9 @@ export const CompanySchema = {
         },
         max_branches: {
             type: 'integer',
-            maximum: 2147483647,
-            minimum: 0
+            maximum: 9223372036854776000,
+            minimum: 0,
+            format: 'int64'
         },
         license_date: {
             type: 'string',
@@ -473,8 +479,9 @@ export const CompanyRequestSchema = {
         },
         max_branches: {
             type: 'integer',
-            maximum: 2147483647,
-            minimum: 0
+            maximum: 9223372036854776000,
+            minimum: 0,
+            format: 'int64'
         },
         license_date: {
             type: 'string',
@@ -819,8 +826,9 @@ export const PatchedCompanyRequestSchema = {
         },
         max_branches: {
             type: 'integer',
-            maximum: 2147483647,
-            minimum: 0
+            maximum: 9223372036854776000,
+            minimum: 0,
+            format: 'int64'
         },
         license_date: {
             type: 'string',
@@ -914,6 +922,11 @@ export const PatchedProductWriteDetailRequestSchema = {
             minLength: 1,
             maxLength: 200
         },
+        sku: {
+            type: 'string',
+            nullable: true,
+            maxLength: 100
+        },
         description: {
             type: 'string',
             nullable: true
@@ -923,10 +936,10 @@ export const PatchedProductWriteDetailRequestSchema = {
             format: 'decimal',
             pattern: '^-?\\d{0,8}(?:\\.\\d{0,2})?$'
         },
-        profit_margin: {
+        selling_price_usd: {
             type: 'string',
             format: 'decimal',
-            pattern: '^-?\\d{0,3}(?:\\.\\d{0,2})?$'
+            pattern: '^-?\\d{0,8}(?:\\.\\d{0,2})?$'
         },
         IVA: {
             type: 'boolean'
@@ -940,11 +953,6 @@ export const PatchedProductWriteDetailRequestSchema = {
             type: 'string',
             format: 'uuid',
             nullable: true
-        },
-        sku: {
-            type: 'string',
-            nullable: true,
-            maxLength: 100
         },
         selling_units: {
             type: 'array',
@@ -1036,6 +1044,11 @@ export const ProductMasterSchema = {
             type: 'string',
             maxLength: 200
         },
+        sku: {
+            type: 'string',
+            nullable: true,
+            maxLength: 100
+        },
         description: {
             type: 'string',
             nullable: true
@@ -1045,10 +1058,10 @@ export const ProductMasterSchema = {
             format: 'decimal',
             pattern: '^-?\\d{0,8}(?:\\.\\d{0,2})?$'
         },
-        profit_margin: {
+        selling_price_usd: {
             type: 'string',
             format: 'decimal',
-            pattern: '^-?\\d{0,3}(?:\\.\\d{0,2})?$'
+            pattern: '^-?\\d{0,8}(?:\\.\\d{0,2})?$'
         },
         IVA: {
             type: 'boolean'
@@ -1062,18 +1075,13 @@ export const ProductMasterSchema = {
             type: 'string',
             format: 'uuid',
             nullable: true
-        },
-        sku: {
-            type: 'string',
-            nullable: true,
-            maxLength: 100
         }
     },
     required: [
         'cost_price_usd',
         'id',
         'name',
-        'profit_margin'
+        'selling_price_usd'
     ]
 } as const;
 
@@ -1165,6 +1173,11 @@ export const ProductWriteDetailSchema = {
             type: 'string',
             maxLength: 200
         },
+        sku: {
+            type: 'string',
+            nullable: true,
+            maxLength: 100
+        },
         description: {
             type: 'string',
             nullable: true
@@ -1174,10 +1187,10 @@ export const ProductWriteDetailSchema = {
             format: 'decimal',
             pattern: '^-?\\d{0,8}(?:\\.\\d{0,2})?$'
         },
-        profit_margin: {
+        selling_price_usd: {
             type: 'string',
             format: 'decimal',
-            pattern: '^-?\\d{0,3}(?:\\.\\d{0,2})?$'
+            pattern: '^-?\\d{0,8}(?:\\.\\d{0,2})?$'
         },
         IVA: {
             type: 'boolean'
@@ -1191,11 +1204,6 @@ export const ProductWriteDetailSchema = {
             type: 'string',
             format: 'uuid',
             nullable: true
-        },
-        sku: {
-            type: 'string',
-            nullable: true,
-            maxLength: 100
         },
         selling_units: {
             type: 'array',
@@ -1208,7 +1216,7 @@ export const ProductWriteDetailSchema = {
         'cost_price_usd',
         'id',
         'name',
-        'profit_margin'
+        'selling_price_usd'
     ]
 } as const;
 
@@ -1221,6 +1229,11 @@ export const ProductWriteDetailRequestSchema = {
             minLength: 1,
             maxLength: 200
         },
+        sku: {
+            type: 'string',
+            nullable: true,
+            maxLength: 100
+        },
         description: {
             type: 'string',
             nullable: true
@@ -1230,10 +1243,10 @@ export const ProductWriteDetailRequestSchema = {
             format: 'decimal',
             pattern: '^-?\\d{0,8}(?:\\.\\d{0,2})?$'
         },
-        profit_margin: {
+        selling_price_usd: {
             type: 'string',
             format: 'decimal',
-            pattern: '^-?\\d{0,3}(?:\\.\\d{0,2})?$'
+            pattern: '^-?\\d{0,8}(?:\\.\\d{0,2})?$'
         },
         IVA: {
             type: 'boolean'
@@ -1248,11 +1261,6 @@ export const ProductWriteDetailRequestSchema = {
             format: 'uuid',
             nullable: true
         },
-        sku: {
-            type: 'string',
-            nullable: true,
-            maxLength: 100
-        },
         selling_units: {
             type: 'array',
             items: {
@@ -1263,7 +1271,7 @@ export const ProductWriteDetailRequestSchema = {
     required: [
         'cost_price_usd',
         'name',
-        'profit_margin'
+        'selling_price_usd'
     ]
 } as const;
 
@@ -1514,6 +1522,10 @@ export const SaleDetailSchema = {
             type: 'string',
             readOnly: true
         },
+        product_sku: {
+            type: 'string',
+            readOnly: true
+        },
         quantity: {
             type: 'string',
             format: 'decimal',
@@ -1530,6 +1542,7 @@ export const SaleDetailSchema = {
         'id',
         'product',
         'product_name',
+        'product_sku',
         'quantity',
         'unit_price'
     ]
@@ -1945,8 +1958,9 @@ export const CompanyWritableSchema = {
         },
         max_branches: {
             type: 'integer',
-            maximum: 2147483647,
-            minimum: 0
+            maximum: 9223372036854776000,
+            minimum: 0,
+            format: 'int64'
         },
         license_date: {
             type: 'string',
@@ -2126,6 +2140,11 @@ export const ProductMasterWritableSchema = {
             type: 'string',
             maxLength: 200
         },
+        sku: {
+            type: 'string',
+            nullable: true,
+            maxLength: 100
+        },
         description: {
             type: 'string',
             nullable: true
@@ -2135,10 +2154,10 @@ export const ProductMasterWritableSchema = {
             format: 'decimal',
             pattern: '^-?\\d{0,8}(?:\\.\\d{0,2})?$'
         },
-        profit_margin: {
+        selling_price_usd: {
             type: 'string',
             format: 'decimal',
-            pattern: '^-?\\d{0,3}(?:\\.\\d{0,2})?$'
+            pattern: '^-?\\d{0,8}(?:\\.\\d{0,2})?$'
         },
         IVA: {
             type: 'boolean'
@@ -2152,17 +2171,12 @@ export const ProductMasterWritableSchema = {
             type: 'string',
             format: 'uuid',
             nullable: true
-        },
-        sku: {
-            type: 'string',
-            nullable: true,
-            maxLength: 100
         }
     },
     required: [
         'cost_price_usd',
         'name',
-        'profit_margin'
+        'selling_price_usd'
     ]
 } as const;
 
@@ -2188,6 +2202,11 @@ export const ProductWriteDetailWritableSchema = {
             type: 'string',
             maxLength: 200
         },
+        sku: {
+            type: 'string',
+            nullable: true,
+            maxLength: 100
+        },
         description: {
             type: 'string',
             nullable: true
@@ -2197,10 +2216,10 @@ export const ProductWriteDetailWritableSchema = {
             format: 'decimal',
             pattern: '^-?\\d{0,8}(?:\\.\\d{0,2})?$'
         },
-        profit_margin: {
+        selling_price_usd: {
             type: 'string',
             format: 'decimal',
-            pattern: '^-?\\d{0,3}(?:\\.\\d{0,2})?$'
+            pattern: '^-?\\d{0,8}(?:\\.\\d{0,2})?$'
         },
         IVA: {
             type: 'boolean'
@@ -2215,11 +2234,6 @@ export const ProductWriteDetailWritableSchema = {
             format: 'uuid',
             nullable: true
         },
-        sku: {
-            type: 'string',
-            nullable: true,
-            maxLength: 100
-        },
         selling_units: {
             type: 'array',
             items: {
@@ -2230,7 +2244,7 @@ export const ProductWriteDetailWritableSchema = {
     required: [
         'cost_price_usd',
         'name',
-        'profit_margin'
+        'selling_price_usd'
     ]
 } as const;
 

@@ -266,7 +266,7 @@ export default function ProductImportModal({ isOpen, onClose }: ProductImportMod
                         cost_price_usd: row.cost || '0', // Default if missing
                         category: row.categoryId || null,
                         measurement_unit: row.unitId || null,
-                        profit_margin: "30",
+                        selling_price_usd: row.cost || '0',
                         IVA: false,
                         description: "Importado desde Excel"
                     }

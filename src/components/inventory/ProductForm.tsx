@@ -29,7 +29,7 @@ const productFormSchema = z.object({
   sku: z.string().nullable().optional(),
   description: z.string().nullable().optional(),
   cost_price_usd: z.string().min(1, 'El precio es obligatorio').regex(/^-?\d{0,8}(?:\.\d{0,2})?$/, 'Precio inválido (ej: 10.50)'),
-  profit_margin: z.string().min(1, 'El margen es obligatorio').regex(/^-?\d{0,3}(?:\.\d{0,2})?$/, 'Margen inválido (ej: 30)'),
+  selling_price_usd: z.string().min(1, 'El precio de venta es obligatorio').regex(/^-?\d{0,8}(?:\.\d{0,2})?$/, 'Precio inválido (ej: 10.50)'),
   IVA: z.boolean().optional(),
   category: z.string().nullable().optional(),
   measurement_unit: z.string().nullable().optional(),
@@ -72,7 +72,7 @@ export default function ProductForm({ initialData, onSuccess }: ProductFormProps
       sku: initialData?.sku || '',
       description: initialData?.description || '',
       cost_price_usd: initialData?.cost_price_usd || '',
-      profit_margin: initialData?.profit_margin || '',
+      selling_price_usd: initialData?.selling_price_usd || '',
       IVA: initialData?.IVA || false,
       category: initialData?.category || '',
       measurement_unit: initialData?.measurement_unit || '',
@@ -99,7 +99,7 @@ export default function ProductForm({ initialData, onSuccess }: ProductFormProps
         sku: fullProduct.sku,
         description: fullProduct.description,
         cost_price_usd: fullProduct.cost_price_usd,
-        profit_margin: fullProduct.profit_margin,
+        selling_price_usd: fullProduct.selling_price_usd,
         IVA: fullProduct.IVA,
         category: fullProduct.category || '',
         measurement_unit: fullProduct.measurement_unit || '',
@@ -287,19 +287,19 @@ export default function ProductForm({ initialData, onSuccess }: ProductFormProps
               </div>
 
               <div>
-                <label htmlFor="profit_margin" className="block text-sm font-medium text-gray-700 mb-1">Margen de Ganancia (%)</label>
+                <label htmlFor="selling_price_usd" className="block text-sm font-medium text-gray-700 mb-1">Precio de Venta (USD)</label>
                 <div className="relative">
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">%</span>
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">$</span>
                   <input
                     type="number"
                     step="0.01"
-                    id="profit_margin"
-                    {...register('profit_margin')}
-                    placeholder="30.00"
-                    className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2.5 outline-none"
+                    id="selling_price_usd"
+                    {...register('selling_price_usd')}
+                    placeholder="0.00"
+                    className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2.5 pl-7 outline-none"
                   />
                 </div>
-                {errors.profit_margin && <p className="mt-1 text-sm text-red-600">{errors.profit_margin.message}</p>}
+                {errors.selling_price_usd && <p className="mt-1 text-sm text-red-600">{errors.selling_price_usd.message}</p>}
               </div>
             </div>
 

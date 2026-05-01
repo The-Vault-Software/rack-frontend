@@ -580,7 +580,7 @@ export interface components {
             /** Format: decimal */
             cost_price_usd?: string;
             /** Format: decimal */
-            profit_margin?: string;
+            selling_price_usd?: string;
             IVA?: boolean;
             /** Format: uuid */
             category?: string | null;
@@ -625,7 +625,7 @@ export interface components {
             /** Format: decimal */
             cost_price_usd: string;
             /** Format: decimal */
-            profit_margin: string;
+            selling_price_usd: string;
             IVA?: boolean;
             /** Format: uuid */
             category?: string | null;
@@ -638,7 +638,7 @@ export interface components {
             /** Format: decimal */
             cost_price_usd: string;
             /** Format: decimal */
-            profit_margin: string;
+            selling_price_usd: string;
             IVA?: boolean;
             /** Format: uuid */
             category?: string | null;

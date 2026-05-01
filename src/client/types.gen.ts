@@ -32,6 +32,7 @@ export type AccountDetail = {
     readonly id: string;
     product: string;
     readonly product_name: string;
+    readonly product_sku: string;
     quantity: string;
     readonly unit_price: string;
 };
@@ -252,13 +253,13 @@ export type PatchedMeasurementUnitRequest = {
  */
 export type PatchedProductWriteDetailRequest = {
     name?: string;
+    sku?: string | null;
     description?: string | null;
     cost_price_usd?: string;
-    profit_margin?: string;
+    selling_price_usd?: string;
     IVA?: boolean;
     category?: string | null;
     measurement_unit?: string | null;
-    sku?: string | null;
     selling_units?: Array<ProductSellingUnitRequest>;
 };
 
@@ -300,13 +301,13 @@ export type PaymentStatusC54Enum = 'PENDING' | 'PARTIALLY_PAID' | 'PAID' | 'OVER
 export type ProductMaster = {
     readonly id: string;
     name: string;
+    sku?: string | null;
     description?: string | null;
     cost_price_usd: string;
-    profit_margin: string;
+    selling_price_usd: string;
     IVA?: boolean;
     category?: string | null;
     measurement_unit?: string | null;
-    sku?: string | null;
 };
 
 export type ProductSellingUnit = {
@@ -334,13 +335,13 @@ export type ProductStockSale = {
 export type ProductWriteDetail = {
     readonly id: string;
     name: string;
+    sku?: string | null;
     description?: string | null;
     cost_price_usd: string;
-    profit_margin: string;
+    selling_price_usd: string;
     IVA?: boolean;
     category?: string | null;
     measurement_unit?: string | null;
-    sku?: string | null;
     selling_units?: Array<ProductSellingUnit>;
 };
 
@@ -349,13 +350,13 @@ export type ProductWriteDetail = {
  */
 export type ProductWriteDetailRequest = {
     name: string;
+    sku?: string | null;
     description?: string | null;
     cost_price_usd: string;
-    profit_margin: string;
+    selling_price_usd: string;
     IVA?: boolean;
     category?: string | null;
     measurement_unit?: string | null;
-    sku?: string | null;
     selling_units?: Array<ProductSellingUnitRequest>;
 };
 
@@ -425,6 +426,7 @@ export type SaleDetail = {
     readonly id: string;
     product: string;
     readonly product_name: string;
+    readonly product_sku: string;
     quantity: string;
     readonly unit_price: string;
 };
@@ -639,13 +641,13 @@ export type PatchedSaleRequestWritable = {
  */
 export type ProductMasterWritable = {
     name: string;
+    sku?: string | null;
     description?: string | null;
     cost_price_usd: string;
-    profit_margin: string;
+    selling_price_usd: string;
     IVA?: boolean;
     category?: string | null;
     measurement_unit?: string | null;
-    sku?: string | null;
 };
 
 export type ProductStockSaleWritable = {
@@ -657,13 +659,13 @@ export type ProductStockSaleWritable = {
  */
 export type ProductWriteDetailWritable = {
     name: string;
+    sku?: string | null;
     description?: string | null;
     cost_price_usd: string;
-    profit_margin: string;
+    selling_price_usd: string;
     IVA?: boolean;
     category?: string | null;
     measurement_unit?: string | null;
-    sku?: string | null;
     selling_units?: Array<ProductSellingUnit>;
 };
 

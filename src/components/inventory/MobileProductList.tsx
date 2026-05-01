@@ -33,7 +33,7 @@ const MobileProductList: React.FC<MobileProductListProps> = ({
   return (
     <div className="space-y-4">
       {products.map((product) => {
-        const basePrice = parseFloat(product.cost_price_usd) * (1 + parseFloat(product.profit_margin || '0') / 100);
+        const basePrice = parseFloat(product.selling_price_usd || '0');
         const finalPriceUsd = product.IVA ? basePrice * 1.16 : basePrice;
         
         return (

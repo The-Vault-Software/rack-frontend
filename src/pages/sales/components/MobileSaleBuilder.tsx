@@ -99,9 +99,7 @@ export default function MobileSaleBuilder() {
 
   const total = useMemo(() => {
     return cart.reduce((acc: number, item: CartItem) => {
-      const cost_price = parseFloat(item.product.cost_price_usd || '0');
-      const margin = parseFloat(item.product.profit_margin || '0');
-      const basePrice = cost_price * (1 + margin / 100);
+      const basePrice = parseFloat(item.product.selling_price_usd || '0');
       const finalPrice = item.product.IVA ? basePrice * 1.16 : basePrice;
       const factor = item.selectedSellingUnit ? parseFloat(item.selectedSellingUnit.unit_conversion_factor) : 1;
       return acc + (finalPrice * item.quantity * factor);
@@ -257,9 +255,7 @@ export default function MobileSaleBuilder() {
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
         {filteredProducts.map(product => {
           const stock = getStock(product.id);
-          const cost_price = parseFloat(product.cost_price_usd || '0');
-          const margin = parseFloat(product.profit_margin || '0');
-          const basePrice = cost_price * (1 + margin / 100);
+          const basePrice = parseFloat(product.selling_price_usd || '0');
           const finalPrice = product.IVA ? basePrice * 1.16 : basePrice;
           const inCart = cart.find(i => i.product.id === product.id);
 
@@ -381,7 +377,7 @@ export default function MobileSaleBuilder() {
 
           <div className="flex-1 overflow-y-auto space-y-4 px-1">
             {cart.map(item => {
-              const basePrice = parseFloat(item.product.cost_price_usd || '0') * (1 + parseFloat(item.product.profit_margin || '0') / 100);
+              const basePrice = parseFloat(item.product.selling_price_usd || '0');
               const factor = item.selectedSellingUnit ? parseFloat(item.selectedSellingUnit.unit_conversion_factor) : 1;
               const finalPrice = (item.product.IVA ? basePrice * 1.16 : basePrice) * factor;
 

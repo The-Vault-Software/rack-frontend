@@ -27,7 +27,7 @@ interface SellingUnit {
 }
 
 interface CartItem {
-  product: { id: string; name: string; cost_price_usd?: string; profit_margin?: string; IVA?: boolean };
+  product: { id: string; name: string; cost_price_usd?: string; selling_price_usd?: string; IVA?: boolean };
   quantity: number;
   selectedSellingUnit?: SellingUnit;
 }

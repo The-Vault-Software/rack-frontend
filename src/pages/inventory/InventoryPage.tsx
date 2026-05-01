@@ -153,8 +153,7 @@ export default function InventoryPage() {
       const stockValue = stockItem ? parseFloat(stockItem.stock) : 0;
       
       const cost = parseFloat(product.cost_price_usd);
-      const margin = parseFloat(product.profit_margin || '0');
-      const basePrice = cost * (1 + margin / 100);
+      const basePrice = parseFloat(product.selling_price_usd || '0');
       const salePrice = product.IVA ? basePrice * 1.16 : basePrice;
 
       totalCost += cost * stockValue;
@@ -244,7 +243,7 @@ export default function InventoryPage() {
   const handleExport = () => {
     try {
       const dataToExport = products.map(product => {
-        const basePrice = parseFloat(product.cost_price_usd) * (1 + parseFloat(product.profit_margin || '0') / 100);
+        const basePrice = parseFloat(product.selling_price_usd || '0');
         const finalPriceUsd = product.IVA ? basePrice * 1.16 : basePrice;
         const finalPriceBs = rates ? (finalPriceUsd * parseFloat(rates.bcv_rate)) : 0;
 
@@ -473,7 +472,7 @@ export default function InventoryPage() {
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {paginatedProducts.map((product: ProductMaster) => {
-                  const basePrice = parseFloat(product.cost_price_usd) * (1 + parseFloat(product.profit_margin || '0') / 100);
+                  const basePrice = parseFloat(product.selling_price_usd || '0');
                   const finalPriceUsd = product.IVA ? basePrice * 1.16 : basePrice;
                   
                   return (

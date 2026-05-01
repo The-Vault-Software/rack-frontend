@@ -114,8 +114,7 @@ export default function InventoryAnalytics() {
           const id = product.id;
           const info = productSummary[id] || { name: product.name, qty: 0 };
           const costPrice = parseFloat(product.cost_price_usd);
-          const profitMargin = parseFloat(product.profit_margin);
-          const salePrice = costPrice * (1 + profitMargin / 100);
+          const salePrice = parseFloat(product.selling_price_usd || '0');
 
           const d = info.qty / daysDiff; // daily demand
           const D = d * 365; // annual demand

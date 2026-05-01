@@ -10,6 +10,7 @@ export const zAccountDetail = z.object({
     id: z.string().uuid().readonly(),
     product: z.string().uuid(),
     product_name: z.string().readonly(),
+    product_sku: z.string().readonly(),
     quantity: z.string().regex(/^-?\d{0,8}(?:\.\d{0,2})?$/),
     unit_price: z.string().regex(/^-?\d{0,10}(?:\.\d{0,2})?$/).readonly()
 });
@@ -116,7 +117,7 @@ export const zCategoryRequest = z.object({
 export const zCompany = z.object({
     name: z.string().max(100),
     email: z.string().email().max(200),
-    max_branches: z.number().int().gte(0).lte(2147483647),
+    max_branches: z.coerce.bigint().gte(BigInt(0)).lte(BigInt(9223372036854776000)),
     license_date: z.string().date(),
     id: z.string().uuid().readonly()
 });
@@ -124,7 +125,7 @@ export const zCompany = z.object({
 export const zCompanyRequest = z.object({
     name: z.string().min(1).max(100),
     email: z.string().email().min(1).max(200),
-    max_branches: z.number().int().gte(0).lte(2147483647),
+    max_branches: z.coerce.bigint().gte(BigInt(0)).lte(BigInt(9223372036854776000)),
     license_date: z.string().date()
 });
 
@@ -234,7 +235,7 @@ export const zPatchedCategoryRequest = z.object({
 export const zPatchedCompanyRequest = z.object({
     name: z.string().min(1).max(100).optional(),
     email: z.string().email().min(1).max(200).optional(),
-    max_branches: z.number().int().gte(0).lte(2147483647).optional(),
+    max_branches: z.coerce.bigint().gte(BigInt(0)).lte(BigInt(9223372036854776000)).optional(),
     license_date: z.string().date().optional()
 });
 
@@ -390,12 +391,16 @@ export const zPaymentStatusC54Enum = z.enum([
 export const zProductMaster = z.object({
     id: z.string().uuid().readonly(),
     name: z.string().max(200),
+    sku: z.union([
+        z.string().max(100),
+        z.null()
+    ]).optional(),
     description: z.union([
         z.string(),
         z.null()
     ]).optional(),
     cost_price_usd: z.string().regex(/^-?\d{0,8}(?:\.\d{0,2})?$/),
-    profit_margin: z.string().regex(/^-?\d{0,3}(?:\.\d{0,2})?$/),
+    selling_price_usd: z.string().regex(/^-?\d{0,8}(?:\.\d{0,2})?$/),
     IVA: z.boolean().optional(),
     category: z.union([
         z.string().uuid(),
@@ -403,10 +408,6 @@ export const zProductMaster = z.object({
     ]).optional(),
     measurement_unit: z.union([
         z.string().uuid(),
-        z.null()
-    ]).optional(),
-    sku: z.union([
-        z.string().max(100),
         z.null()
     ]).optional()
 });
@@ -430,12 +431,16 @@ export const zProductSellingUnitRequest = z.object({
  */
 export const zPatchedProductWriteDetailRequest = z.object({
     name: z.string().min(1).max(200).optional(),
+    sku: z.union([
+        z.string().max(100),
+        z.null()
+    ]).optional(),
     description: z.union([
         z.string(),
         z.null()
     ]).optional(),
     cost_price_usd: z.string().regex(/^-?\d{0,8}(?:\.\d{0,2})?$/).optional(),
-    profit_margin: z.string().regex(/^-?\d{0,3}(?:\.\d{0,2})?$/).optional(),
+    selling_price_usd: z.string().regex(/^-?\d{0,8}(?:\.\d{0,2})?$/).optional(),
     IVA: z.boolean().optional(),
     category: z.union([
         z.string().uuid(),
@@ -443,10 +448,6 @@ export const zPatchedProductWriteDetailRequest = z.object({
     ]).optional(),
     measurement_unit: z.union([
         z.string().uuid(),
-        z.null()
-    ]).optional(),
-    sku: z.union([
-        z.string().max(100),
         z.null()
     ]).optional(),
     selling_units: z.array(zProductSellingUnitRequest).optional()
@@ -463,12 +464,16 @@ export const zProductStockSale = z.object({
 export const zProductWriteDetail = z.object({
     id: z.string().uuid().readonly(),
     name: z.string().max(200),
+    sku: z.union([
+        z.string().max(100),
+        z.null()
+    ]).optional(),
     description: z.union([
         z.string(),
         z.null()
     ]).optional(),
     cost_price_usd: z.string().regex(/^-?\d{0,8}(?:\.\d{0,2})?$/),
-    profit_margin: z.string().regex(/^-?\d{0,3}(?:\.\d{0,2})?$/),
+    selling_price_usd: z.string().regex(/^-?\d{0,8}(?:\.\d{0,2})?$/),
     IVA: z.boolean().optional(),
     category: z.union([
         z.string().uuid(),
@@ -476,10 +481,6 @@ export const zProductWriteDetail = z.object({
     ]).optional(),
     measurement_unit: z.union([
         z.string().uuid(),
-        z.null()
-    ]).optional(),
-    sku: z.union([
-        z.string().max(100),
         z.null()
     ]).optional(),
     selling_units: z.array(zProductSellingUnit).optional()
@@ -490,12 +491,16 @@ export const zProductWriteDetail = z.object({
  */
 export const zProductWriteDetailRequest = z.object({
     name: z.string().min(1).max(200),
+    sku: z.union([
+        z.string().max(100),
+        z.null()
+    ]).optional(),
     description: z.union([
         z.string(),
         z.null()
     ]).optional(),
     cost_price_usd: z.string().regex(/^-?\d{0,8}(?:\.\d{0,2})?$/),
-    profit_margin: z.string().regex(/^-?\d{0,3}(?:\.\d{0,2})?$/),
+    selling_price_usd: z.string().regex(/^-?\d{0,8}(?:\.\d{0,2})?$/),
     IVA: z.boolean().optional(),
     category: z.union([
         z.string().uuid(),
@@ -503,10 +508,6 @@ export const zProductWriteDetailRequest = z.object({
     ]).optional(),
     measurement_unit: z.union([
         z.string().uuid(),
-        z.null()
-    ]).optional(),
-    sku: z.union([
-        z.string().max(100),
         z.null()
     ]).optional(),
     selling_units: z.array(zProductSellingUnitRequest).optional()
@@ -577,6 +578,7 @@ export const zSaleDetail = z.object({
     id: z.string().uuid().readonly(),
     product: z.string().uuid(),
     product_name: z.string().readonly(),
+    product_sku: z.string().readonly(),
     quantity: z.string().regex(/^-?\d{0,8}(?:\.\d{0,2})?$/),
     unit_price: z.string().regex(/^-?\d{0,10}(?:\.\d{0,2})?$/).readonly()
 });
@@ -781,7 +783,7 @@ export const zCategoryWritable = z.object({
 export const zCompanyWritable = z.object({
     name: z.string().max(100),
     email: z.string().email().max(200),
-    max_branches: z.number().int().gte(0).lte(2147483647),
+    max_branches: z.coerce.bigint().gte(BigInt(0)).lte(BigInt(9223372036854776000)),
     license_date: z.string().date()
 });
 
@@ -868,12 +870,16 @@ export const zPatchedSaleRequestWritable = z.object({
  */
 export const zProductMasterWritable = z.object({
     name: z.string().max(200),
+    sku: z.union([
+        z.string().max(100),
+        z.null()
+    ]).optional(),
     description: z.union([
         z.string(),
         z.null()
     ]).optional(),
     cost_price_usd: z.string().regex(/^-?\d{0,8}(?:\.\d{0,2})?$/),
-    profit_margin: z.string().regex(/^-?\d{0,3}(?:\.\d{0,2})?$/),
+    selling_price_usd: z.string().regex(/^-?\d{0,8}(?:\.\d{0,2})?$/),
     IVA: z.boolean().optional(),
     category: z.union([
         z.string().uuid(),
@@ -881,10 +887,6 @@ export const zProductMasterWritable = z.object({
     ]).optional(),
     measurement_unit: z.union([
         z.string().uuid(),
-        z.null()
-    ]).optional(),
-    sku: z.union([
-        z.string().max(100),
         z.null()
     ]).optional()
 });
@@ -898,12 +900,16 @@ export const zProductStockSaleWritable = z.object({
  */
 export const zProductWriteDetailWritable = z.object({
     name: z.string().max(200),
+    sku: z.union([
+        z.string().max(100),
+        z.null()
+    ]).optional(),
     description: z.union([
         z.string(),
         z.null()
     ]).optional(),
     cost_price_usd: z.string().regex(/^-?\d{0,8}(?:\.\d{0,2})?$/),
-    profit_margin: z.string().regex(/^-?\d{0,3}(?:\.\d{0,2})?$/),
+    selling_price_usd: z.string().regex(/^-?\d{0,8}(?:\.\d{0,2})?$/),
     IVA: z.boolean().optional(),
     category: z.union([
         z.string().uuid(),
@@ -911,10 +917,6 @@ export const zProductWriteDetailWritable = z.object({
     ]).optional(),
     measurement_unit: z.union([
         z.string().uuid(),
-        z.null()
-    ]).optional(),
-    sku: z.union([
-        z.string().max(100),
         z.null()
     ]).optional(),
     selling_units: z.array(zProductSellingUnit).optional()

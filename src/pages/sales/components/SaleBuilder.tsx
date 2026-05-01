@@ -94,9 +94,7 @@ export default function SaleBuilder() {
 
   const total = useMemo(() => {
     return cart.reduce((acc: number, item: CartItem) => {
-      const cost_price = parseFloat(item.product.cost_price_usd || '0');
-      const margin = parseFloat(item.product.profit_margin || '0');
-      const basePrice = cost_price * (1 + margin / 100);
+      const basePrice = parseFloat(item.product.selling_price_usd || '0');
       const finalPrice = item.product.IVA ? basePrice * 1.16 : basePrice;
       
       const factor = item.selectedSellingUnit ? parseFloat(item.selectedSellingUnit.unit_conversion_factor) : 1;
@@ -375,7 +373,7 @@ export default function SaleBuilder() {
         <div className="flex-1 overflow-y-auto p-4 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
           {filteredProducts.map(product => {
             const stock = getStock(product.id);
-            const basePrice = parseFloat(product.cost_price_usd) * (1 + parseFloat(product.profit_margin) / 100);
+            const basePrice = parseFloat(product.selling_price_usd || '0');
             const finalPrice = product.IVA ? basePrice * 1.16 : basePrice;
             
             return (
@@ -435,7 +433,7 @@ export default function SaleBuilder() {
 
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
           {cart.map(item => {
-            const basePrice = parseFloat(item.product.cost_price_usd) * (1 + parseFloat(item.product.profit_margin) / 100);
+            const basePrice = parseFloat(item.product.selling_price_usd || '0');
             const factor = item.selectedSellingUnit ? parseFloat(item.selectedSellingUnit.unit_conversion_factor) : 1;
             const finalPrice = (item.product.IVA ? basePrice * 1.16 : basePrice) * factor;
 
