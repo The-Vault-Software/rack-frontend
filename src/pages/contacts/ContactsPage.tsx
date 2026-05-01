@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Plus, Search, Edit2, Trash2, User, Building2, Filter, Truck, Users, History } from 'lucide-react';
+import { Plus, Search, Edit2, Trash2, User, Building2, Filter, Truck, Users, History, FileSpreadsheet } from 'lucide-react';
 import { toast } from 'sonner';
 import { 
   v1CustomersListOptions, 
@@ -20,6 +20,7 @@ import { cn } from '../../lib/utils';
 import { useMediaQuery } from '../../hooks/useMediaQuery';
 import MobileCustomerList from '../../components/customers/MobileCustomerList';
 import MobileProviderList from '../../components/providers/MobileProviderList';
+import ContactImportModal from '../../components/contacts/ContactImportModal';
 
 export default function ContactsPage() {
   const navigate = useNavigate();
@@ -27,6 +28,7 @@ export default function ContactsPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState<'all' | 'person' | 'company'>('all');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<Customer | Provider | null>(null);
   
   const isMobile = useMediaQuery('(max-width: 768px)');
@@ -123,13 +125,22 @@ export default function ContactsPage() {
         )}>
           Directorio de Contactos
         </h1>
-        <button
-          onClick={handleCreate}
-          className="inline-flex items-center justify-center px-4 py-2.5 border border-transparent text-sm font-bold rounded-xl shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all active:scale-95 cursor-pointer"
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          Nuevo {activeTab === 'customers' ? 'Cliente' : 'Proveedor'}
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={() => setIsImportModalOpen(true)}
+            className="inline-flex items-center justify-center px-4 py-2.5 border border-gray-300 text-sm font-bold rounded-xl shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all active:scale-95 cursor-pointer"
+          >
+            <FileSpreadsheet className="h-4 w-4 mr-2" />
+            Importar Excel
+          </button>
+          <button
+            onClick={handleCreate}
+            className="inline-flex items-center justify-center px-4 py-2.5 border border-transparent text-sm font-bold rounded-xl shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all active:scale-95 cursor-pointer"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Nuevo {activeTab === 'customers' ? 'Cliente' : 'Proveedor'}
+          </button>
+        </div>
       </div>
 
       <div className="flex flex-col sm:flex-row gap-4">
@@ -393,6 +404,12 @@ export default function ContactsPage() {
           />
         )}
       </Modal>
+
+      <ContactImportModal
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
+        type={activeTab === 'customers' ? 'customer' : 'provider'}
+      />
 
       <ConfirmationDialog
         isOpen={confirmState.isOpen}
