@@ -438,6 +438,11 @@ export const CompanySchema = {
             format: 'email',
             maxLength: 200
         },
+        rif: {
+            type: 'string',
+            nullable: true,
+            maxLength: 12
+        },
         max_branches: {
             type: 'integer',
             maximum: 9223372036854776000,
@@ -476,6 +481,11 @@ export const CompanyRequestSchema = {
             format: 'email',
             minLength: 1,
             maxLength: 200
+        },
+        rif: {
+            type: 'string',
+            nullable: true,
+            maxLength: 12
         },
         max_branches: {
             type: 'integer',
@@ -823,6 +833,11 @@ export const PatchedCompanyRequestSchema = {
             format: 'email',
             minLength: 1,
             maxLength: 200
+        },
+        rif: {
+            type: 'string',
+            nullable: true,
+            maxLength: 12
         },
         max_branches: {
             type: 'integer',
@@ -1955,6 +1970,11 @@ export const CompanyWritableSchema = {
             type: 'string',
             format: 'email',
             maxLength: 200
+        },
+        rif: {
+            type: 'string',
+            nullable: true,
+            maxLength: 12
         },
         max_branches: {
             type: 'integer',

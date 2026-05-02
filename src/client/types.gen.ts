@@ -127,6 +127,7 @@ export type CategoryRequest = {
 export type Company = {
     name: string;
     email: string;
+    rif?: string | null;
     max_branches: number;
     license_date: string;
     readonly id: string;
@@ -135,6 +136,7 @@ export type Company = {
 export type CompanyRequest = {
     name: string;
     email: string;
+    rif?: string | null;
     max_branches: number;
     license_date: string;
 };
@@ -223,6 +225,7 @@ export type PatchedCategoryRequest = {
 export type PatchedCompanyRequest = {
     name?: string;
     email?: string;
+    rif?: string | null;
     max_branches?: number;
     license_date?: string;
 };
@@ -574,6 +577,7 @@ export type CategoryWritable = {
 export type CompanyWritable = {
     name: string;
     email: string;
+    rif?: string | null;
     max_branches: number;
     license_date: string;
 };

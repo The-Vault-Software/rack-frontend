@@ -169,7 +169,7 @@ export default function InventoryAnalytics() {
             restockInDays,
             rotationType: (isHighRotation ? 'high' : 'low') as 'high' | 'low',
             costPrice,
-            profitMargin,
+            profitMargin: salePrice > 0 ? (salePrice - costPrice) / salePrice : 0,
             totalCostValue: currentStock * costPrice,
             totalSaleValue: currentStock * salePrice
           };

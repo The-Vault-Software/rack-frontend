@@ -1,10 +1,11 @@
 import { useState } from 'react';
-import { Store, UserCircle } from 'lucide-react';
+import { Store, UserCircle, Building2 } from 'lucide-react';
 import BranchSettingsPage from './BranchSettingsPage';
 import UserProfileForm from './UserProfileForm';
+import CompanySettingsForm from './CompanySettingsForm';
 
 export default function SettingsPage() {
-  const [activeTab, setActiveTab] = useState<'branches' | 'profile'>('branches');
+  const [activeTab, setActiveTab] = useState<'branches' | 'profile' | 'company'>('branches');
 
   return (
     <div className="space-y-6">
@@ -32,6 +33,21 @@ export default function SettingsPage() {
             Sucursales
           </button>
           <button
+            onClick={() => setActiveTab('company')}
+            className={`${
+              activeTab === 'company'
+                ? 'border-blue-500 text-blue-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+            } group inline-flex items-center py-4 px-1 border-b-2 font-medium text-sm cursor-pointer`}
+          >
+            <Building2
+              className={`${
+                activeTab === 'company' ? 'text-blue-500' : 'text-gray-400 group-hover:text-gray-500'
+              } -ml-0.5 mr-2 h-5 w-5`}
+            />
+            Empresa
+          </button>
+          <button
             onClick={() => setActiveTab('profile')}
             className={`${
               activeTab === 'profile'
@@ -51,11 +67,9 @@ export default function SettingsPage() {
 
       {/* Content */}
       <div className="mt-6">
-        {activeTab === 'branches' ? (
-          <BranchSettingsPage hideHeader />
-        ) : (
-          <UserProfileForm />
-        )}
+        {activeTab === 'branches' && <BranchSettingsPage hideHeader />}
+        {activeTab === 'company' && <CompanySettingsForm />}
+        {activeTab === 'profile' && <UserProfileForm />}
       </div>
     </div>
   );

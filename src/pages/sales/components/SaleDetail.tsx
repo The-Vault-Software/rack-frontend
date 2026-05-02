@@ -2,13 +2,15 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { v1SalesRetrieveOptions, v1SalesPaymentsListOptions, v1ExchangeRatesRetrieveOptions, v1ProductListOptions } from '../../../client/@tanstack/react-query.gen';
 import { useExchangeRates } from '../../../hooks/useExchangeRates';
-import { Package, User, Calendar, CreditCard, Receipt, Search, Info, Wallet } from 'lucide-react';
+import { Package, User, Calendar, CreditCard, Receipt, Search, Info, Wallet, Download } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import Modal from '../../../components/ui/Modal';
 import type { SalePayment, ProductMaster } from '../../../client/types.gen';
 import { useMediaQuery } from '../../../hooks/useMediaQuery';
 import { cn } from '../../../lib/utils';
+import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react';
+import { exportSaleToExcel } from '../../../utils/excelExport';
 
 interface SaleDetailProps {
   saleId: string;
@@ -269,13 +271,55 @@ export default function SaleDetail({ saleId }: SaleDetailProps) {
               <CreditCard className="h-5 w-5 mr-3" />
               <span className="font-black uppercase tracking-[0.2em] text-[10px]">Resumen de Cuenta</span>
             </div>
-            <button
-              onClick={() => setShowPaymentsModal(true)}
-              className="px-4 py-2 cursor-pointer bg-white/10 hover:bg-white/20 text-white rounded-xl backdrop-blur-md transition-all flex items-center gap-2 text-[10px] font-black uppercase tracking-widest border border-white/20"
-            >
-              <Search className="h-3.5 w-3.5" />
-              Pagos Recibidos
-            </button>
+            <div className="flex items-center gap-2">
+              <Menu as="div" className="relative inline-block text-left">
+                <MenuButton className="px-4 py-2 cursor-pointer bg-white/10 hover:bg-white/20 text-white rounded-xl backdrop-blur-md transition-all flex items-center gap-2 text-[10px] font-black uppercase tracking-widest border border-white/20">
+                  <Download className="h-3.5 w-3.5" />
+                  Exportar
+                </MenuButton>
+                <MenuItems className="absolute right-0 mt-2 w-48 origin-top-right rounded-xl bg-white shadow-lg ring-1 ring-black/5 focus:outline-none z-50 overflow-hidden">
+                  <div className="py-1">
+                    <MenuItem>
+                      {({ focus }) => (
+                        <button
+                          onClick={() => window.open(`/print/sale/${saleId}?type=factura`, '_blank')}
+                          className={cn(focus ? 'bg-gray-50' : '', 'flex w-full items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100')}
+                        >
+                          Factura
+                        </button>
+                      )}
+                    </MenuItem>
+                    <MenuItem>
+                      {({ focus }) => (
+                        <button
+                          onClick={() => window.open(`/print/sale/${saleId}?type=nota_entrega`, '_blank')}
+                          className={cn(focus ? 'bg-gray-50' : '', 'flex w-full items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100')}
+                        >
+                          Nota de Entrega
+                        </button>
+                      )}
+                    </MenuItem>
+                    <MenuItem>
+                      {({ focus }) => (
+                        <button
+                          onClick={() => exportSaleToExcel(sale)}
+                          className={cn(focus ? 'bg-gray-50' : '', 'flex w-full items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100')}
+                        >
+                          Excel (Interno)
+                        </button>
+                      )}
+                    </MenuItem>
+                  </div>
+                </MenuItems>
+              </Menu>
+              <button
+                onClick={() => setShowPaymentsModal(true)}
+                className="px-4 py-2 cursor-pointer bg-white/10 hover:bg-white/20 text-white rounded-xl backdrop-blur-md transition-all flex items-center gap-2 text-[10px] font-black uppercase tracking-widest border border-white/20"
+              >
+                <Search className="h-3.5 w-3.5" />
+                Pagos Recibidos
+              </button>
+            </div>
           </div>
           
           <div className="space-y-4">

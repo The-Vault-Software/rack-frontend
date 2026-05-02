@@ -14,6 +14,8 @@ import SalesPage from './pages/sales/SalesPage';
 import CustomerSalesPage from './pages/contacts/CustomerSalesPage';
 import ProviderAccountsPage from './pages/contacts/ProviderAccountsPage';
 import AnalyticsPage from './pages/analytics/AnalyticsPage';
+import PrintSalePage from './pages/print/PrintSalePage';
+import PrintAccountPage from './pages/print/PrintAccountPage';
 
 export const router = createBrowserRouter([
     {
@@ -34,6 +36,14 @@ export const router = createBrowserRouter([
             {
                 path: '/setup-branch',
                 element: <SetupBranchPage />
+            },
+            {
+                path: '/print/sale/:id',
+                element: <PrintSalePage />
+            },
+            {
+                path: '/print/account/:id',
+                element: <PrintAccountPage />
             },
             {
                 element: <DashboardLayout />,

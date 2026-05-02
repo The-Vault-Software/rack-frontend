@@ -117,6 +117,10 @@ export const zCategoryRequest = z.object({
 export const zCompany = z.object({
     name: z.string().max(100),
     email: z.string().email().max(200),
+    rif: z.union([
+        z.string().max(12),
+        z.null()
+    ]).optional(),
     max_branches: z.coerce.bigint().gte(BigInt(0)).lte(BigInt(9223372036854776000)),
     license_date: z.string().date(),
     id: z.string().uuid().readonly()
@@ -125,6 +129,10 @@ export const zCompany = z.object({
 export const zCompanyRequest = z.object({
     name: z.string().min(1).max(100),
     email: z.string().email().min(1).max(200),
+    rif: z.union([
+        z.string().max(12),
+        z.null()
+    ]).optional(),
     max_branches: z.coerce.bigint().gte(BigInt(0)).lte(BigInt(9223372036854776000)),
     license_date: z.string().date()
 });
@@ -235,6 +243,10 @@ export const zPatchedCategoryRequest = z.object({
 export const zPatchedCompanyRequest = z.object({
     name: z.string().min(1).max(100).optional(),
     email: z.string().email().min(1).max(200).optional(),
+    rif: z.union([
+        z.string().max(12),
+        z.null()
+    ]).optional(),
     max_branches: z.coerce.bigint().gte(BigInt(0)).lte(BigInt(9223372036854776000)).optional(),
     license_date: z.string().date().optional()
 });
@@ -783,6 +795,10 @@ export const zCategoryWritable = z.object({
 export const zCompanyWritable = z.object({
     name: z.string().max(100),
     email: z.string().email().max(200),
+    rif: z.union([
+        z.string().max(12),
+        z.null()
+    ]).optional(),
     max_branches: z.coerce.bigint().gte(BigInt(0)).lte(BigInt(9223372036854776000)),
     license_date: z.string().date()
 });

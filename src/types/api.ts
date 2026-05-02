@@ -472,6 +472,7 @@ export interface components {
             name: string;
             /** Format: email */
             email: string;
+            rif?: string | null;
             max_branches: number;
             /** Format: date */
             license_date: string;
@@ -482,6 +483,7 @@ export interface components {
             name: string;
             /** Format: email */
             email: string;
+            rif?: string | null;
             max_branches: number;
             /** Format: date */
             license_date: string;
@@ -549,6 +551,7 @@ export interface components {
             name?: string;
             /** Format: email */
             email?: string;
+            rif?: string | null;
             max_branches?: number;
             /** Format: date */
             license_date?: string;
