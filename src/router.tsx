@@ -16,6 +16,7 @@ import ProviderAccountsPage from './pages/contacts/ProviderAccountsPage';
 import AnalyticsPage from './pages/analytics/AnalyticsPage';
 import PrintSalePage from './pages/print/PrintSalePage';
 import PrintAccountPage from './pages/print/PrintAccountPage';
+import InventoryAdjustmentsPage from './pages/inventory-adjustments/InventoryAdjustmentsPage';
 
 export const router = createBrowserRouter([
     {
@@ -91,6 +92,10 @@ export const router = createBrowserRouter([
                     {
                         path: '/analytics',
                         element: <AnalyticsPage />
+                    },
+                    {
+                        path: '/adjustments',
+                        element: <InventoryAdjustmentsPage />
                     },
                     {
                         path: '/',
