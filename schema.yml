@@ -229,6 +229,124 @@ paths:
       responses:
         '204':
           description: No response body
+  /v1/adjustments/:
+    get:
+      operationId: v1_adjustments_list
+      description: Retorna una lista paginada de ajustes de inventario de la empresa
+        del usuario autenticado. Filtrable por sucursal y tipo de ajuste.
+      summary: Listar ajustes de inventario
+      parameters:
+      - in: query
+        name: adjustment_type
+        schema:
+          type: string
+          enum:
+          - COUNT_CORRECTION
+          - DAMAGE
+          - INITIAL_LOAD
+          - MANUAL_DECREASE
+          - MANUAL_INCREASE
+          - SAMPLE
+          - TRANSFER_IN
+          - TRANSFER_OUT
+        description: Filtrar por tipo de ajuste.
+      - in: query
+        name: branch_id
+        schema:
+          type: string
+        description: Filtrar por ID (ULID) de sucursal.
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - Inventory Adjustments
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedInventoryAdjustmentListList'
+          description: ''
+    post:
+      operationId: v1_adjustments_create
+      description: |2
+
+        Crea un ajuste de inventario y actualiza el stock de la sucursal en una sola operación atómica.
+
+        **Reglas por tipo de ajuste:**
+
+        | Tipo | Campo requerido en `details` |
+        |------|------------------------------|
+        | `COUNT_CORRECTION` | `quantity_after` — stock final deseado (≥ 0) |
+        | Todos los demás | `quantity_change` — delta (≠ 0; puede ser negativo para decrementos) |
+
+        **Tipos disponibles:**
+        - `INITIAL_LOAD` — Carga inicial de inventario
+        - `MANUAL_INCREASE` — Incremento manual
+        - `MANUAL_DECREASE` — Decremento manual
+        - `COUNT_CORRECTION` — Corrección por conteo físico
+        - `DAMAGE` — Daño / merma
+        - `SAMPLE` — Muestra
+        - `TRANSFER_IN` — Entrada por traslado
+        - `TRANSFER_OUT` — Salida por traslado
+
+        **Restricciones:**
+        - La sucursal (`branch`) debe pertenecer a la empresa del usuario autenticado.
+        - Cada producto debe tener un registro de stock existente en la sucursal.
+        - El stock resultante no puede ser negativo.
+        - Se requiere al menos un ítem en `details`.
+      summary: Crear ajuste de inventario
+      tags:
+      - Inventory Adjustments
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InventoryAdjustmentWriteRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/InventoryAdjustmentWriteRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/InventoryAdjustmentWriteRequest'
+        required: true
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InventoryAdjustmentDetailRead'
+          description: ''
+  /v1/adjustments/{id}/:
+    get:
+      operationId: v1_adjustments_retrieve
+      description: Retorna el ajuste de inventario completo con todos sus ítems (`details`),
+        incluyendo nombre y SKU de cada producto y los snapshots de cantidad antes/cambio/después.
+      summary: Obtener detalle de ajuste de inventario
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - Inventory Adjustments
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InventoryAdjustmentDetailRead'
+          description: ''
   /v1/branch/:
     get:
       operationId: v1_branch_list
@@ -1747,6 +1865,66 @@ components:
       required:
       - branch
       - details
+    AdjustmentDetailItem:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        product:
+          type: string
+          format: uuid
+          readOnly: true
+        product_name:
+          type: string
+          readOnly: true
+        product_sku:
+          type: string
+          readOnly: true
+        quantity_before:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,6}(?:\.\d{0,10})?$
+          readOnly: true
+        quantity_change:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,6}(?:\.\d{0,10})?$
+          readOnly: true
+        quantity_after:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,6}(?:\.\d{0,10})?$
+          readOnly: true
+      required:
+      - id
+      - product
+      - product_name
+      - product_sku
+      - quantity_after
+      - quantity_before
+      - quantity_change
+    AdjustmentTypeEnum:
+      enum:
+      - INITIAL_LOAD
+      - MANUAL_INCREASE
+      - MANUAL_DECREASE
+      - COUNT_CORRECTION
+      - DAMAGE
+      - SAMPLE
+      - TRANSFER_IN
+      - TRANSFER_OUT
+      type: string
+      description: |-
+        * `INITIAL_LOAD` - Carga inicial
+        * `MANUAL_INCREASE` - Incremento manual
+        * `MANUAL_DECREASE` - Decremento manual
+        * `COUNT_CORRECTION` - Corrección por conteo físico
+        * `DAMAGE` - Daño / merma
+        * `SAMPLE` - Muestra
+        * `TRANSFER_IN` - Entrada por traslado
+        * `TRANSFER_OUT` - Salida por traslado
     Branch:
       type: object
       properties:
@@ -1833,9 +2011,8 @@ components:
           maxLength: 12
         max_branches:
           type: integer
-          maximum: 9223372036854775807
+          maximum: 2147483647
           minimum: 0
-          format: int64
         license_date:
           type: string
           format: date
@@ -1867,9 +2044,8 @@ components:
           maxLength: 12
         max_branches:
           type: integer
-          maximum: 9223372036854775807
+          maximum: 2147483647
           minimum: 0
-          format: int64
         license_date:
           type: string
           format: date
@@ -1991,6 +2167,146 @@ components:
           nullable: true
       required:
       - name
+    InventoryAdjustmentDetailRead:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        seq_number:
+          type: integer
+          readOnly: true
+        adjustment_type:
+          allOf:
+          - $ref: '#/components/schemas/AdjustmentTypeEnum'
+          readOnly: true
+        adjustment_type_display:
+          type: string
+          readOnly: true
+        reason:
+          type: string
+          readOnly: true
+        notes:
+          type: string
+          readOnly: true
+          nullable: true
+        branch:
+          type: string
+          format: uuid
+          readOnly: true
+        branch_name:
+          type: string
+          readOnly: true
+        details:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdjustmentDetailItem'
+          readOnly: true
+        created_by:
+          type: string
+          format: email
+          nullable: true
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - adjustment_type
+      - adjustment_type_display
+      - branch
+      - branch_name
+      - created_at
+      - created_by
+      - details
+      - id
+      - notes
+      - reason
+      - seq_number
+      - updated_at
+    InventoryAdjustmentList:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        seq_number:
+          type: integer
+          readOnly: true
+        adjustment_type:
+          allOf:
+          - $ref: '#/components/schemas/AdjustmentTypeEnum'
+          readOnly: true
+        adjustment_type_display:
+          type: string
+          readOnly: true
+        reason:
+          type: string
+          readOnly: true
+        branch:
+          type: string
+          format: uuid
+          readOnly: true
+        branch_name:
+          type: string
+          readOnly: true
+        item_count:
+          type: integer
+          readOnly: true
+        created_by:
+          type: string
+          format: email
+          nullable: true
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - adjustment_type
+      - adjustment_type_display
+      - branch
+      - branch_name
+      - created_at
+      - created_by
+      - id
+      - item_count
+      - reason
+      - seq_number
+    InventoryAdjustmentWriteRequest:
+      type: object
+      properties:
+        branch:
+          type: string
+          format: uuid
+        adjustment_type:
+          $ref: '#/components/schemas/AdjustmentTypeEnum'
+        reason:
+          type: string
+          minLength: 1
+          maxLength: 255
+        notes:
+          type: string
+          nullable: true
+        details:
+          type: array
+          items:
+            type: object
+            additionalProperties: {}
+          writeOnly: true
+          description: 'List of items. Non-COUNT_CORRECTION: {product, quantity_change}.
+            COUNT_CORRECTION: {product, quantity_after}.'
+      required:
+      - adjustment_type
+      - branch
+      - details
+      - reason
     MeasurementUnit:
       type: object
       properties:
@@ -2040,6 +2356,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/AccountList'
+    PaginatedInventoryAdjustmentListList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/InventoryAdjustmentList'
     PaginatedSaleListList:
       type: object
       required:
@@ -2130,9 +2469,8 @@ components:
           maxLength: 12
         max_branches:
           type: integer
-          maximum: 9223372036854775807
+          maximum: 2147483647
           minimum: 0
-          format: int64
         license_date:
           type: string
           format: date

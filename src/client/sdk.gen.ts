@@ -2,7 +2,7 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { V1AccountsCreateData, V1AccountsCreateResponses, V1AccountsDestroyData, V1AccountsDestroyResponses, V1AccountsListData, V1AccountsListResponses, V1AccountsPartialUpdateData, V1AccountsPartialUpdateResponses, V1AccountsPaymentsCreateData, V1AccountsPaymentsCreateResponses, V1AccountsPaymentsListData, V1AccountsPaymentsListResponses, V1AccountsRetrieveData, V1AccountsRetrieveResponses, V1AccountsUpdateData, V1AccountsUpdateResponses, V1BranchCreateData, V1BranchCreateResponses, V1BranchDestroyData, V1BranchDestroyResponses, V1BranchListData, V1BranchListResponses, V1BranchPartialUpdateData, V1BranchPartialUpdateResponses, V1BranchRetrieveData, V1BranchRetrieveResponses, V1BranchUpdateData, V1BranchUpdateResponses, V1CategoryCreateData, V1CategoryCreateResponses, V1CategoryDestroyData, V1CategoryDestroyResponses, V1CategoryListData, V1CategoryListResponses, V1CategoryPartialUpdateData, V1CategoryPartialUpdateResponses, V1CategoryRetrieveData, V1CategoryRetrieveResponses, V1CategoryUpdateData, V1CategoryUpdateResponses, V1CompanyCreateData, V1CompanyCreateResponses, V1CompanyPartialUpdateData, V1CompanyPartialUpdateResponses, V1CompanyRetrieveData, V1CompanyRetrieveResponses, V1CompanyUpdateData, V1CompanyUpdateResponses, V1CustomersCreateData, V1CustomersCreateResponses, V1CustomersDestroyData, V1CustomersDestroyResponses, V1CustomersListData, V1CustomersListResponses, V1CustomersPartialUpdateData, V1CustomersPartialUpdateResponses, V1CustomersRetrieveData, V1CustomersRetrieveResponses, V1CustomersUpdateData, V1CustomersUpdateResponses, V1ExchangeRatesHistoryRetrieveData, V1ExchangeRatesHistoryRetrieveResponses, V1ExchangeRatesRetrieveData, V1ExchangeRatesRetrieveResponses, V1ExchangeRatesTodayRetrieveData, V1ExchangeRatesTodayRetrieveResponses, V1LoginCreateData, V1LoginCreateResponses, V1LogoutCreateData, V1LogoutCreateResponses, V1MeasurementCreateData, V1MeasurementCreateResponses, V1MeasurementDestroyData, V1MeasurementDestroyResponses, V1MeasurementListData, V1MeasurementListResponses, V1MeasurementPartialUpdateData, V1MeasurementPartialUpdateResponses, V1MeasurementRetrieveData, V1MeasurementRetrieveResponses, V1MeasurementUpdateData, V1MeasurementUpdateResponses, V1ProductBranchStockListData, V1ProductBranchStockListResponses, V1ProductCreateData, V1ProductCreateResponses, V1ProductDestroyData, V1ProductDestroyResponses, V1ProductListData, V1ProductListResponses, V1ProductPartialUpdateData, V1ProductPartialUpdateResponses, V1ProductRetrieveData, V1ProductRetrieveResponses, V1ProductUpdateData, V1ProductUpdateResponses, V1ProvidersCreateData, V1ProvidersCreateResponses, V1ProvidersDestroyData, V1ProvidersDestroyResponses, V1ProvidersListData, V1ProvidersListResponses, V1ProvidersPartialUpdateData, V1ProvidersPartialUpdateResponses, V1ProvidersRetrieveData, V1ProvidersRetrieveResponses, V1ProvidersUpdateData, V1ProvidersUpdateResponses, V1RefreshCreateData, V1RefreshCreateResponses, V1RegisterCreateData, V1RegisterCreateResponses, V1SalesCreateData, V1SalesCreateResponses, V1SalesDestroyData, V1SalesDestroyResponses, V1SalesListData, V1SalesListResponses, V1SalesPartialUpdateData, V1SalesPartialUpdateResponses, V1SalesPaymentsCreateData, V1SalesPaymentsCreateResponses, V1SalesPaymentsListData, V1SalesPaymentsListResponses, V1SalesRetrieveData, V1SalesRetrieveResponses, V1SalesUpdateData, V1SalesUpdateResponses, V1UserBranchesRetrieveData, V1UserBranchesRetrieveResponses, V1UserBranchesUpdateData, V1UserBranchesUpdateResponses, V1UserInfoPartialUpdateData, V1UserInfoPartialUpdateResponses, V1UserInfoRetrieveData, V1UserInfoRetrieveResponses, V1UserInfoUpdateData, V1UserInfoUpdateResponses } from './types.gen';
+import type { V1AccountsCreateData, V1AccountsCreateResponses, V1AccountsDestroyData, V1AccountsDestroyResponses, V1AccountsListData, V1AccountsListResponses, V1AccountsPartialUpdateData, V1AccountsPartialUpdateResponses, V1AccountsPaymentsCreateData, V1AccountsPaymentsCreateResponses, V1AccountsPaymentsListData, V1AccountsPaymentsListResponses, V1AccountsRetrieveData, V1AccountsRetrieveResponses, V1AccountsUpdateData, V1AccountsUpdateResponses, V1AdjustmentsCreateData, V1AdjustmentsCreateResponses, V1AdjustmentsListData, V1AdjustmentsListResponses, V1AdjustmentsRetrieveData, V1AdjustmentsRetrieveResponses, V1BranchCreateData, V1BranchCreateResponses, V1BranchDestroyData, V1BranchDestroyResponses, V1BranchListData, V1BranchListResponses, V1BranchPartialUpdateData, V1BranchPartialUpdateResponses, V1BranchRetrieveData, V1BranchRetrieveResponses, V1BranchUpdateData, V1BranchUpdateResponses, V1CategoryCreateData, V1CategoryCreateResponses, V1CategoryDestroyData, V1CategoryDestroyResponses, V1CategoryListData, V1CategoryListResponses, V1CategoryPartialUpdateData, V1CategoryPartialUpdateResponses, V1CategoryRetrieveData, V1CategoryRetrieveResponses, V1CategoryUpdateData, V1CategoryUpdateResponses, V1CompanyCreateData, V1CompanyCreateResponses, V1CompanyPartialUpdateData, V1CompanyPartialUpdateResponses, V1CompanyRetrieveData, V1CompanyRetrieveResponses, V1CompanyUpdateData, V1CompanyUpdateResponses, V1CustomersCreateData, V1CustomersCreateResponses, V1CustomersDestroyData, V1CustomersDestroyResponses, V1CustomersListData, V1CustomersListResponses, V1CustomersPartialUpdateData, V1CustomersPartialUpdateResponses, V1CustomersRetrieveData, V1CustomersRetrieveResponses, V1CustomersUpdateData, V1CustomersUpdateResponses, V1ExchangeRatesHistoryRetrieveData, V1ExchangeRatesHistoryRetrieveResponses, V1ExchangeRatesRetrieveData, V1ExchangeRatesRetrieveResponses, V1ExchangeRatesTodayRetrieveData, V1ExchangeRatesTodayRetrieveResponses, V1LoginCreateData, V1LoginCreateResponses, V1LogoutCreateData, V1LogoutCreateResponses, V1MeasurementCreateData, V1MeasurementCreateResponses, V1MeasurementDestroyData, V1MeasurementDestroyResponses, V1MeasurementListData, V1MeasurementListResponses, V1MeasurementPartialUpdateData, V1MeasurementPartialUpdateResponses, V1MeasurementRetrieveData, V1MeasurementRetrieveResponses, V1MeasurementUpdateData, V1MeasurementUpdateResponses, V1ProductBranchStockListData, V1ProductBranchStockListResponses, V1ProductCreateData, V1ProductCreateResponses, V1ProductDestroyData, V1ProductDestroyResponses, V1ProductListData, V1ProductListResponses, V1ProductPartialUpdateData, V1ProductPartialUpdateResponses, V1ProductRetrieveData, V1ProductRetrieveResponses, V1ProductUpdateData, V1ProductUpdateResponses, V1ProvidersCreateData, V1ProvidersCreateResponses, V1ProvidersDestroyData, V1ProvidersDestroyResponses, V1ProvidersListData, V1ProvidersListResponses, V1ProvidersPartialUpdateData, V1ProvidersPartialUpdateResponses, V1ProvidersRetrieveData, V1ProvidersRetrieveResponses, V1ProvidersUpdateData, V1ProvidersUpdateResponses, V1RefreshCreateData, V1RefreshCreateResponses, V1RegisterCreateData, V1RegisterCreateResponses, V1SalesCreateData, V1SalesCreateResponses, V1SalesDestroyData, V1SalesDestroyResponses, V1SalesListData, V1SalesListResponses, V1SalesPartialUpdateData, V1SalesPartialUpdateResponses, V1SalesPaymentsCreateData, V1SalesPaymentsCreateResponses, V1SalesPaymentsListData, V1SalesPaymentsListResponses, V1SalesRetrieveData, V1SalesRetrieveResponses, V1SalesUpdateData, V1SalesUpdateResponses, V1UserBranchesRetrieveData, V1UserBranchesRetrieveResponses, V1UserBranchesUpdateData, V1UserBranchesUpdateResponses, V1UserInfoPartialUpdateData, V1UserInfoPartialUpdateResponses, V1UserInfoRetrieveData, V1UserInfoRetrieveResponses, V1UserInfoUpdateData, V1UserInfoUpdateResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -109,6 +109,59 @@ export const v1AccountsUpdate = <ThrowOnError extends boolean = false>(options: 
         ...options.headers
     }
 });
+
+/**
+ * Listar ajustes de inventario
+ *
+ * Retorna una lista paginada de ajustes de inventario de la empresa del usuario autenticado. Filtrable por sucursal y tipo de ajuste.
+ */
+export const v1AdjustmentsList = <ThrowOnError extends boolean = false>(options?: Options<V1AdjustmentsListData, ThrowOnError>) => (options?.client ?? client).get<V1AdjustmentsListResponses, unknown, ThrowOnError>({ url: '/v1/adjustments/', ...options });
+
+/**
+ * Crear ajuste de inventario
+ *
+ *
+ * Crea un ajuste de inventario y actualiza el stock de la sucursal en una sola operación atómica.
+ *
+ * **Reglas por tipo de ajuste:**
+ *
+ * | Tipo | Campo requerido en `details` |
+ * |------|------------------------------|
+ * | `COUNT_CORRECTION` | `quantity_after` — stock final deseado (≥ 0) |
+ * | Todos los demás | `quantity_change` — delta (≠ 0; puede ser negativo para decrementos) |
+ *
+ * **Tipos disponibles:**
+ * - `INITIAL_LOAD` — Carga inicial de inventario
+ * - `MANUAL_INCREASE` — Incremento manual
+ * - `MANUAL_DECREASE` — Decremento manual
+ * - `COUNT_CORRECTION` — Corrección por conteo físico
+ * - `DAMAGE` — Daño / merma
+ * - `SAMPLE` — Muestra
+ * - `TRANSFER_IN` — Entrada por traslado
+ * - `TRANSFER_OUT` — Salida por traslado
+ *
+ * **Restricciones:**
+ * - La sucursal (`branch`) debe pertenecer a la empresa del usuario autenticado.
+ * - Cada producto debe tener un registro de stock existente en la sucursal.
+ * - El stock resultante no puede ser negativo.
+ * - Se requiere al menos un ítem en `details`.
+ *
+ */
+export const v1AdjustmentsCreate = <ThrowOnError extends boolean = false>(options: Options<V1AdjustmentsCreateData, ThrowOnError>) => (options.client ?? client).post<V1AdjustmentsCreateResponses, unknown, ThrowOnError>({
+    url: '/v1/adjustments/',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Obtener detalle de ajuste de inventario
+ *
+ * Retorna el ajuste de inventario completo con todos sus ítems (`details`), incluyendo nombre y SKU de cada producto y los snapshots de cantidad antes/cambio/después.
+ */
+export const v1AdjustmentsRetrieve = <ThrowOnError extends boolean = false>(options: Options<V1AdjustmentsRetrieveData, ThrowOnError>) => (options.client ?? client).get<V1AdjustmentsRetrieveResponses, unknown, ThrowOnError>({ url: '/v1/adjustments/{id}/', ...options });
 
 export const v1BranchList = <ThrowOnError extends boolean = false>(options?: Options<V1BranchListData, ThrowOnError>) => (options?.client ?? client).get<V1BranchListResponses, unknown, ThrowOnError>({ url: '/v1/branch/', ...options });
 

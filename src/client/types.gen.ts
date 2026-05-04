@@ -100,6 +100,28 @@ export type AccountRequest = {
     provider?: string | null;
 };
 
+export type AdjustmentDetailItem = {
+    readonly id: string;
+    readonly product: string;
+    readonly product_name: string;
+    readonly product_sku: string;
+    readonly quantity_before: string;
+    readonly quantity_change: string;
+    readonly quantity_after: string;
+};
+
+/**
+ * * `INITIAL_LOAD` - Carga inicial
+ * * `MANUAL_INCREASE` - Incremento manual
+ * * `MANUAL_DECREASE` - Decremento manual
+ * * `COUNT_CORRECTION` - Corrección por conteo físico
+ * * `DAMAGE` - Daño / merma
+ * * `SAMPLE` - Muestra
+ * * `TRANSFER_IN` - Entrada por traslado
+ * * `TRANSFER_OUT` - Salida por traslado
+ */
+export type AdjustmentTypeEnum = 'INITIAL_LOAD' | 'MANUAL_INCREASE' | 'MANUAL_DECREASE' | 'COUNT_CORRECTION' | 'DAMAGE' | 'SAMPLE' | 'TRANSFER_IN' | 'TRANSFER_OUT';
+
 export type Branch = {
     name: string;
     address?: string | null;
@@ -176,6 +198,41 @@ export type CustomerRequest = {
     changed_by?: number | null;
 };
 
+export type InventoryAdjustmentDetailRead = {
+    readonly id: string;
+    readonly seq_number: number;
+    adjustment_type: AdjustmentTypeEnum;
+    readonly adjustment_type_display: string;
+    readonly reason: string;
+    readonly notes: string | null;
+    readonly branch: string;
+    readonly branch_name: string;
+    readonly details: Array<AdjustmentDetailItem>;
+    readonly created_by: string | null;
+    readonly created_at: string;
+    readonly updated_at: string;
+};
+
+export type InventoryAdjustmentList = {
+    readonly id: string;
+    readonly seq_number: number;
+    adjustment_type: AdjustmentTypeEnum;
+    readonly adjustment_type_display: string;
+    readonly reason: string;
+    readonly branch: string;
+    readonly branch_name: string;
+    readonly item_count: number;
+    readonly created_by: string | null;
+    readonly created_at: string;
+};
+
+export type InventoryAdjustmentWriteRequest = {
+    branch: string;
+    adjustment_type: AdjustmentTypeEnum;
+    reason: string;
+    notes?: string | null;
+};
+
 export type MeasurementUnit = {
     name: string;
     decimals?: boolean;
@@ -192,6 +249,13 @@ export type PaginatedAccountListList = {
     next?: string | null;
     previous?: string | null;
     results: Array<AccountList>;
+};
+
+export type PaginatedInventoryAdjustmentListList = {
+    count: number;
+    next?: string | null;
+    previous?: string | null;
+    results: Array<InventoryAdjustmentList>;
 };
 
 export type PaginatedSaleListList = {
@@ -590,12 +654,32 @@ export type CustomerWritable = {
     changed_by?: number | null;
 };
 
+export type InventoryAdjustmentWriteRequestWritable = {
+    branch: string;
+    adjustment_type: AdjustmentTypeEnum;
+    reason: string;
+    notes?: string | null;
+    /**
+     * List of items. Non-COUNT_CORRECTION: {product, quantity_change}. COUNT_CORRECTION: {product, quantity_after}.
+     */
+    details: Array<{
+        [key: string]: unknown;
+    }>;
+};
+
 export type MeasurementUnitWritable = {
     name: string;
     decimals?: boolean;
 };
 
 export type PaginatedAccountListListWritable = {
+    count: number;
+    next?: string | null;
+    previous?: string | null;
+    results: Array<unknown>;
+};
+
+export type PaginatedInventoryAdjustmentListListWritable = {
     count: number;
     next?: string | null;
     previous?: string | null;
@@ -878,6 +962,64 @@ export type V1AccountsUpdateResponses = {
 };
 
 export type V1AccountsUpdateResponse = V1AccountsUpdateResponses[keyof V1AccountsUpdateResponses];
+
+export type V1AdjustmentsListData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Filtrar por tipo de ajuste.
+         */
+        adjustment_type?: 'COUNT_CORRECTION' | 'DAMAGE' | 'INITIAL_LOAD' | 'MANUAL_DECREASE' | 'MANUAL_INCREASE' | 'SAMPLE' | 'TRANSFER_IN' | 'TRANSFER_OUT';
+        /**
+         * Filtrar por ID (ULID) de sucursal.
+         */
+        branch_id?: string;
+        /**
+         * A page number within the paginated result set.
+         */
+        page?: number;
+        /**
+         * Number of results to return per page.
+         */
+        page_size?: number;
+    };
+    url: '/v1/adjustments/';
+};
+
+export type V1AdjustmentsListResponses = {
+    200: PaginatedInventoryAdjustmentListList;
+};
+
+export type V1AdjustmentsListResponse = V1AdjustmentsListResponses[keyof V1AdjustmentsListResponses];
+
+export type V1AdjustmentsCreateData = {
+    body: InventoryAdjustmentWriteRequestWritable;
+    path?: never;
+    query?: never;
+    url: '/v1/adjustments/';
+};
+
+export type V1AdjustmentsCreateResponses = {
+    201: InventoryAdjustmentDetailRead;
+};
+
+export type V1AdjustmentsCreateResponse = V1AdjustmentsCreateResponses[keyof V1AdjustmentsCreateResponses];
+
+export type V1AdjustmentsRetrieveData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/v1/adjustments/{id}/';
+};
+
+export type V1AdjustmentsRetrieveResponses = {
+    200: InventoryAdjustmentDetailRead;
+};
+
+export type V1AdjustmentsRetrieveResponse = V1AdjustmentsRetrieveResponses[keyof V1AdjustmentsRetrieveResponses];
 
 export type V1BranchListData = {
     body?: never;

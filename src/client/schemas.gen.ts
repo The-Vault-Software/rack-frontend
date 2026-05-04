@@ -328,6 +328,72 @@ export const AccountRequestSchema = {
     ]
 } as const;
 
+export const AdjustmentDetailItemSchema = {
+    type: 'object',
+    properties: {
+        id: {
+            type: 'string',
+            format: 'uuid',
+            readOnly: true
+        },
+        product: {
+            type: 'string',
+            format: 'uuid',
+            readOnly: true
+        },
+        product_name: {
+            type: 'string',
+            readOnly: true
+        },
+        product_sku: {
+            type: 'string',
+            readOnly: true
+        },
+        quantity_before: {
+            type: 'string',
+            format: 'decimal',
+            pattern: '^-?\\d{0,6}(?:\\.\\d{0,10})?$',
+            readOnly: true
+        },
+        quantity_change: {
+            type: 'string',
+            format: 'decimal',
+            pattern: '^-?\\d{0,6}(?:\\.\\d{0,10})?$',
+            readOnly: true
+        },
+        quantity_after: {
+            type: 'string',
+            format: 'decimal',
+            pattern: '^-?\\d{0,6}(?:\\.\\d{0,10})?$',
+            readOnly: true
+        }
+    },
+    required: [
+        'id',
+        'product',
+        'product_name',
+        'product_sku',
+        'quantity_after',
+        'quantity_before',
+        'quantity_change'
+    ]
+} as const;
+
+export const AdjustmentTypeEnumSchema = {
+    enum: [
+        'INITIAL_LOAD',
+        'MANUAL_INCREASE',
+        'MANUAL_DECREASE',
+        'COUNT_CORRECTION',
+        'DAMAGE',
+        'SAMPLE',
+        'TRANSFER_IN',
+        'TRANSFER_OUT'
+    ],
+    type: 'string',
+    description: '* `INITIAL_LOAD` - Carga inicial\n* `MANUAL_INCREASE` - Incremento manual\n* `MANUAL_DECREASE` - Decremento manual\n* `COUNT_CORRECTION` - Corrección por conteo físico\n* `DAMAGE` - Daño / merma\n* `SAMPLE` - Muestra\n* `TRANSFER_IN` - Entrada por traslado\n* `TRANSFER_OUT` - Salida por traslado'
+} as const;
+
 export const BranchSchema = {
     type: 'object',
     properties: {
@@ -445,9 +511,8 @@ export const CompanySchema = {
         },
         max_branches: {
             type: 'integer',
-            maximum: 9223372036854776000,
-            minimum: 0,
-            format: 'int64'
+            maximum: 2147483647,
+            minimum: 0
         },
         license_date: {
             type: 'string',
@@ -489,9 +554,8 @@ export const CompanyRequestSchema = {
         },
         max_branches: {
             type: 'integer',
-            maximum: 9223372036854776000,
-            minimum: 0,
-            format: 'int64'
+            maximum: 2147483647,
+            minimum: 0
         },
         license_date: {
             type: 'string',
@@ -663,6 +727,182 @@ export const CustomerRequestSchema = {
     ]
 } as const;
 
+export const InventoryAdjustmentDetailReadSchema = {
+    type: 'object',
+    properties: {
+        id: {
+            type: 'string',
+            format: 'uuid',
+            readOnly: true
+        },
+        seq_number: {
+            type: 'integer',
+            readOnly: true
+        },
+        adjustment_type: {
+            allOf: [
+                {
+                    $ref: '#/components/schemas/AdjustmentTypeEnum'
+                }
+            ],
+            readOnly: true
+        },
+        adjustment_type_display: {
+            type: 'string',
+            readOnly: true
+        },
+        reason: {
+            type: 'string',
+            readOnly: true
+        },
+        notes: {
+            type: 'string',
+            readOnly: true,
+            nullable: true
+        },
+        branch: {
+            type: 'string',
+            format: 'uuid',
+            readOnly: true
+        },
+        branch_name: {
+            type: 'string',
+            readOnly: true
+        },
+        details: {
+            type: 'array',
+            items: {
+                $ref: '#/components/schemas/AdjustmentDetailItem'
+            },
+            readOnly: true
+        },
+        created_by: {
+            type: 'string',
+            format: 'email',
+            nullable: true,
+            readOnly: true
+        },
+        created_at: {
+            type: 'string',
+            format: 'date-time',
+            readOnly: true
+        },
+        updated_at: {
+            type: 'string',
+            format: 'date-time',
+            readOnly: true
+        }
+    },
+    required: [
+        'adjustment_type',
+        'adjustment_type_display',
+        'branch',
+        'branch_name',
+        'created_at',
+        'created_by',
+        'details',
+        'id',
+        'notes',
+        'reason',
+        'seq_number',
+        'updated_at'
+    ]
+} as const;
+
+export const InventoryAdjustmentListSchema = {
+    type: 'object',
+    properties: {
+        id: {
+            type: 'string',
+            format: 'uuid',
+            readOnly: true
+        },
+        seq_number: {
+            type: 'integer',
+            readOnly: true
+        },
+        adjustment_type: {
+            allOf: [
+                {
+                    $ref: '#/components/schemas/AdjustmentTypeEnum'
+                }
+            ],
+            readOnly: true
+        },
+        adjustment_type_display: {
+            type: 'string',
+            readOnly: true
+        },
+        reason: {
+            type: 'string',
+            readOnly: true
+        },
+        branch: {
+            type: 'string',
+            format: 'uuid',
+            readOnly: true
+        },
+        branch_name: {
+            type: 'string',
+            readOnly: true
+        },
+        item_count: {
+            type: 'integer',
+            readOnly: true
+        },
+        created_by: {
+            type: 'string',
+            format: 'email',
+            nullable: true,
+            readOnly: true
+        },
+        created_at: {
+            type: 'string',
+            format: 'date-time',
+            readOnly: true
+        }
+    },
+    required: [
+        'adjustment_type',
+        'adjustment_type_display',
+        'branch',
+        'branch_name',
+        'created_at',
+        'created_by',
+        'id',
+        'item_count',
+        'reason',
+        'seq_number'
+    ]
+} as const;
+
+export const InventoryAdjustmentWriteRequestSchema = {
+    type: 'object',
+    properties: {
+        branch: {
+            type: 'string',
+            format: 'uuid'
+        },
+        adjustment_type: {
+            $ref: '#/components/schemas/AdjustmentTypeEnum'
+        },
+        reason: {
+            type: 'string',
+            minLength: 1,
+            maxLength: 255
+        },
+        notes: {
+            type: 'string',
+            nullable: true
+        }
+    },
+    required: [
+        'adjustment_type',
+        'branch',
+        'reason'
+    ]
+} as const;
+
 export const MeasurementUnitSchema = {
     type: 'object',
     properties: {
@@ -729,6 +969,38 @@ export const PaginatedAccountListListSchema = {
             type: 'array',
             items: {
                 $ref: '#/components/schemas/AccountList'
+            }
+        }
+    }
+} as const;
+
+export const PaginatedInventoryAdjustmentListListSchema = {
+    type: 'object',
+    required: [
+        'count',
+        'results'
+    ],
+    properties: {
+        count: {
+            type: 'integer',
+            example: 123
+        },
+        next: {
+            type: 'string',
+            nullable: true,
+            format: 'uri',
+            example: 'http://api.example.org/accounts/?page=4'
+        },
+        previous: {
+            type: 'string',
+            nullable: true,
+            format: 'uri',
+            example: 'http://api.example.org/accounts/?page=2'
+        },
+        results: {
+            type: 'array',
+            items: {
+                $ref: '#/components/schemas/InventoryAdjustmentList'
             }
         }
     }
@@ -841,9 +1113,8 @@ export const PatchedCompanyRequestSchema = {
         },
         max_branches: {
             type: 'integer',
-            maximum: 9223372036854776000,
-            minimum: 0,
-            format: 'int64'
+            maximum: 2147483647,
+            minimum: 0
         },
         license_date: {
             type: 'string',
@@ -1978,9 +2249,8 @@ export const CompanyWritableSchema = {
         },
         max_branches: {
             type: 'integer',
-            maximum: 9223372036854776000,
-            minimum: 0,
-            format: 'int64'
+            maximum: 2147483647,
+            minimum: 0
         },
         license_date: {
             type: 'string',
@@ -2028,6 +2298,43 @@ export const CustomerWritableSchema = {
     ]
 } as const;
 
+export const InventoryAdjustmentWriteRequestWritableSchema = {
+    type: 'object',
+    properties: {
+        branch: {
+            type: 'string',
+            format: 'uuid'
+        },
+        adjustment_type: {
+            $ref: '#/components/schemas/AdjustmentTypeEnum'
+        },
+        reason: {
+            type: 'string',
+            minLength: 1,
+            maxLength: 255
+        },
+        notes: {
+            type: 'string',
+            nullable: true
+        },
+        details: {
+            type: 'array',
+            items: {
+                type: 'object',
+                additionalProperties: {}
+            },
+            writeOnly: true,
+            description: 'List of items. Non-COUNT_CORRECTION: {product, quantity_change}. COUNT_CORRECTION: {product, quantity_after}.'
+        }
+    },
+    required: [
+        'adjustment_type',
+        'branch',
+        'details',
+        'reason'
+    ]
+} as const;
+
 export const MeasurementUnitWritableSchema = {
     type: 'object',
     properties: {
@@ -2045,6 +2352,35 @@ export const MeasurementUnitWritableSchema = {
 } as const;
 
 export const PaginatedAccountListListWritableSchema = {
+    type: 'object',
+    required: [
+        'count',
+        'results'
+    ],
+    properties: {
+        count: {
+            type: 'integer',
+            example: 123
+        },
+        next: {
+            type: 'string',
+            nullable: true,
+            format: 'uri',
+            example: 'http://api.example.org/accounts/?page=4'
+        },
+        previous: {
+            type: 'string',
+            nullable: true,
+            format: 'uri',
+            example: 'http://api.example.org/accounts/?page=2'
+        },
+        results: {
+            type: 'array'
+        }
+    }
+} as const;
+
+export const PaginatedInventoryAdjustmentListListWritableSchema = {
     type: 'object',
     required: [
         'count',

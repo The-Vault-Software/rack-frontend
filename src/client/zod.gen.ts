@@ -72,6 +72,37 @@ export const zAccountRequest = z.object({
     ]).optional()
 });
 
+export const zAdjustmentDetailItem = z.object({
+    id: z.string().uuid().readonly(),
+    product: z.string().uuid().readonly(),
+    product_name: z.string().readonly(),
+    product_sku: z.string().readonly(),
+    quantity_before: z.string().regex(/^-?\d{0,6}(?:\.\d{0,10})?$/).readonly(),
+    quantity_change: z.string().regex(/^-?\d{0,6}(?:\.\d{0,10})?$/).readonly(),
+    quantity_after: z.string().regex(/^-?\d{0,6}(?:\.\d{0,10})?$/).readonly()
+});
+
+/**
+ * * `INITIAL_LOAD` - Carga inicial
+ * * `MANUAL_INCREASE` - Incremento manual
+ * * `MANUAL_DECREASE` - Decremento manual
+ * * `COUNT_CORRECTION` - Corrección por conteo físico
+ * * `DAMAGE` - Daño / merma
+ * * `SAMPLE` - Muestra
+ * * `TRANSFER_IN` - Entrada por traslado
+ * * `TRANSFER_OUT` - Salida por traslado
+ */
+export const zAdjustmentTypeEnum = z.enum([
+    'INITIAL_LOAD',
+    'MANUAL_INCREASE',
+    'MANUAL_DECREASE',
+    'COUNT_CORRECTION',
+    'DAMAGE',
+    'SAMPLE',
+    'TRANSFER_IN',
+    'TRANSFER_OUT'
+]);
+
 export const zBranch = z.object({
     name: z.string().max(200),
     address: z.union([
@@ -121,7 +152,7 @@ export const zCompany = z.object({
         z.string().max(12),
         z.null()
     ]).optional(),
-    max_branches: z.coerce.bigint().gte(BigInt(0)).lte(BigInt(9223372036854776000)),
+    max_branches: z.number().int().gte(0).lte(2147483647),
     license_date: z.string().date(),
     id: z.string().uuid().readonly()
 });
@@ -133,7 +164,7 @@ export const zCompanyRequest = z.object({
         z.string().max(12),
         z.null()
     ]).optional(),
-    max_branches: z.coerce.bigint().gte(BigInt(0)).lte(BigInt(9223372036854776000)),
+    max_branches: z.number().int().gte(0).lte(2147483647),
     license_date: z.string().date()
 });
 
@@ -196,6 +227,53 @@ export const zCustomerRequest = z.object({
     ]).optional()
 });
 
+export const zInventoryAdjustmentDetailRead = z.object({
+    id: z.string().uuid().readonly(),
+    seq_number: z.number().int().readonly(),
+    adjustment_type: zAdjustmentTypeEnum,
+    adjustment_type_display: z.string().readonly(),
+    reason: z.string().readonly(),
+    notes: z.union([
+        z.string().readonly(),
+        z.null()
+    ]).readonly(),
+    branch: z.string().uuid().readonly(),
+    branch_name: z.string().readonly(),
+    details: z.array(zAdjustmentDetailItem).readonly(),
+    created_by: z.union([
+        z.string().email().readonly(),
+        z.null()
+    ]).readonly(),
+    created_at: z.string().datetime().readonly(),
+    updated_at: z.string().datetime().readonly()
+});
+
+export const zInventoryAdjustmentList = z.object({
+    id: z.string().uuid().readonly(),
+    seq_number: z.number().int().readonly(),
+    adjustment_type: zAdjustmentTypeEnum,
+    adjustment_type_display: z.string().readonly(),
+    reason: z.string().readonly(),
+    branch: z.string().uuid().readonly(),
+    branch_name: z.string().readonly(),
+    item_count: z.number().int().readonly(),
+    created_by: z.union([
+        z.string().email().readonly(),
+        z.null()
+    ]).readonly(),
+    created_at: z.string().datetime().readonly()
+});
+
+export const zInventoryAdjustmentWriteRequest = z.object({
+    branch: z.string().uuid(),
+    adjustment_type: zAdjustmentTypeEnum,
+    reason: z.string().min(1).max(255),
+    notes: z.union([
+        z.string(),
+        z.null()
+    ]).optional()
+});
+
 export const zMeasurementUnit = z.object({
     name: z.string().max(200),
     decimals: z.boolean().optional(),
@@ -205,6 +283,19 @@ export const zMeasurementUnit = z.object({
 export const zMeasurementUnitRequest = z.object({
     name: z.string().min(1).max(200),
     decimals: z.boolean().optional()
+});
+
+export const zPaginatedInventoryAdjustmentListList = z.object({
+    count: z.number().int(),
+    next: z.union([
+        z.string().url(),
+        z.null()
+    ]).optional(),
+    previous: z.union([
+        z.string().url(),
+        z.null()
+    ]).optional(),
+    results: z.array(zInventoryAdjustmentList)
 });
 
 /**
@@ -247,7 +338,7 @@ export const zPatchedCompanyRequest = z.object({
         z.string().max(12),
         z.null()
     ]).optional(),
-    max_branches: z.coerce.bigint().gte(BigInt(0)).lte(BigInt(9223372036854776000)).optional(),
+    max_branches: z.number().int().gte(0).lte(2147483647).optional(),
     license_date: z.string().date().optional()
 });
 
@@ -799,7 +890,7 @@ export const zCompanyWritable = z.object({
         z.string().max(12),
         z.null()
     ]).optional(),
-    max_branches: z.coerce.bigint().gte(BigInt(0)).lte(BigInt(9223372036854776000)),
+    max_branches: z.number().int().gte(0).lte(2147483647),
     license_date: z.string().date()
 });
 
@@ -823,12 +914,36 @@ export const zCustomerWritable = z.object({
     ]).optional()
 });
 
+export const zInventoryAdjustmentWriteRequestWritable = z.object({
+    branch: z.string().uuid(),
+    adjustment_type: zAdjustmentTypeEnum,
+    reason: z.string().min(1).max(255),
+    notes: z.union([
+        z.string(),
+        z.null()
+    ]).optional(),
+    details: z.array(z.record(z.unknown()))
+});
+
 export const zMeasurementUnitWritable = z.object({
     name: z.string().max(200),
     decimals: z.boolean().optional()
 });
 
 export const zPaginatedAccountListListWritable = z.object({
+    count: z.number().int(),
+    next: z.union([
+        z.string().url(),
+        z.null()
+    ]).optional(),
+    previous: z.union([
+        z.string().url(),
+        z.null()
+    ]).optional(),
+    results: z.array(z.unknown())
+});
+
+export const zPaginatedInventoryAdjustmentListListWritable = z.object({
     count: z.number().int(),
     next: z.union([
         z.string().url(),
@@ -1104,6 +1219,46 @@ export const zV1AccountsUpdateData = z.object({
 });
 
 export const zV1AccountsUpdateResponse = zAccount;
+
+export const zV1AdjustmentsListData = z.object({
+    body: z.never().optional(),
+    path: z.never().optional(),
+    query: z.object({
+        adjustment_type: z.enum([
+            'COUNT_CORRECTION',
+            'DAMAGE',
+            'INITIAL_LOAD',
+            'MANUAL_DECREASE',
+            'MANUAL_INCREASE',
+            'SAMPLE',
+            'TRANSFER_IN',
+            'TRANSFER_OUT'
+        ]).optional(),
+        branch_id: z.string().optional(),
+        page: z.number().int().optional(),
+        page_size: z.number().int().optional()
+    }).optional()
+});
+
+export const zV1AdjustmentsListResponse = zPaginatedInventoryAdjustmentListList;
+
+export const zV1AdjustmentsCreateData = z.object({
+    body: zInventoryAdjustmentWriteRequestWritable,
+    path: z.never().optional(),
+    query: z.never().optional()
+});
+
+export const zV1AdjustmentsCreateResponse = zInventoryAdjustmentDetailRead;
+
+export const zV1AdjustmentsRetrieveData = z.object({
+    body: z.never().optional(),
+    path: z.object({
+        id: z.string()
+    }),
+    query: z.never().optional()
+});
+
+export const zV1AdjustmentsRetrieveResponse = zInventoryAdjustmentDetailRead;
 
 export const zV1BranchListData = z.object({
     body: z.never().optional(),
