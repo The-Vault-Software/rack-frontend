@@ -317,7 +317,6 @@ export default function AdjustmentForm({ onSuccess }: AdjustmentFormProps) {
         adjustment_type: data.adjustment_type,
         reason: data.reason,
         notes: data.notes ?? null,
-        // @ts-expect-error - details items are union types not reflected in generated schema
         details: transformedDetails,
       },
     });
