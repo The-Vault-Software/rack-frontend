@@ -29,8 +29,9 @@ interface SellingUnit {
 interface CartItem {
   product: ProductMaster;
   quantity: number;
+  customPrice?: string;
   // Dynamic fields from product detail
-  sellingUnits?: SellingUnit[]; 
+  sellingUnits?: SellingUnit[];
   selectedSellingUnit?: SellingUnit;
   measurementUnitDetail?: MeasurementUnit;
   loadingDetails?: boolean;
@@ -190,6 +191,12 @@ export default function AccountBuilder() {
     ));
   };
 
+  const handlePriceChange = (productId: string, value: string) => {
+    setCart(cart.map(i =>
+      i.product.id === productId ? { ...i, customPrice: value } : i
+    ));
+  };
+
   const handleSelectSellingUnit = (productId: string, sellingUnitId: string) => {
     setCart(cart.map(item => {
       if (item.product.id !== productId) return item;
@@ -207,10 +214,7 @@ export default function AccountBuilder() {
   };
 
   const total = cart.reduce((acc, item) => {
-    const baseCost = parseFloat(item.product.cost_price_usd);
-    // If selling unit is selected, the factor applies to the base COST
-    // Fact: if 1 unit costs $10 and a box has 12, the box cost is $120.
-    // The details in the payload SHOULD BE in base units, but we need to convert back.
+    const baseCost = parseFloat(item.customPrice ?? item.product.cost_price_usd);
     const factor = item.selectedSellingUnit ? parseFloat(item.selectedSellingUnit.unit_conversion_factor) : 1;
     return acc + (baseCost * item.quantity * factor);
   }, 0);
@@ -425,13 +429,23 @@ export default function AccountBuilder() {
               <div className="flex items-center justify-between">
                 <div className="flex-1 min-w-0 mr-4">
                   <h5 className="text-sm font-medium text-gray-900 truncate">{item.product.name}</h5>
-                  <div className="flex items-center gap-2">
-                    <p className="text-xs text-gray-500">
-                      ${(parseFloat(item.product.cost_price_usd) * (item.selectedSellingUnit ? parseFloat(item.selectedSellingUnit.unit_conversion_factor) : 1)).toFixed(2)} 
-                      <span className="ml-1 italic text-[10px]">
-                        ({item.selectedSellingUnit ? item.selectedSellingUnit.name : (item.measurementUnitDetail?.name || 'Base')})
-                      </span>
-                    </p>
+                  <div className="flex items-center gap-1 mt-0.5">
+                    <span className="text-xs text-gray-400">$</span>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={item.customPrice ?? item.product.cost_price_usd}
+                      onChange={(e) => handlePriceChange(item.product.id, e.target.value)}
+                      className="w-20 text-xs font-semibold text-gray-700 border-b border-gray-200 focus:border-blue-500 outline-none bg-transparent [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                      title="Precio unitario (se actualizará en el producto)"
+                    />
+                    {item.customPrice !== undefined && item.customPrice !== item.product.cost_price_usd && (
+                      <span className="text-[10px] text-blue-500 font-bold" title="Precio modificado">✎</span>
+                    )}
+                    <span className="ml-1 italic text-[10px] text-gray-400">
+                      ({item.selectedSellingUnit ? item.selectedSellingUnit.name : (item.measurementUnitDetail?.name || 'Base')})
+                    </span>
                   </div>
                 </div>
                 <button onClick={() => removeFromCart(item.product.id)} className="text-gray-400 hover:text-red-500">
@@ -486,7 +500,7 @@ export default function AccountBuilder() {
                 
                 <div className="text-right">
                   <p className="text-sm font-bold text-gray-900">
-                    ${(parseFloat(item.product.cost_price_usd) * item.quantity * (item.selectedSellingUnit ? parseFloat(item.selectedSellingUnit.unit_conversion_factor) : 1)).toFixed(2)}
+                    ${(parseFloat(item.customPrice ?? item.product.cost_price_usd) * item.quantity * (item.selectedSellingUnit ? parseFloat(item.selectedSellingUnit.unit_conversion_factor) : 1)).toFixed(2)}
                   </p>
                 </div>
               </div>

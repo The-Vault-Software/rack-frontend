@@ -29,6 +29,7 @@ interface SellingUnit {
 interface CartItem {
   product: { id: string; name: string; cost_price_usd?: string; selling_price_usd?: string; IVA?: boolean };
   quantity: number;
+  customPrice?: string;
   selectedSellingUnit?: SellingUnit;
 }
 
@@ -93,7 +94,8 @@ export default function SaleProcessModal({
           const factor = item.selectedSellingUnit ? parseFloat(item.selectedSellingUnit.unit_conversion_factor) : 1;
           return {
             product: item.product.id,
-            quantity: item.quantity * factor
+            quantity: item.quantity * factor,
+            ...(item.customPrice !== undefined ? { unit_price: item.customPrice } : {})
           };
         })
       };
@@ -138,7 +140,8 @@ export default function SaleProcessModal({
           const factor = item.selectedSellingUnit ? parseFloat(item.selectedSellingUnit.unit_conversion_factor) : 1;
           return {
             product: item.product.id,
-            quantity: item.quantity * factor
+            quantity: item.quantity * factor,
+            ...(item.customPrice !== undefined ? { unit_price: item.customPrice } : {})
           };
         })
       };

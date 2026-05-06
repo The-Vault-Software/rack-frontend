@@ -31,6 +31,7 @@ interface SellingUnit {
 interface CartItem {
   product: ProductMaster;
   quantity: number;
+  customPrice?: string;
   sellingUnits?: SellingUnit[];
   selectedSellingUnit?: SellingUnit;
   measurementUnitDetail?: MeasurementUnit;
@@ -71,6 +72,11 @@ export default function SaleBuilder() {
     return stockItem ? parseFloat(stockItem.stock) : 0;
   };
 
+  const formatStock = (n: number) => {
+    const rounded = Math.round(n * 100) / 100;
+    return Number.isInteger(rounded) ? rounded.toString() : rounded.toFixed(2);
+  };
+
   const filteredProducts = useMemo(() => {
     return products.filter((p: ProductMaster) => 
       p.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
@@ -95,10 +101,11 @@ export default function SaleBuilder() {
   const total = useMemo(() => {
     return cart.reduce((acc: number, item: CartItem) => {
       const basePrice = parseFloat(item.product.selling_price_usd || '0');
-      const finalPrice = item.product.IVA ? basePrice * 1.16 : basePrice;
-      
+      const price = item.customPrice !== undefined
+        ? parseFloat(item.customPrice)
+        : (item.product.IVA ? basePrice * 1.16 : basePrice);
       const factor = item.selectedSellingUnit ? parseFloat(item.selectedSellingUnit.unit_conversion_factor) : 1;
-      return acc + (finalPrice * item.quantity * factor);
+      return acc + (price * item.quantity * factor);
     }, 0);
   }, [cart]);
 
@@ -227,6 +234,11 @@ export default function SaleBuilder() {
     }));
   };
 
+  const handlePriceChange = (productId: string, value: string) => {
+    setCart(cart.map(i =>
+      i.product.id === productId ? { ...i, customPrice: value } : i
+    ));
+  };
 
   const handleCheckout = () => {
     if (!selectedBranch) {
@@ -406,7 +418,7 @@ export default function SaleBuilder() {
                         )}
                     </div>
                     <p className={`text-xs ${stock > 0 ? 'text-gray-500' : 'text-red-500'}`}>
-                      Stock: {stock}
+                      Stock: {formatStock(stock)}
                     </p>
                   </div>
                   <div className="bg-blue-50 p-2 rounded-full">
@@ -434,20 +446,47 @@ export default function SaleBuilder() {
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
           {cart.map(item => {
             const basePrice = parseFloat(item.product.selling_price_usd || '0');
+            const defaultPrice = item.product.IVA ? basePrice * 1.16 : basePrice;
+            const defaultPriceStr = defaultPrice.toFixed(2);
             const factor = item.selectedSellingUnit ? parseFloat(item.selectedSellingUnit.unit_conversion_factor) : 1;
-            const finalPrice = (item.product.IVA ? basePrice * 1.16 : basePrice) * factor;
+            const effectivePrice = item.customPrice !== undefined ? parseFloat(item.customPrice) : defaultPrice;
 
             return (
               <div key={item.product.id} className="py-3 border-b border-gray-100 last:border-0 space-y-2">
                 <div className="flex items-center justify-between">
                   <div className="flex-1 min-w-0 mr-4">
                     <h5 className="text-sm font-medium text-gray-900 truncate">{item.product.name}</h5>
-                    <div className="flex items-center gap-1.5">
-                      <p className="text-xs text-gray-500">${finalPrice.toFixed(2)} c/u</p>
-                      {item.product.IVA && <span className="text-[10px] text-gray-400 border px-1 rounded">IVA</span>}
-                      <span className="text-[10px] italic text-gray-400">
+                    <div className="flex items-center gap-1 mt-0.5">
+                      <span className="text-xs text-gray-400">$</span>
+                      <input
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        value={item.customPrice ?? defaultPriceStr}
+                        onChange={(e) => handlePriceChange(item.product.id, e.target.value)}
+                        className="w-20 text-xs font-semibold text-gray-700 border-b border-gray-200 focus:border-blue-500 outline-none bg-transparent [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                        title="Precio unitario personalizado"
+                      />
+                      {item.customPrice !== undefined && item.customPrice !== defaultPriceStr && (
+                        <span className="text-[10px] text-blue-500 font-bold" title="Precio modificado">✎</span>
+                      )}
+                      {item.product.IVA && item.customPrice === undefined && (
+                        <span className="text-[10px] text-gray-400 border px-1 rounded">IVA</span>
+                      )}
+                      <span className="ml-1 italic text-[10px] text-gray-400">
                         ({item.selectedSellingUnit ? item.selectedSellingUnit.name : (item.measurementUnitDetail?.name || 'Base')})
                       </span>
+                    </div>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <span className="text-[10px] text-gray-400">
+                        Costo: ${parseFloat(item.product.cost_price_usd || '0').toFixed(2)}
+                      </span>
+                      {effectivePrice < parseFloat(item.product.cost_price_usd || '0') && (
+                        <span className="flex items-center gap-0.5 text-[10px] text-red-600 font-bold">
+                          <AlertTriangle className="h-3 w-3" />
+                          Margen Negativo
+                        </span>
+                      )}
                     </div>
                   </div>
                   <button onClick={() => removeFromCart(item.product.id)} className="text-gray-400 hover:text-red-500 cursor-pointer">
@@ -494,7 +533,7 @@ export default function SaleBuilder() {
                     </span>
                   </div>
                   <div className="text-right">
-                    <p className="text-sm font-bold text-gray-900">${(finalPrice * item.quantity).toFixed(2)}</p>
+                    <p className="text-sm font-bold text-gray-900">${(effectivePrice * factor * item.quantity).toFixed(2)}</p>
                   </div>
                 </div>
 

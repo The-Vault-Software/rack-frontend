@@ -1,13 +1,15 @@
 import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { 
-  v1ProductListOptions, 
+import {
+  v1ProductListOptions,
   v1ProvidersListOptions,
   v1AccountsCreateMutation,
   v1AccountsListQueryKey,
   v1MeasurementListOptions,
-  v1ProductRetrieveOptions
+  v1ProductRetrieveOptions,
+  v1ProductListQueryKey,
 } from '../../../client/@tanstack/react-query.gen';
+import { v1ProductPartialUpdate } from '../../../client/sdk.gen';
 import { useExchangeRates } from '../../../hooks/useExchangeRates';
 import { useBranch } from '../../../context/BranchContext';
 import { 
@@ -36,6 +38,7 @@ interface SellingUnit {
 interface CartItem {
   product: ProductMaster;
   quantity: number;
+  customPrice?: string;
   sellingUnits?: SellingUnit[];
   selectedSellingUnit?: SellingUnit;
   measurementUnitDetail?: MeasurementUnit;
@@ -87,7 +90,7 @@ export default function MobileAccountBuilder() {
 
   const total = useMemo(() => {
     return cart.reduce((acc: number, item: CartItem) => {
-      const baseCost = parseFloat(item.product.cost_price_usd || '0');
+      const baseCost = parseFloat(item.customPrice ?? item.product.cost_price_usd ?? '0');
       const factor = item.selectedSellingUnit ? parseFloat(item.selectedSellingUnit.unit_conversion_factor) : 1;
       return acc + (baseCost * item.quantity * factor);
     }, 0);
@@ -165,7 +168,13 @@ export default function MobileAccountBuilder() {
     }));
   };
 
-  const handleCheckout = () => {
+  const handlePriceChange = (productId: string, value: string) => {
+    setCart(cart.map(i =>
+      i.product.id === productId ? { ...i, customPrice: value } : i
+    ));
+  };
+
+  const handleCheckout = async () => {
     if (!selectedBranch) {
       toast.error('Seleccione una sucursal');
       return;
@@ -176,18 +185,34 @@ export default function MobileAccountBuilder() {
     }
     if (cart.length === 0) return;
 
+    // Step 1: Update prices for items with custom prices
+    const itemsWithCustomPrice = cart.filter(
+      (item) => item.customPrice !== undefined && item.customPrice !== item.product.cost_price_usd
+    );
+    if (itemsWithCustomPrice.length > 0) {
+      const results = await Promise.allSettled(
+        itemsWithCustomPrice.map((item) =>
+          v1ProductPartialUpdate({ path: { id: item.product.id }, body: { cost_price_usd: item.customPrice! } })
+        )
+      );
+      const failed = results
+        .map((r, i) => (r.status === 'rejected' ? itemsWithCustomPrice[i].product.name : null))
+        .filter(Boolean) as string[];
+      if (failed.length > 0) {
+        toast.warning(`No se pudo actualizar el precio de: ${failed.join(', ')}`);
+      }
+      queryClient.invalidateQueries({ queryKey: v1ProductListQueryKey() });
+    }
+
+    // Step 2: Create account
     const payload: AccountRequestWritable = {
       branch: selectedBranch.id,
       provider: selectedProviderId,
       details: cart.map((item: CartItem) => {
         const factor = item.selectedSellingUnit ? parseFloat(item.selectedSellingUnit.unit_conversion_factor) : 1;
-        return {
-          product: item.product.id,
-          quantity: item.quantity * factor
-        };
+        return { product: item.product.id, quantity: item.quantity * factor };
       })
     };
-
     createAccountMutation.mutate({ body: payload });
   };
 
@@ -351,7 +376,7 @@ export default function MobileAccountBuilder() {
 
           <div className="flex-1 overflow-y-auto space-y-4 px-1">
             {cart.map(item => {
-              const baseCost = parseFloat(item.product.cost_price_usd || '0');
+              const baseCost = parseFloat(item.customPrice ?? item.product.cost_price_usd ?? '0');
               const factor = item.selectedSellingUnit ? parseFloat(item.selectedSellingUnit.unit_conversion_factor) : 1;
               const finalCost = baseCost * factor;
 
@@ -360,11 +385,25 @@ export default function MobileAccountBuilder() {
                   <div className="flex justify-between items-start">
                     <div className="flex-1 min-w-0">
                       <h4 className="font-bold text-gray-900 truncate">{item.product.name}</h4>
-                      <p className="text-xs text-gray-500 mt-0.5">
-                        ${finalCost.toFixed(2)} x {item.quantity} {item.selectedSellingUnit?.name || item.measurementUnitDetail?.name || 'u'}
-                      </p>
+                      <div className="flex items-center gap-1 mt-0.5">
+                        <span className="text-xs text-gray-400">$</span>
+                        <input
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          value={item.customPrice ?? item.product.cost_price_usd}
+                          onChange={(e) => handlePriceChange(item.product.id, e.target.value)}
+                          className="w-20 text-xs font-semibold text-gray-700 border-b border-gray-200 focus:border-blue-500 outline-none bg-transparent [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                          title="Precio unitario (se actualizará en el producto)"
+                        />
+                        {item.customPrice !== undefined && item.customPrice !== item.product.cost_price_usd && (
+                          <span className="text-[10px] text-blue-500 font-bold" title="Precio modificado">✎</span>
+                        )}
+                        <span className="text-xs text-gray-400">x {item.quantity} {item.selectedSellingUnit?.name || item.measurementUnitDetail?.name || 'u'}</span>
+                      </div>
+                      <p className="text-xs font-semibold text-gray-700 mt-0.5">${finalCost.toFixed(2)} / unidad</p>
                     </div>
-                    <button 
+                    <button
                       onClick={() => removeFromCart(item.product.id)}
                       className="p-1.5 text-gray-400 hover:text-red-500"
                     >

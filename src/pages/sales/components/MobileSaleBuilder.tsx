@@ -12,9 +12,9 @@ import {
 } from '../../../client/@tanstack/react-query.gen';
 import { useExchangeRates } from '../../../hooks/useExchangeRates';
 import { useBranch } from '../../../context/BranchContext';
-import { 
-  ShoppingCart, Plus, Minus, Trash2, Search, User, 
-  ArrowRight, Layers, X, ChevronRight, Info
+import {
+  ShoppingCart, Plus, Minus, Trash2, Search, User,
+  ArrowRight, Layers, X, ChevronRight, Info, AlertTriangle
 } from 'lucide-react';
 import { toast } from 'sonner';
 import type { 
@@ -36,6 +36,7 @@ interface SellingUnit {
 interface CartItem {
   product: ProductMaster;
   quantity: number;
+  customPrice?: string;
   sellingUnits?: SellingUnit[];
   selectedSellingUnit?: SellingUnit;
   measurementUnitDetail?: MeasurementUnit;
@@ -89,6 +90,11 @@ export default function MobileSaleBuilder() {
     return stockItem ? parseFloat(stockItem.stock) : 0;
   };
 
+  const formatStock = (n: number) => {
+    const rounded = Math.round(n * 100) / 100;
+    return Number.isInteger(rounded) ? rounded.toString() : rounded.toFixed(2);
+  };
+
   const filteredProducts = useMemo(() => {
     if (!searchTerm) return products.slice(0, 20); // Limit initial view
     return products.filter((p: ProductMaster) => 
@@ -100,9 +106,11 @@ export default function MobileSaleBuilder() {
   const total = useMemo(() => {
     return cart.reduce((acc: number, item: CartItem) => {
       const basePrice = parseFloat(item.product.selling_price_usd || '0');
-      const finalPrice = item.product.IVA ? basePrice * 1.16 : basePrice;
+      const price = item.customPrice !== undefined
+        ? parseFloat(item.customPrice)
+        : (item.product.IVA ? basePrice * 1.16 : basePrice);
       const factor = item.selectedSellingUnit ? parseFloat(item.selectedSellingUnit.unit_conversion_factor) : 1;
-      return acc + (finalPrice * item.quantity * factor);
+      return acc + (price * item.quantity * factor);
     }, 0);
   }, [cart]);
 
@@ -199,6 +207,12 @@ export default function MobileSaleBuilder() {
     }));
   };
 
+  const handlePriceChange = (productId: string, value: string) => {
+    setCart(cart.map(i =>
+      i.product.id === productId ? { ...i, customPrice: value } : i
+    ));
+  };
+
   const handleCheckout = () => {
     if (!selectedBranch) {
       toast.error('Seleccione una sucursal');
@@ -213,7 +227,8 @@ export default function MobileSaleBuilder() {
         const factor = item.selectedSellingUnit ? parseFloat(item.selectedSellingUnit.unit_conversion_factor) : 1;
         return {
           product: item.product.id,
-          quantity: item.quantity * factor
+          quantity: item.quantity * factor,
+          ...(item.customPrice !== undefined ? { unit_price: item.customPrice } : {})
         };
       })
     };
@@ -282,7 +297,7 @@ export default function MobileSaleBuilder() {
                     "w-1.5 h-1.5 rounded-full",
                     stock > 10 ? "bg-green-500" : stock > 0 ? "bg-amber-500" : "bg-red-500"
                   )} />
-                  <span className="text-[10px] text-gray-500 font-medium">Stock: {stock}</span>
+                  <span className="text-[10px] text-gray-500 font-medium">Stock: {formatStock(stock)}</span>
                 </div>
               </div>
 
@@ -378,19 +393,46 @@ export default function MobileSaleBuilder() {
           <div className="flex-1 overflow-y-auto space-y-4 px-1">
             {cart.map(item => {
               const basePrice = parseFloat(item.product.selling_price_usd || '0');
+              const defaultPrice = item.product.IVA ? basePrice * 1.16 : basePrice;
+              const defaultPriceStr = defaultPrice.toFixed(2);
               const factor = item.selectedSellingUnit ? parseFloat(item.selectedSellingUnit.unit_conversion_factor) : 1;
-              const finalPrice = (item.product.IVA ? basePrice * 1.16 : basePrice) * factor;
+              const effectivePrice = item.customPrice !== undefined ? parseFloat(item.customPrice) : defaultPrice;
 
               return (
                 <div key={item.product.id} className="p-3 bg-white border border-gray-100 rounded-2xl space-y-3">
                   <div className="flex justify-between items-start">
                     <div className="flex-1 min-w-0">
                       <h4 className="font-bold text-gray-900 truncate">{item.product.name}</h4>
-                      <p className="text-xs text-gray-500 mt-0.5">
-                        ${finalPrice.toFixed(2)} x {item.quantity} {item.selectedSellingUnit?.name || item.measurementUnitDetail?.name || 'u'}
-                      </p>
+                      <div className="flex items-center gap-1 mt-0.5">
+                        <span className="text-xs text-gray-400">$</span>
+                        <input
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          value={item.customPrice ?? defaultPriceStr}
+                          onChange={(e) => handlePriceChange(item.product.id, e.target.value)}
+                          className="w-20 text-xs font-semibold text-gray-700 border-b border-gray-200 focus:border-blue-500 outline-none bg-transparent [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                          title="Precio unitario personalizado"
+                        />
+                        {item.customPrice !== undefined && item.customPrice !== defaultPriceStr && (
+                          <span className="text-[10px] text-blue-500 font-bold" title="Precio modificado">✎</span>
+                        )}
+                        <span className="text-xs text-gray-400">x {item.quantity} {item.selectedSellingUnit?.name || item.measurementUnitDetail?.name || 'u'}</span>
+                      </div>
+                      <p className="text-xs font-semibold text-gray-700 mt-0.5">${(effectivePrice * factor).toFixed(2)} / unidad</p>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <span className="text-[10px] text-gray-400">
+                          Costo: ${parseFloat(item.product.cost_price_usd || '0').toFixed(2)}
+                        </span>
+                        {effectivePrice < parseFloat(item.product.cost_price_usd || '0') && (
+                          <span className="flex items-center gap-0.5 text-[10px] text-red-600 font-bold">
+                            <AlertTriangle className="h-3 w-3" />
+                            Margen Negativo
+                          </span>
+                        )}
+                      </div>
                     </div>
-                    <button 
+                    <button
                       onClick={() => removeFromCart(item.product.id)}
                       className="p-1.5 text-gray-400 hover:text-red-500 cursor-pointer"
                     >

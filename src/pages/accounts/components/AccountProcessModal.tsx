@@ -5,11 +5,13 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { motion } from 'motion/react';
 import { RefreshCw, AlertCircle } from 'lucide-react';
-import { 
-  v1AccountsCreateMutation, 
-  v1AccountsPaymentsCreateMutation, 
-  v1AccountsListQueryKey, 
+import {
+  v1AccountsCreateMutation,
+  v1AccountsPaymentsCreateMutation,
+  v1AccountsListQueryKey,
+  v1ProductListQueryKey,
 } from '../../../client/@tanstack/react-query.gen';
+import { v1ProductPartialUpdate } from '../../../client/sdk.gen';
 import { zAccountPaymentRequestWritable } from '../../../client/zod.gen';
 import type { AccountPaymentRequestWritable, AccountRequestWritable } from '../../../client/types.gen';
 import { usePaymentCalculations, type PaymentFormValues } from '../hooks/usePaymentCalculations';
@@ -27,6 +29,7 @@ interface SellingUnit {
 interface CartItem {
   product: { id: string; name: string; cost_price_usd?: string };
   quantity: number;
+  customPrice?: string;
   selectedSellingUnit?: SellingUnit;
 }
 
@@ -78,65 +81,97 @@ export default function AccountProcessModal({
     ...v1AccountsPaymentsCreateMutation(),
   });
 
+  const buildAccountPayload = (): AccountRequestWritable => ({
+    branch: branchId,
+    provider: providerId,
+    details: cart.map((item) => {
+      const factor = item.selectedSellingUnit ? parseFloat(item.selectedSellingUnit.unit_conversion_factor) : 1;
+      return { product: item.product.id, quantity: item.quantity * factor };
+    })
+  });
+
+  const updatePrices = async (): Promise<string[]> => {
+    const itemsWithCustomPrice = cart.filter(
+      (item) => item.customPrice !== undefined && item.customPrice !== item.product.cost_price_usd
+    );
+    if (itemsWithCustomPrice.length === 0) return [];
+
+    const results = await Promise.allSettled(
+      itemsWithCustomPrice.map((item) =>
+        v1ProductPartialUpdate({ path: { id: item.product.id }, body: { cost_price_usd: item.customPrice! } })
+      )
+    );
+
+    return results
+      .map((result, i) => (result.status === 'rejected' ? itemsWithCustomPrice[i].product.name : null))
+      .filter(Boolean) as string[];
+  };
+
   const handleRegisterAndPay = async (data: PaymentFormValues) => {
+    // Step 1: Update prices
+    const failedPriceUpdates = await updatePrices();
+    if (failedPriceUpdates.length > 0) {
+      toast.warning(`No se pudo actualizar el precio de: ${failedPriceUpdates.join(', ')}`);
+    }
+    const hadPriceUpdates = cart.some(i => i.customPrice !== undefined && i.customPrice !== i.product.cost_price_usd);
+    if (hadPriceUpdates) {
+      queryClient.invalidateQueries({ queryKey: v1ProductListQueryKey() });
+    }
+
+    // Step 2: Create Account
+    let account;
     try {
-      // 1. Create Account
-      const accountPayload: AccountRequestWritable = {
-        branch: branchId,
-        provider: providerId,
-        details: cart.map((item) => {
-          const factor = item.selectedSellingUnit ? parseFloat(item.selectedSellingUnit.unit_conversion_factor) : 1;
-          return {
-            product: item.product.id,
-            quantity: item.quantity * factor
-          };
-        })
-      };
-
-      const account = await createAccountMutation.mutateAsync({ body: accountPayload });
-      
-      // 2. Register Payment
-      const paymentPayload: AccountPaymentRequestWritable = {
-        amount: data.amount,
-        currency: data.currency,
-        payment_method: data.payment_method,
-        REF: data.REF,
-      };
-
-      await accountPaymentMutation.mutateAsync({
-        path: { account_id: account.id },
-        body: paymentPayload
-      });
-
-      toast.success('Compra y pago registrados exitosamente');
-      onSuccess();
+      account = await createAccountMutation.mutateAsync({ body: buildAccountPayload() });
     } catch (error) {
       console.error(error);
-      toast.error('Error al procesar la compra y el pago');
+      const priceNote = failedPriceUpdates.length === 0 && cart.some(i => i.customPrice !== undefined && i.customPrice !== i.product.cost_price_usd)
+        ? 'Los precios fueron actualizados. '
+        : '';
+      toast.error(`${priceNote}Error al registrar la compra.`);
+      return;
     }
+
+    // Step 3: Register Payment
+    const paymentPayload: AccountPaymentRequestWritable = {
+      amount: data.amount,
+      currency: data.currency,
+      payment_method: data.payment_method,
+      REF: data.REF,
+    };
+
+    try {
+      await accountPaymentMutation.mutateAsync({ path: { account_id: account.id }, body: paymentPayload });
+      toast.success('Compra y pago registrados exitosamente');
+    } catch (error) {
+      console.error(error);
+      toast.error('Compra registrada, pero el pago no pudo procesarse. Puedes registrarlo más tarde.');
+    }
+    onSuccess();
   };
 
   const handlePayLater = async () => {
-    try {
-      const accountPayload: AccountRequestWritable = {
-        branch: branchId,
-        provider: providerId,
-        details: cart.map((item) => {
-          const factor = item.selectedSellingUnit ? parseFloat(item.selectedSellingUnit.unit_conversion_factor) : 1;
-          return {
-            product: item.product.id,
-            quantity: item.quantity * factor
-          };
-        })
-      };
+    // Step 1: Update prices
+    const failedPriceUpdates = await updatePrices();
+    if (failedPriceUpdates.length > 0) {
+      toast.warning(`No se pudo actualizar el precio de: ${failedPriceUpdates.join(', ')}`);
+    }
+    const hadPriceUpdates = cart.some(i => i.customPrice !== undefined && i.customPrice !== i.product.cost_price_usd);
+    if (hadPriceUpdates) {
+      queryClient.invalidateQueries({ queryKey: v1ProductListQueryKey() });
+    }
 
-      await createAccountMutation.mutateAsync({ body: accountPayload });
+    // Step 2: Create Account
+    try {
+      await createAccountMutation.mutateAsync({ body: buildAccountPayload() });
       toast.success('Compra registrada como cuenta por pagar');
       setIsPayLaterConfirmOpen(false);
       onSuccess();
     } catch (error) {
       console.error(error);
-      toast.error('Error al registrar la compra');
+      const priceNote = failedPriceUpdates.length === 0 && cart.some(i => i.customPrice !== undefined && i.customPrice !== i.product.cost_price_usd)
+        ? 'Los precios fueron actualizados. '
+        : '';
+      toast.error(`${priceNote}Error al registrar la compra.`);
     }
   };
 
