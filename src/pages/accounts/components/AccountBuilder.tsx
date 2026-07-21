@@ -1,10 +1,11 @@
 import { useState, useMemo } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { 
-  v1ProductListOptions, 
+import {
+  v1ProductListOptions,
   v1ProvidersListOptions,
   v1MeasurementListOptions,
-  v1ProductRetrieveOptions
+  v1ProductRetrieveOptions,
+  v1CategoryListOptions
 } from '../../../client/@tanstack/react-query.gen';
 import { useExchangeRates } from '../../../hooks/useExchangeRates';
 import { useBranch } from '../../../context/BranchContext';
@@ -12,7 +13,7 @@ import { ShoppingCart, Plus, Minus, Trash2, Search, Truck, Edit2, ArrowRight, La
 import { toast } from 'sonner';
 import { Combobox, ComboboxButton, ComboboxInput, ComboboxOption, ComboboxOptions } from '@headlessui/react';
 import { motion, AnimatePresence } from 'framer-motion';
-import type { ProductMaster, Provider, MeasurementUnit } from '../../../client/types.gen';
+import type { ProductMaster, Provider, MeasurementUnit, Category } from '../../../client/types.gen';
 import Modal from '../../../components/ui/Modal';
 import SimpleTooltip from '../../../components/ui/SimpleTooltip';
 import ProductForm from '../../../components/inventory/ProductForm';
@@ -51,18 +52,25 @@ export default function AccountBuilder() {
 
   const { data: products = [] } = useQuery(v1ProductListOptions());
   const { data: providers = [], isLoading: loadingProviders } = useQuery(v1ProvidersListOptions());
+  const { data: categories = [] } = useQuery(v1CategoryListOptions());
   const { rates } = useExchangeRates();
   const { data: measurementUnits = [] } = useQuery(v1MeasurementListOptions());
   const { branches, isLoading: loadingBranches } = useBranch();
 
-
+  const getCategoryName = (id?: string | null) => {
+    if (!id) return '';
+    const cat = (categories as Category[]).find((c) => c.id === id);
+    return cat?.name || '';
+  };
 
   const filteredProducts = useMemo(() => {
-    return products.filter((p: ProductMaster) => 
-      p.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-      (p.sku && p.sku.toLowerCase().includes(searchTerm.toLowerCase()))
+    const term = searchTerm.toLowerCase();
+    return products.filter((p: ProductMaster) =>
+      p.name.toLowerCase().includes(term) ||
+      (p.sku && p.sku.toLowerCase().includes(term)) ||
+      getCategoryName(p.category).toLowerCase().includes(term)
     );
-  }, [products, searchTerm]);
+  }, [products, searchTerm, categories]);
 
   const filteredProviders = useMemo(() => {
     return providerQuery === ''

@@ -8,18 +8,19 @@ import {
   v1MeasurementListOptions,
   v1ProductRetrieveOptions,
   v1ProductListQueryKey,
+  v1CategoryListOptions,
 } from '../../../client/@tanstack/react-query.gen';
 import { v1ProductPartialUpdate } from '../../../client/sdk.gen';
 import { useExchangeRates } from '../../../hooks/useExchangeRates';
 import { useBranch } from '../../../context/BranchContext';
-import { 
-  ShoppingCart, Plus, Minus, Trash2, Search, Truck, 
+import {
+  ShoppingCart, Plus, Minus, Trash2, Search, Truck,
   ArrowRight, Layers, X, ChevronRight, Info, PlusCircle, UserPlus
 } from 'lucide-react';
 import { toast } from 'sonner';
-import type { 
-  ProductMaster, AccountRequestWritable, Provider, 
-  Account, MeasurementUnit 
+import type {
+  ProductMaster, AccountRequestWritable, Provider,
+  Account, MeasurementUnit, Category
 } from '../../../client/types.gen';
 import Modal from '../../../components/ui/Modal';
 import PaymentForm from './PaymentForm';
@@ -60,7 +61,8 @@ export default function MobileAccountBuilder() {
 
   const { data: products = [] } = useQuery(v1ProductListOptions());
   const { data: providers = [] } = useQuery(v1ProvidersListOptions());
-  
+  const { data: categories = [] } = useQuery(v1CategoryListOptions());
+
   const { rates } = useExchangeRates();
   const { data: measurementUnits = [] } = useQuery(v1MeasurementListOptions());
 
@@ -80,13 +82,21 @@ export default function MobileAccountBuilder() {
     }
   });
 
+  const getCategoryName = (id?: string | null) => {
+    if (!id) return '';
+    const cat = (categories as Category[]).find((c) => c.id === id);
+    return cat?.name || '';
+  };
+
   const filteredProducts = useMemo(() => {
     if (!searchTerm) return products.slice(0, 20);
-    return products.filter((p: ProductMaster) => 
-      p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      p.sku?.toLowerCase().includes(searchTerm.toLowerCase())
+    const term = searchTerm.toLowerCase();
+    return products.filter((p: ProductMaster) =>
+      p.name.toLowerCase().includes(term) ||
+      p.sku?.toLowerCase().includes(term) ||
+      getCategoryName(p.category).toLowerCase().includes(term)
     ).slice(0, 50);
-  }, [products, searchTerm]);
+  }, [products, searchTerm, categories]);
 
   const total = useMemo(() => {
     return cart.reduce((acc: number, item: CartItem) => {
