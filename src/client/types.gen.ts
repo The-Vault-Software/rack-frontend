@@ -122,6 +122,15 @@ export type AdjustmentDetailItem = {
  */
 export type AdjustmentTypeEnum = 'INITIAL_LOAD' | 'MANUAL_INCREASE' | 'MANUAL_DECREASE' | 'COUNT_CORRECTION' | 'DAMAGE' | 'SAMPLE' | 'TRANSFER_IN' | 'TRANSFER_OUT';
 
+/**
+ * Recomputed state of a sale touched by a reversal.
+ */
+export type AffectedSale = {
+    readonly sale_id: string;
+    readonly payment_status: string;
+    readonly total_paid: string;
+};
+
 export type Branch = {
     name: string;
     address?: string | null;
@@ -198,6 +207,32 @@ export type CustomerRequest = {
     changed_by?: number | null;
 };
 
+/**
+ * Read-only serializer for listing a customer's payments across every sale.
+ *
+ * Denormalizes the sale it belongs to, because the nested per-sale payment
+ * endpoint never exposed it and the client has no other way to tell which sale
+ * a payment affected.
+ */
+export type CustomerSalePaymentList = {
+    readonly id: string;
+    readonly sale: string;
+    readonly sale_seq_number: number;
+    readonly customer: string;
+    readonly payment_date: string;
+    readonly currency: string;
+    readonly payment_method: string;
+    readonly REF: string | null;
+    readonly discount: string;
+    readonly total_amount_usd: string;
+    readonly total_amount_ves: string;
+    readonly exchange_rate: string | null;
+    readonly reverses: string | null;
+    readonly reversal_reason: string | null;
+    readonly is_reversed: boolean;
+    readonly created_at: string;
+};
+
 export type InventoryAdjustmentDetailRead = {
     readonly id: string;
     readonly seq_number: number;
@@ -249,6 +284,13 @@ export type PaginatedAccountListList = {
     next?: string | null;
     previous?: string | null;
     results: Array<AccountList>;
+};
+
+export type PaginatedCustomerSalePaymentListList = {
+    count: number;
+    next?: string | null;
+    previous?: string | null;
+    results: Array<CustomerSalePaymentList>;
 };
 
 export type PaginatedInventoryAdjustmentListList = {
@@ -496,6 +538,7 @@ export type SaleDetail = {
     readonly product_sku: string;
     quantity: string;
     readonly unit_price: string;
+    readonly suggested_price_usd: string;
 };
 
 /**
@@ -534,11 +577,15 @@ export type SalePayment = {
     currency: string;
     payment_method: string;
     readonly payment_date: string;
+    REF?: string | null;
     discount?: string;
     readonly total_amount_usd: string;
     readonly total_amount_ves: string;
     readonly exchange_rate: string | null;
     readonly created_at: string;
+    readonly reverses: string | null;
+    readonly reversal_reason: string | null;
+    readonly is_reversed: boolean;
 };
 
 /**
@@ -548,7 +595,33 @@ export type SalePayment = {
 export type SalePaymentRequest = {
     currency: string;
     payment_method: string;
+    REF?: string | null;
     discount?: string;
+};
+
+/**
+ * Read serializer for the reversal response.
+ *
+ * Returns the recomputed sale state alongside the created rows so the client
+ * can refresh without a second round trip.
+ */
+export type SalePaymentReversalResult = {
+    readonly reversals: Array<CustomerSalePaymentList>;
+    readonly affected_sales: Array<AffectedSale>;
+};
+
+/**
+ * Write serializer for reversing one or more payments in a single action.
+ */
+export type SalePaymentReverseRequest = {
+    /**
+     * IDs of the payments to reverse, at most 100. Applied all-or-nothing.
+     */
+    payment_ids: Array<string>;
+    /**
+     * Optional note stored on every compensating payment created.
+     */
+    reason?: string;
 };
 
 /**
@@ -679,6 +752,13 @@ export type PaginatedAccountListListWritable = {
     results: Array<unknown>;
 };
 
+export type PaginatedCustomerSalePaymentListListWritable = {
+    count: number;
+    next?: string | null;
+    previous?: string | null;
+    results: Array<unknown>;
+};
+
 export type PaginatedInventoryAdjustmentListListWritable = {
     count: number;
     next?: string | null;
@@ -803,6 +883,7 @@ export type SaleDetailWritable = {
 export type SalePaymentWritable = {
     currency: string;
     payment_method: string;
+    REF?: string | null;
     discount?: string;
 };
 
@@ -813,6 +894,7 @@ export type SalePaymentWritable = {
 export type SalePaymentRequestWritable = {
     currency: string;
     payment_method: string;
+    REF?: string | null;
     discount?: string;
     /**
      * Payment amount in the specified currency
@@ -1717,6 +1799,60 @@ export type V1RegisterCreateResponses = {
 };
 
 export type V1RegisterCreateResponse = V1RegisterCreateResponses[keyof V1RegisterCreateResponses];
+
+export type V1CustomerSalePaymentsListData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Filtrar por el cliente dueño de la venta.
+         */
+        customer_id?: string;
+        /**
+         * A page number within the paginated result set.
+         */
+        page?: number;
+        /**
+         * Number of results to return per page.
+         */
+        page_size?: number;
+        /**
+         * Filtrar por una venta puntual.
+         */
+        sale_id?: string;
+    };
+    url: '/v1/sale-payments/';
+};
+
+export type V1CustomerSalePaymentsListResponses = {
+    200: PaginatedCustomerSalePaymentListList;
+};
+
+export type V1CustomerSalePaymentsListResponse = V1CustomerSalePaymentsListResponses[keyof V1CustomerSalePaymentsListResponses];
+
+export type V1SalePaymentsReverseCreateData = {
+    body: SalePaymentReverseRequest;
+    path?: never;
+    query?: never;
+    url: '/v1/sale-payments/reverse/';
+};
+
+export type V1SalePaymentsReverseCreateErrors = {
+    /**
+     * Algún pago ya fue devuelto, o es una devolución.
+     */
+    400: unknown;
+    /**
+     * Algún pago no existe o no pertenece a la compañía.
+     */
+    404: unknown;
+};
+
+export type V1SalePaymentsReverseCreateResponses = {
+    201: SalePaymentReversalResult;
+};
+
+export type V1SalePaymentsReverseCreateResponse = V1SalePaymentsReverseCreateResponses[keyof V1SalePaymentsReverseCreateResponses];
 
 export type V1SalesListData = {
     body?: never;

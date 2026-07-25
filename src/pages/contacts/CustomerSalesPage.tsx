@@ -1,7 +1,7 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import SalesHistory from '../sales/components/SalesHistory';
-import { ArrowLeft, User, MessageCircle, Loader2, PhoneOff, CheckCircle2, DollarSign } from 'lucide-react';
+import { ArrowLeft, User, MessageCircle, Loader2, PhoneOff, CheckCircle2, DollarSign, Undo2 } from 'lucide-react';
 import { v1SalesRetrieve } from '../../client/sdk.gen';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { SaleList, Sale } from '../../client/types.gen';
@@ -15,6 +15,7 @@ import Modal from '../../components/ui/Modal';
 import { useQueryClient, useMutation } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { useExchangeRates } from '../../hooks/useExchangeRates';
+import ReversePaymentsModal from './components/ReversePaymentsModal';
 
 export default function CustomerSalesPage() {
   const { id } = useParams<{ id: string }>();
@@ -29,6 +30,7 @@ export default function CustomerSalesPage() {
 
   const [isGeneratingSummary, setIsGeneratingSummary] = useState(false);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [isReverseModalOpen, setIsReverseModalOpen] = useState(false);
   const queryClient = useQueryClient();
   const { rates } = useExchangeRates();
 
@@ -230,6 +232,18 @@ export default function CustomerSalesPage() {
                 <motion.button
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
+                  onClick={() => setIsReverseModalOpen(true)}
+                  aria-label="Devolver un pago registrado de este cliente"
+                  title="Devolver un pago registrado de este cliente"
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg border border-red-200 bg-white text-red-700 shadow-sm transition-all active:scale-95 hover:bg-red-50"
+                >
+                  <Undo2 className="h-5 w-5" />
+                  <span className="font-semibold text-sm">Devolver Pago</span>
+                </motion.button>
+
+                <motion.button
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
                   disabled={isGeneratingSummary || !customer.phone || pendingSalesCount === 0}
                   onClick={handleSendWhatsAppSummary}
                   title={
@@ -294,6 +308,13 @@ export default function CustomerSalesPage() {
           onSubmitOverride={handleBulkPayment}
         />
       </Modal>
+
+      <ReversePaymentsModal
+        isOpen={isReverseModalOpen}
+        onClose={() => setIsReverseModalOpen(false)}
+        customerId={id!}
+        customerName={customer?.name}
+      />
 
       {/* Debt Summary Card */}
       {!isLoadingSales && (

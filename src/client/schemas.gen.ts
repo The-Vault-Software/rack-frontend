@@ -394,6 +394,32 @@ export const AdjustmentTypeEnumSchema = {
     description: '* `INITIAL_LOAD` - Carga inicial\n* `MANUAL_INCREASE` - Incremento manual\n* `MANUAL_DECREASE` - Decremento manual\n* `COUNT_CORRECTION` - Corrección por conteo físico\n* `DAMAGE` - Daño / merma\n* `SAMPLE` - Muestra\n* `TRANSFER_IN` - Entrada por traslado\n* `TRANSFER_OUT` - Salida por traslado'
 } as const;
 
+export const AffectedSaleSchema = {
+    type: 'object',
+    description: 'Recomputed state of a sale touched by a reversal.',
+    properties: {
+        sale_id: {
+            type: 'string',
+            readOnly: true
+        },
+        payment_status: {
+            type: 'string',
+            readOnly: true
+        },
+        total_paid: {
+            type: 'string',
+            format: 'decimal',
+            pattern: '^-?\\d{0,10}(?:\\.\\d{0,2})?$',
+            readOnly: true
+        }
+    },
+    required: [
+        'payment_status',
+        'sale_id',
+        'total_paid'
+    ]
+} as const;
+
 export const BranchSchema = {
     type: 'object',
     properties: {
@@ -727,6 +753,111 @@ export const CustomerRequestSchema = {
     ]
 } as const;
 
+export const CustomerSalePaymentListSchema = {
+    type: 'object',
+    description: 'Read-only serializer for listing a customer\'s payments across every sale.\n\nDenormalizes the sale it belongs to, because the nested per-sale payment\nendpoint never exposed it and the client has no other way to tell which sale\na payment affected.',
+    properties: {
+        id: {
+            type: 'string',
+            format: 'uuid',
+            readOnly: true
+        },
+        sale: {
+            type: 'string',
+            format: 'uuid',
+            readOnly: true
+        },
+        sale_seq_number: {
+            type: 'integer',
+            readOnly: true
+        },
+        customer: {
+            type: 'string',
+            readOnly: true
+        },
+        payment_date: {
+            type: 'string',
+            format: 'date-time',
+            readOnly: true
+        },
+        currency: {
+            type: 'string',
+            readOnly: true
+        },
+        payment_method: {
+            type: 'string',
+            readOnly: true
+        },
+        REF: {
+            type: 'string',
+            readOnly: true,
+            nullable: true
+        },
+        discount: {
+            type: 'string',
+            format: 'decimal',
+            pattern: '^-?\\d{0,8}(?:\\.\\d{0,2})?$',
+            readOnly: true
+        },
+        total_amount_usd: {
+            type: 'string',
+            format: 'decimal',
+            pattern: '^-?\\d{0,10}(?:\\.\\d{0,2})?$',
+            readOnly: true
+        },
+        total_amount_ves: {
+            type: 'string',
+            format: 'decimal',
+            pattern: '^-?\\d{0,10}(?:\\.\\d{0,2})?$',
+            readOnly: true
+        },
+        exchange_rate: {
+            type: 'string',
+            format: 'uuid',
+            readOnly: true,
+            nullable: true
+        },
+        reverses: {
+            type: 'string',
+            format: 'uuid',
+            readOnly: true,
+            nullable: true
+        },
+        reversal_reason: {
+            type: 'string',
+            readOnly: true,
+            nullable: true
+        },
+        is_reversed: {
+            type: 'boolean',
+            readOnly: true
+        },
+        created_at: {
+            type: 'string',
+            format: 'date-time',
+            readOnly: true
+        }
+    },
+    required: [
+        'REF',
+        'created_at',
+        'currency',
+        'customer',
+        'discount',
+        'exchange_rate',
+        'id',
+        'is_reversed',
+        'payment_date',
+        'payment_method',
+        'reversal_reason',
+        'reverses',
+        'sale',
+        'sale_seq_number',
+        'total_amount_usd',
+        'total_amount_ves'
+    ]
+} as const;
+
 export const InventoryAdjustmentDetailReadSchema = {
     type: 'object',
     properties: {
@@ -969,6 +1100,38 @@ export const PaginatedAccountListListSchema = {
             type: 'array',
             items: {
                 $ref: '#/components/schemas/AccountList'
+            }
+        }
+    }
+} as const;
+
+export const PaginatedCustomerSalePaymentListListSchema = {
+    type: 'object',
+    required: [
+        'count',
+        'results'
+    ],
+    properties: {
+        count: {
+            type: 'integer',
+            example: 123
+        },
+        next: {
+            type: 'string',
+            nullable: true,
+            format: 'uri',
+            example: 'http://api.example.org/accounts/?page=4'
+        },
+        previous: {
+            type: 'string',
+            nullable: true,
+            format: 'uri',
+            example: 'http://api.example.org/accounts/?page=2'
+        },
+        results: {
+            type: 'array',
+            items: {
+                $ref: '#/components/schemas/CustomerSalePaymentList'
             }
         }
     }
@@ -1822,6 +1985,12 @@ export const SaleDetailSchema = {
             format: 'decimal',
             pattern: '^-?\\d{0,10}(?:\\.\\d{0,2})?$',
             readOnly: true
+        },
+        suggested_price_usd: {
+            type: 'string',
+            format: 'decimal',
+            pattern: '^-?\\d{0,10}(?:\\.\\d{0,2})?$',
+            readOnly: true
         }
     },
     required: [
@@ -1830,6 +1999,7 @@ export const SaleDetailSchema = {
         'product_name',
         'product_sku',
         'quantity',
+        'suggested_price_usd',
         'unit_price'
     ]
 } as const;
@@ -1952,6 +2122,11 @@ export const SalePaymentSchema = {
             format: 'date-time',
             readOnly: true
         },
+        REF: {
+            type: 'string',
+            nullable: true,
+            maxLength: 100
+        },
         discount: {
             type: 'string',
             format: 'decimal',
@@ -1979,6 +2154,21 @@ export const SalePaymentSchema = {
             type: 'string',
             format: 'date-time',
             readOnly: true
+        },
+        reverses: {
+            type: 'string',
+            format: 'uuid',
+            readOnly: true,
+            nullable: true
+        },
+        reversal_reason: {
+            type: 'string',
+            readOnly: true,
+            nullable: true
+        },
+        is_reversed: {
+            type: 'boolean',
+            readOnly: true
         }
     },
     required: [
@@ -1986,8 +2176,11 @@ export const SalePaymentSchema = {
         'currency',
         'exchange_rate',
         'id',
+        'is_reversed',
         'payment_date',
         'payment_method',
+        'reversal_reason',
+        'reverses',
         'total_amount_usd',
         'total_amount_ves'
     ]
@@ -2006,6 +2199,11 @@ export const SalePaymentRequestSchema = {
             type: 'string',
             minLength: 1
         },
+        REF: {
+            type: 'string',
+            nullable: true,
+            maxLength: 100
+        },
         discount: {
             type: 'string',
             format: 'decimal',
@@ -2015,6 +2213,55 @@ export const SalePaymentRequestSchema = {
     required: [
         'currency',
         'payment_method'
+    ]
+} as const;
+
+export const SalePaymentReversalResultSchema = {
+    type: 'object',
+    description: 'Read serializer for the reversal response.\n\nReturns the recomputed sale state alongside the created rows so the client\ncan refresh without a second round trip.',
+    properties: {
+        reversals: {
+            type: 'array',
+            items: {
+                $ref: '#/components/schemas/CustomerSalePaymentList'
+            },
+            readOnly: true
+        },
+        affected_sales: {
+            type: 'array',
+            items: {
+                $ref: '#/components/schemas/AffectedSale'
+            },
+            readOnly: true
+        }
+    },
+    required: [
+        'affected_sales',
+        'reversals'
+    ]
+} as const;
+
+export const SalePaymentReverseRequestSchema = {
+    type: 'object',
+    description: 'Write serializer for reversing one or more payments in a single action.',
+    properties: {
+        payment_ids: {
+            type: 'array',
+            items: {
+                type: 'string',
+                minLength: 1
+            },
+            description: 'IDs of the payments to reverse, at most 100. Applied all-or-nothing.',
+            maxItems: 100
+        },
+        reason: {
+            type: 'string',
+            description: 'Optional note stored on every compensating payment created.',
+            maxLength: 255
+        }
+    },
+    required: [
+        'payment_ids'
     ]
 } as const;
 
@@ -2352,6 +2599,35 @@ export const MeasurementUnitWritableSchema = {
 } as const;
 
 export const PaginatedAccountListListWritableSchema = {
+    type: 'object',
+    required: [
+        'count',
+        'results'
+    ],
+    properties: {
+        count: {
+            type: 'integer',
+            example: 123
+        },
+        next: {
+            type: 'string',
+            nullable: true,
+            format: 'uri',
+            example: 'http://api.example.org/accounts/?page=4'
+        },
+        previous: {
+            type: 'string',
+            nullable: true,
+            format: 'uri',
+            example: 'http://api.example.org/accounts/?page=2'
+        },
+        results: {
+            type: 'array'
+        }
+    }
+} as const;
+
+export const PaginatedCustomerSalePaymentListListWritableSchema = {
     type: 'object',
     required: [
         'count',
@@ -2740,6 +3016,11 @@ export const SalePaymentWritableSchema = {
         payment_method: {
             type: 'string'
         },
+        REF: {
+            type: 'string',
+            nullable: true,
+            maxLength: 100
+        },
         discount: {
             type: 'string',
             format: 'decimal',
@@ -2764,6 +3045,11 @@ export const SalePaymentRequestWritableSchema = {
         payment_method: {
             type: 'string',
             minLength: 1
+        },
+        REF: {
+            type: 'string',
+            nullable: true,
+            maxLength: 100
         },
         discount: {
             type: 'string',
