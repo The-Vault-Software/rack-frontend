@@ -3,8 +3,8 @@
 import { type DefaultError, type InfiniteData, infiniteQueryOptions, queryOptions, type UseMutationOptions } from '@tanstack/react-query';
 
 import { client } from '../client.gen';
-import { type Options, v1AccountsCreate, v1AccountsDestroy, v1AccountsList, v1AccountsPartialUpdate, v1AccountsPaymentsCreate, v1AccountsPaymentsList, v1AccountsRetrieve, v1AccountsUpdate, v1AdjustmentsCreate, v1AdjustmentsList, v1AdjustmentsRetrieve, v1BranchCreate, v1BranchDestroy, v1BranchList, v1BranchPartialUpdate, v1BranchRetrieve, v1BranchUpdate, v1CategoryCreate, v1CategoryDestroy, v1CategoryList, v1CategoryPartialUpdate, v1CategoryRetrieve, v1CategoryUpdate, v1CompanyCreate, v1CompanyPartialUpdate, v1CompanyRetrieve, v1CompanyUpdate, v1CustomersCreate, v1CustomersDestroy, v1CustomersList, v1CustomersPartialUpdate, v1CustomersRetrieve, v1CustomersUpdate, v1ExchangeRatesHistoryRetrieve, v1ExchangeRatesRetrieve, v1ExchangeRatesTodayRetrieve, v1LoginCreate, v1LogoutCreate, v1MeasurementCreate, v1MeasurementDestroy, v1MeasurementList, v1MeasurementPartialUpdate, v1MeasurementRetrieve, v1MeasurementUpdate, v1ProductBranchStockList, v1ProductCreate, v1ProductDestroy, v1ProductList, v1ProductPartialUpdate, v1ProductRetrieve, v1ProductUpdate, v1ProvidersCreate, v1ProvidersDestroy, v1ProvidersList, v1ProvidersPartialUpdate, v1ProvidersRetrieve, v1ProvidersUpdate, v1RefreshCreate, v1RegisterCreate, v1SalesCreate, v1SalesDestroy, v1SalesList, v1SalesPartialUpdate, v1SalesPaymentsCreate, v1SalesPaymentsList, v1SalesRetrieve, v1SalesUpdate, v1UserBranchesRetrieve, v1UserBranchesUpdate, v1UserInfoPartialUpdate, v1UserInfoRetrieve, v1UserInfoUpdate } from '../sdk.gen';
-import type { V1AccountsCreateData, V1AccountsCreateResponse, V1AccountsDestroyData, V1AccountsDestroyResponse, V1AccountsListData, V1AccountsListResponse, V1AccountsPartialUpdateData, V1AccountsPartialUpdateResponse, V1AccountsPaymentsCreateData, V1AccountsPaymentsCreateResponse, V1AccountsPaymentsListData, V1AccountsPaymentsListResponse, V1AccountsRetrieveData, V1AccountsRetrieveResponse, V1AccountsUpdateData, V1AccountsUpdateResponse, V1AdjustmentsCreateData, V1AdjustmentsCreateResponse, V1AdjustmentsListData, V1AdjustmentsListResponse, V1AdjustmentsRetrieveData, V1AdjustmentsRetrieveResponse, V1BranchCreateData, V1BranchCreateResponse, V1BranchDestroyData, V1BranchDestroyResponse, V1BranchListData, V1BranchListResponse, V1BranchPartialUpdateData, V1BranchPartialUpdateResponse, V1BranchRetrieveData, V1BranchRetrieveResponse, V1BranchUpdateData, V1BranchUpdateResponse, V1CategoryCreateData, V1CategoryCreateResponse, V1CategoryDestroyData, V1CategoryDestroyResponse, V1CategoryListData, V1CategoryListResponse, V1CategoryPartialUpdateData, V1CategoryPartialUpdateResponse, V1CategoryRetrieveData, V1CategoryRetrieveResponse, V1CategoryUpdateData, V1CategoryUpdateResponse, V1CompanyCreateData, V1CompanyCreateResponse, V1CompanyPartialUpdateData, V1CompanyPartialUpdateResponse, V1CompanyRetrieveData, V1CompanyRetrieveResponse, V1CompanyUpdateData, V1CompanyUpdateResponse, V1CustomersCreateData, V1CustomersCreateResponse, V1CustomersDestroyData, V1CustomersDestroyResponse, V1CustomersListData, V1CustomersListResponse, V1CustomersPartialUpdateData, V1CustomersPartialUpdateResponse, V1CustomersRetrieveData, V1CustomersRetrieveResponse, V1CustomersUpdateData, V1CustomersUpdateResponse, V1ExchangeRatesHistoryRetrieveData, V1ExchangeRatesRetrieveData, V1ExchangeRatesTodayRetrieveData, V1LoginCreateData, V1LogoutCreateData, V1MeasurementCreateData, V1MeasurementCreateResponse, V1MeasurementDestroyData, V1MeasurementDestroyResponse, V1MeasurementListData, V1MeasurementListResponse, V1MeasurementPartialUpdateData, V1MeasurementPartialUpdateResponse, V1MeasurementRetrieveData, V1MeasurementRetrieveResponse, V1MeasurementUpdateData, V1MeasurementUpdateResponse, V1ProductBranchStockListData, V1ProductBranchStockListResponse, V1ProductCreateData, V1ProductCreateResponse, V1ProductDestroyData, V1ProductDestroyResponse, V1ProductListData, V1ProductListResponse, V1ProductPartialUpdateData, V1ProductPartialUpdateResponse, V1ProductRetrieveData, V1ProductRetrieveResponse, V1ProductUpdateData, V1ProductUpdateResponse, V1ProvidersCreateData, V1ProvidersCreateResponse, V1ProvidersDestroyData, V1ProvidersDestroyResponse, V1ProvidersListData, V1ProvidersListResponse, V1ProvidersPartialUpdateData, V1ProvidersPartialUpdateResponse, V1ProvidersRetrieveData, V1ProvidersRetrieveResponse, V1ProvidersUpdateData, V1ProvidersUpdateResponse, V1RefreshCreateData, V1RefreshCreateResponse, V1RegisterCreateData, V1RegisterCreateResponse, V1SalesCreateData, V1SalesCreateResponse, V1SalesDestroyData, V1SalesDestroyResponse, V1SalesListData, V1SalesListResponse, V1SalesPartialUpdateData, V1SalesPartialUpdateResponse, V1SalesPaymentsCreateData, V1SalesPaymentsCreateResponse, V1SalesPaymentsListData, V1SalesPaymentsListResponse, V1SalesRetrieveData, V1SalesRetrieveResponse, V1SalesUpdateData, V1SalesUpdateResponse, V1UserBranchesRetrieveData, V1UserBranchesUpdateData, V1UserInfoPartialUpdateData, V1UserInfoPartialUpdateResponse, V1UserInfoRetrieveData, V1UserInfoRetrieveResponse, V1UserInfoUpdateData, V1UserInfoUpdateResponse } from '../types.gen';
+import { type Options, v1AccountsCreate, v1AccountsDestroy, v1AccountsList, v1AccountsPartialUpdate, v1AccountsPaymentsCreate, v1AccountsPaymentsList, v1AccountsRetrieve, v1AccountsUpdate, v1AdjustmentsCreate, v1AdjustmentsList, v1AdjustmentsRetrieve, v1BranchCreate, v1BranchDestroy, v1BranchList, v1BranchPartialUpdate, v1BranchRetrieve, v1BranchUpdate, v1CategoryCreate, v1CategoryDestroy, v1CategoryList, v1CategoryPartialUpdate, v1CategoryRetrieve, v1CategoryUpdate, v1CompanyCreate, v1CompanyPartialUpdate, v1CompanyRetrieve, v1CompanyUpdate, v1CustomerSalePaymentsList, v1CustomersCreate, v1CustomersDestroy, v1CustomersList, v1CustomersPartialUpdate, v1CustomersRetrieve, v1CustomersUpdate, v1ExchangeRatesHistoryRetrieve, v1ExchangeRatesRetrieve, v1ExchangeRatesTodayRetrieve, v1LoginCreate, v1LogoutCreate, v1MeasurementCreate, v1MeasurementDestroy, v1MeasurementList, v1MeasurementPartialUpdate, v1MeasurementRetrieve, v1MeasurementUpdate, v1ProductBranchStockList, v1ProductCreate, v1ProductDestroy, v1ProductList, v1ProductPartialUpdate, v1ProductRetrieve, v1ProductUpdate, v1ProvidersCreate, v1ProvidersDestroy, v1ProvidersList, v1ProvidersPartialUpdate, v1ProvidersRetrieve, v1ProvidersUpdate, v1RefreshCreate, v1RegisterCreate, v1SalePaymentsReverseCreate, v1SalesCreate, v1SalesDestroy, v1SalesList, v1SalesPartialUpdate, v1SalesPaymentsCreate, v1SalesPaymentsList, v1SalesRetrieve, v1SalesUpdate, v1UserBranchesRetrieve, v1UserBranchesUpdate, v1UserInfoPartialUpdate, v1UserInfoRetrieve, v1UserInfoUpdate } from '../sdk.gen';
+import type { V1AccountsCreateData, V1AccountsCreateResponse, V1AccountsDestroyData, V1AccountsDestroyResponse, V1AccountsListData, V1AccountsListResponse, V1AccountsPartialUpdateData, V1AccountsPartialUpdateResponse, V1AccountsPaymentsCreateData, V1AccountsPaymentsCreateResponse, V1AccountsPaymentsListData, V1AccountsPaymentsListResponse, V1AccountsRetrieveData, V1AccountsRetrieveResponse, V1AccountsUpdateData, V1AccountsUpdateResponse, V1AdjustmentsCreateData, V1AdjustmentsCreateResponse, V1AdjustmentsListData, V1AdjustmentsListResponse, V1AdjustmentsRetrieveData, V1AdjustmentsRetrieveResponse, V1BranchCreateData, V1BranchCreateResponse, V1BranchDestroyData, V1BranchDestroyResponse, V1BranchListData, V1BranchListResponse, V1BranchPartialUpdateData, V1BranchPartialUpdateResponse, V1BranchRetrieveData, V1BranchRetrieveResponse, V1BranchUpdateData, V1BranchUpdateResponse, V1CategoryCreateData, V1CategoryCreateResponse, V1CategoryDestroyData, V1CategoryDestroyResponse, V1CategoryListData, V1CategoryListResponse, V1CategoryPartialUpdateData, V1CategoryPartialUpdateResponse, V1CategoryRetrieveData, V1CategoryRetrieveResponse, V1CategoryUpdateData, V1CategoryUpdateResponse, V1CompanyCreateData, V1CompanyCreateResponse, V1CompanyPartialUpdateData, V1CompanyPartialUpdateResponse, V1CompanyRetrieveData, V1CompanyRetrieveResponse, V1CompanyUpdateData, V1CompanyUpdateResponse, V1CustomerSalePaymentsListData, V1CustomerSalePaymentsListResponse, V1CustomersCreateData, V1CustomersCreateResponse, V1CustomersDestroyData, V1CustomersDestroyResponse, V1CustomersListData, V1CustomersListResponse, V1CustomersPartialUpdateData, V1CustomersPartialUpdateResponse, V1CustomersRetrieveData, V1CustomersRetrieveResponse, V1CustomersUpdateData, V1CustomersUpdateResponse, V1ExchangeRatesHistoryRetrieveData, V1ExchangeRatesRetrieveData, V1ExchangeRatesTodayRetrieveData, V1LoginCreateData, V1LogoutCreateData, V1MeasurementCreateData, V1MeasurementCreateResponse, V1MeasurementDestroyData, V1MeasurementDestroyResponse, V1MeasurementListData, V1MeasurementListResponse, V1MeasurementPartialUpdateData, V1MeasurementPartialUpdateResponse, V1MeasurementRetrieveData, V1MeasurementRetrieveResponse, V1MeasurementUpdateData, V1MeasurementUpdateResponse, V1ProductBranchStockListData, V1ProductBranchStockListResponse, V1ProductCreateData, V1ProductCreateResponse, V1ProductDestroyData, V1ProductDestroyResponse, V1ProductListData, V1ProductListResponse, V1ProductPartialUpdateData, V1ProductPartialUpdateResponse, V1ProductRetrieveData, V1ProductRetrieveResponse, V1ProductUpdateData, V1ProductUpdateResponse, V1ProvidersCreateData, V1ProvidersCreateResponse, V1ProvidersDestroyData, V1ProvidersDestroyResponse, V1ProvidersListData, V1ProvidersListResponse, V1ProvidersPartialUpdateData, V1ProvidersPartialUpdateResponse, V1ProvidersRetrieveData, V1ProvidersRetrieveResponse, V1ProvidersUpdateData, V1ProvidersUpdateResponse, V1RefreshCreateData, V1RefreshCreateResponse, V1RegisterCreateData, V1RegisterCreateResponse, V1SalePaymentsReverseCreateData, V1SalePaymentsReverseCreateResponse, V1SalesCreateData, V1SalesCreateResponse, V1SalesDestroyData, V1SalesDestroyResponse, V1SalesListData, V1SalesListResponse, V1SalesPartialUpdateData, V1SalesPartialUpdateResponse, V1SalesPaymentsCreateData, V1SalesPaymentsCreateResponse, V1SalesPaymentsListData, V1SalesPaymentsListResponse, V1SalesRetrieveData, V1SalesRetrieveResponse, V1SalesUpdateData, V1SalesUpdateResponse, V1UserBranchesRetrieveData, V1UserBranchesUpdateData, V1UserInfoPartialUpdateData, V1UserInfoPartialUpdateResponse, V1UserInfoRetrieveData, V1UserInfoRetrieveResponse, V1UserInfoUpdateData, V1UserInfoUpdateResponse } from '../types.gen';
 
 export type QueryKey<TOptions extends Options> = [
     Pick<TOptions, 'baseUrl' | 'body' | 'headers' | 'path' | 'query'> & {
@@ -1055,6 +1055,86 @@ export const v1RegisterCreateMutation = (options?: Partial<Options<V1RegisterCre
     const mutationOptions: UseMutationOptions<V1RegisterCreateResponse, DefaultError, Options<V1RegisterCreateData>> = {
         mutationFn: async (fnOptions) => {
             const { data } = await v1RegisterCreate({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const v1CustomerSalePaymentsListQueryKey = (options?: Options<V1CustomerSalePaymentsListData>) => createQueryKey('v1CustomerSalePaymentsList', options);
+
+/**
+ * Listar pagos de ventas
+ *
+ * Lista los pagos de ventas de la compañía del usuario, atravesando todas las ventas. Filtrar por `customer_id` devuelve el historial de pagos de un cliente, que es la única forma de ver juntos los pagos que se registraron como un mismo cobro.
+ *
+ * Incluye las devoluciones, que aparecen con montos negativos y con `reverses` apuntando al pago que cancelan.
+ */
+export const v1CustomerSalePaymentsListOptions = (options?: Options<V1CustomerSalePaymentsListData>) => queryOptions<V1CustomerSalePaymentsListResponse, DefaultError, V1CustomerSalePaymentsListResponse, ReturnType<typeof v1CustomerSalePaymentsListQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await v1CustomerSalePaymentsList({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: v1CustomerSalePaymentsListQueryKey(options)
+});
+
+export const v1CustomerSalePaymentsListInfiniteQueryKey = (options?: Options<V1CustomerSalePaymentsListData>): QueryKey<Options<V1CustomerSalePaymentsListData>> => createQueryKey('v1CustomerSalePaymentsList', options, true);
+
+/**
+ * Listar pagos de ventas
+ *
+ * Lista los pagos de ventas de la compañía del usuario, atravesando todas las ventas. Filtrar por `customer_id` devuelve el historial de pagos de un cliente, que es la única forma de ver juntos los pagos que se registraron como un mismo cobro.
+ *
+ * Incluye las devoluciones, que aparecen con montos negativos y con `reverses` apuntando al pago que cancelan.
+ */
+export const v1CustomerSalePaymentsListInfiniteOptions = (options?: Options<V1CustomerSalePaymentsListData>) => infiniteQueryOptions<V1CustomerSalePaymentsListResponse, DefaultError, InfiniteData<V1CustomerSalePaymentsListResponse>, QueryKey<Options<V1CustomerSalePaymentsListData>>, number | Pick<QueryKey<Options<V1CustomerSalePaymentsListData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+// @ts-ignore
+{
+    queryFn: async ({ pageParam, queryKey, signal }) => {
+        // @ts-ignore
+        const page: Pick<QueryKey<Options<V1CustomerSalePaymentsListData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+            query: {
+                page: pageParam
+            }
+        };
+        const params = createInfiniteParams(queryKey, page);
+        const { data } = await v1CustomerSalePaymentsList({
+            ...options,
+            ...params,
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: v1CustomerSalePaymentsListInfiniteQueryKey(options)
+});
+
+/**
+ * Devolver pagos de ventas
+ *
+ * Registra la devolución de uno o más pagos mediante asientos compensatorios: por cada pago se crea uno nuevo con los montos negados que referencia al original. El pago original nunca se modifica ni se elimina.
+ *
+ * La operación es atómica y todo-o-nada: si algún pago de la lista no se puede devolver, no se aplica ninguno.
+ *
+ * Reglas:
+ * - Un pago solo puede devolverse una vez.
+ * - Una devolución no puede devolverse.
+ * - El estado de pago de cada venta afectada se recalcula automáticamente.
+ * - Se reutilizan los montos almacenados en el pago original; no se consulta la tasa de cambio actual.
+ */
+export const v1SalePaymentsReverseCreateMutation = (options?: Partial<Options<V1SalePaymentsReverseCreateData>>): UseMutationOptions<V1SalePaymentsReverseCreateResponse, DefaultError, Options<V1SalePaymentsReverseCreateData>> => {
+    const mutationOptions: UseMutationOptions<V1SalePaymentsReverseCreateResponse, DefaultError, Options<V1SalePaymentsReverseCreateData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await v1SalePaymentsReverseCreate({
                 ...options,
                 ...fnOptions,
                 throwOnError: true

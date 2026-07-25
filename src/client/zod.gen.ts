@@ -103,6 +103,15 @@ export const zAdjustmentTypeEnum = z.enum([
     'TRANSFER_OUT'
 ]);
 
+/**
+ * Recomputed state of a sale touched by a reversal.
+ */
+export const zAffectedSale = z.object({
+    sale_id: z.string().readonly(),
+    payment_status: z.string().readonly(),
+    total_paid: z.string().regex(/^-?\d{0,10}(?:\.\d{0,2})?$/).readonly()
+});
+
 export const zBranch = z.object({
     name: z.string().max(200),
     address: z.union([
@@ -227,6 +236,44 @@ export const zCustomerRequest = z.object({
     ]).optional()
 });
 
+/**
+ * Read-only serializer for listing a customer's payments across every sale.
+ *
+ * Denormalizes the sale it belongs to, because the nested per-sale payment
+ * endpoint never exposed it and the client has no other way to tell which sale
+ * a payment affected.
+ */
+export const zCustomerSalePaymentList = z.object({
+    id: z.string().uuid().readonly(),
+    sale: z.string().uuid().readonly(),
+    sale_seq_number: z.number().int().readonly(),
+    customer: z.string().readonly(),
+    payment_date: z.string().datetime().readonly(),
+    currency: z.string().readonly(),
+    payment_method: z.string().readonly(),
+    REF: z.union([
+        z.string().readonly(),
+        z.null()
+    ]).readonly(),
+    discount: z.string().regex(/^-?\d{0,8}(?:\.\d{0,2})?$/).readonly(),
+    total_amount_usd: z.string().regex(/^-?\d{0,10}(?:\.\d{0,2})?$/).readonly(),
+    total_amount_ves: z.string().regex(/^-?\d{0,10}(?:\.\d{0,2})?$/).readonly(),
+    exchange_rate: z.union([
+        z.string().uuid().readonly(),
+        z.null()
+    ]).readonly(),
+    reverses: z.union([
+        z.string().uuid().readonly(),
+        z.null()
+    ]).readonly(),
+    reversal_reason: z.union([
+        z.string().readonly(),
+        z.null()
+    ]).readonly(),
+    is_reversed: z.boolean().readonly(),
+    created_at: z.string().datetime().readonly()
+});
+
 export const zInventoryAdjustmentDetailRead = z.object({
     id: z.string().uuid().readonly(),
     seq_number: z.number().int().readonly(),
@@ -283,6 +330,19 @@ export const zMeasurementUnit = z.object({
 export const zMeasurementUnitRequest = z.object({
     name: z.string().min(1).max(200),
     decimals: z.boolean().optional()
+});
+
+export const zPaginatedCustomerSalePaymentListList = z.object({
+    count: z.number().int(),
+    next: z.union([
+        z.string().url(),
+        z.null()
+    ]).optional(),
+    previous: z.union([
+        z.string().url(),
+        z.null()
+    ]).optional(),
+    results: z.array(zCustomerSalePaymentList)
 });
 
 export const zPaginatedInventoryAdjustmentListList = z.object({
@@ -683,7 +743,8 @@ export const zSaleDetail = z.object({
     product_name: z.string().readonly(),
     product_sku: z.string().readonly(),
     quantity: z.string().regex(/^-?\d{0,8}(?:\.\d{0,2})?$/),
-    unit_price: z.string().regex(/^-?\d{0,10}(?:\.\d{0,2})?$/).readonly()
+    unit_price: z.string().regex(/^-?\d{0,10}(?:\.\d{0,2})?$/).readonly(),
+    suggested_price_usd: z.string().regex(/^-?\d{0,10}(?:\.\d{0,2})?$/).readonly()
 });
 
 /**
@@ -760,6 +821,10 @@ export const zSalePayment = z.object({
     currency: z.string().max(3),
     payment_method: z.string(),
     payment_date: z.string().datetime().readonly(),
+    REF: z.union([
+        z.string().max(100),
+        z.null()
+    ]).optional(),
     discount: z.string().regex(/^-?\d{0,8}(?:\.\d{0,2})?$/).optional(),
     total_amount_usd: z.string().regex(/^-?\d{0,10}(?:\.\d{0,2})?$/).readonly(),
     total_amount_ves: z.string().regex(/^-?\d{0,10}(?:\.\d{0,2})?$/).readonly(),
@@ -767,7 +832,16 @@ export const zSalePayment = z.object({
         z.string().uuid().readonly(),
         z.null()
     ]).readonly(),
-    created_at: z.string().datetime().readonly()
+    created_at: z.string().datetime().readonly(),
+    reverses: z.union([
+        z.string().uuid().readonly(),
+        z.null()
+    ]).readonly(),
+    reversal_reason: z.union([
+        z.string().readonly(),
+        z.null()
+    ]).readonly(),
+    is_reversed: z.boolean().readonly()
 });
 
 /**
@@ -777,7 +851,30 @@ export const zSalePayment = z.object({
 export const zSalePaymentRequest = z.object({
     currency: z.string().min(1).max(3),
     payment_method: z.string().min(1),
+    REF: z.union([
+        z.string().max(100),
+        z.null()
+    ]).optional(),
     discount: z.string().regex(/^-?\d{0,8}(?:\.\d{0,2})?$/).optional()
+});
+
+/**
+ * Read serializer for the reversal response.
+ *
+ * Returns the recomputed sale state alongside the created rows so the client
+ * can refresh without a second round trip.
+ */
+export const zSalePaymentReversalResult = z.object({
+    reversals: z.array(zCustomerSalePaymentList).readonly(),
+    affected_sales: z.array(zAffectedSale).readonly()
+});
+
+/**
+ * Write serializer for reversing one or more payments in a single action.
+ */
+export const zSalePaymentReverseRequest = z.object({
+    payment_ids: z.array(z.string().min(1)).max(100),
+    reason: z.string().max(255).optional()
 });
 
 /**
@@ -931,6 +1028,19 @@ export const zMeasurementUnitWritable = z.object({
 });
 
 export const zPaginatedAccountListListWritable = z.object({
+    count: z.number().int(),
+    next: z.union([
+        z.string().url(),
+        z.null()
+    ]).optional(),
+    previous: z.union([
+        z.string().url(),
+        z.null()
+    ]).optional(),
+    results: z.array(z.unknown())
+});
+
+export const zPaginatedCustomerSalePaymentListListWritable = z.object({
     count: z.number().int(),
     next: z.union([
         z.string().url(),
@@ -1111,6 +1221,10 @@ export const zSaleDetailWritable = z.object({
 export const zSalePaymentWritable = z.object({
     currency: z.string().max(3),
     payment_method: z.string(),
+    REF: z.union([
+        z.string().max(100),
+        z.null()
+    ]).optional(),
     discount: z.string().regex(/^-?\d{0,8}(?:\.\d{0,2})?$/).optional()
 });
 
@@ -1121,6 +1235,10 @@ export const zSalePaymentWritable = z.object({
 export const zSalePaymentRequestWritable = z.object({
     currency: z.string().min(1).max(3),
     payment_method: z.string().min(1),
+    REF: z.union([
+        z.string().max(100),
+        z.null()
+    ]).optional(),
     discount: z.string().regex(/^-?\d{0,8}(?:\.\d{0,2})?$/).optional(),
     amount: z.string().regex(/^-?\d{0,8}(?:\.\d{0,2})?$/)
 });
@@ -1701,6 +1819,27 @@ export const zV1RegisterCreateData = z.object({
 });
 
 export const zV1RegisterCreateResponse = zRegisterUser;
+
+export const zV1CustomerSalePaymentsListData = z.object({
+    body: z.never().optional(),
+    path: z.never().optional(),
+    query: z.object({
+        customer_id: z.string().optional(),
+        page: z.number().int().optional(),
+        page_size: z.number().int().optional(),
+        sale_id: z.string().optional()
+    }).optional()
+});
+
+export const zV1CustomerSalePaymentsListResponse = zPaginatedCustomerSalePaymentListList;
+
+export const zV1SalePaymentsReverseCreateData = z.object({
+    body: zSalePaymentReverseRequest,
+    path: z.never().optional(),
+    query: z.never().optional()
+});
+
+export const zV1SalePaymentsReverseCreateResponse = zSalePaymentReversalResult;
 
 export const zV1SalesListData = z.object({
     body: z.never().optional(),

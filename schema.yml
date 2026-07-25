@@ -6,7 +6,7 @@ info:
 paths:
   /v1/accounts/:
     get:
-      operationId: accounts_list
+      operationId: v1_accounts_list
       description: |-
         List all accounts (purchases) or create a new account.
         Supports nested creation of account details.
@@ -24,7 +24,7 @@ paths:
         schema:
           type: integer
       tags:
-      - accounts
+      - v1
       responses:
         '200':
           content:
@@ -33,12 +33,12 @@ paths:
                 $ref: '#/components/schemas/PaginatedAccountListList'
           description: ''
     post:
-      operationId: accounts_create
+      operationId: v1_accounts_create
       description: |-
         List all accounts (purchases) or create a new account.
         Supports nested creation of account details.
       tags:
-      - accounts
+      - v1
       requestBody:
         content:
           application/json:
@@ -60,7 +60,7 @@ paths:
           description: ''
   /v1/accounts/{account_id}/payments/:
     get:
-      operationId: accounts_payments_list
+      operationId: v1_accounts_payments_list
       description: |-
         List payments for an account or create a new payment.
         Nested under /accounts/<account_id>/payments/
@@ -71,7 +71,7 @@ paths:
           type: string
         required: true
       tags:
-      - accounts
+      - v1
       responses:
         '200':
           content:
@@ -82,7 +82,7 @@ paths:
                   $ref: '#/components/schemas/AccountPayment'
           description: ''
     post:
-      operationId: accounts_payments_create
+      operationId: v1_accounts_payments_create
       description: |-
         List payments for an account or create a new payment.
         Nested under /accounts/<account_id>/payments/
@@ -93,7 +93,7 @@ paths:
           type: string
         required: true
       tags:
-      - accounts
+      - v1
       requestBody:
         content:
           application/json:
@@ -115,7 +115,7 @@ paths:
           description: ''
   /v1/accounts/{id}/:
     get:
-      operationId: accounts_retrieve
+      operationId: v1_accounts_retrieve
       description: |-
         Retrieve, update, or delete an account (purchase).
         Delete operation is soft delete (sets state=False).
@@ -130,7 +130,7 @@ paths:
           type: string
         required: true
       tags:
-      - accounts
+      - v1
       responses:
         '200':
           content:
@@ -139,7 +139,7 @@ paths:
                 $ref: '#/components/schemas/Account'
           description: ''
     put:
-      operationId: accounts_update
+      operationId: v1_accounts_update
       description: |-
         Retrieve, update, or delete an account (purchase).
         Delete operation is soft delete (sets state=False).
@@ -154,7 +154,7 @@ paths:
           type: string
         required: true
       tags:
-      - accounts
+      - v1
       requestBody:
         content:
           application/json:
@@ -175,7 +175,7 @@ paths:
                 $ref: '#/components/schemas/Account'
           description: ''
     patch:
-      operationId: accounts_partial_update
+      operationId: v1_accounts_partial_update
       description: |-
         Retrieve, update, or delete an account (purchase).
         Delete operation is soft delete (sets state=False).
@@ -190,7 +190,7 @@ paths:
           type: string
         required: true
       tags:
-      - accounts
+      - v1
       requestBody:
         content:
           application/json:
@@ -210,7 +210,7 @@ paths:
                 $ref: '#/components/schemas/Account'
           description: ''
     delete:
-      operationId: accounts_destroy
+      operationId: v1_accounts_destroy
       description: |-
         Retrieve, update, or delete an account (purchase).
         Delete operation is soft delete (sets state=False).
@@ -225,13 +225,13 @@ paths:
           type: string
         required: true
       tags:
-      - accounts
+      - v1
       responses:
         '204':
           description: No response body
   /v1/adjustments/:
     get:
-      operationId: adjustments_list
+      operationId: v1_adjustments_list
       description: Retorna una lista paginada de ajustes de inventario de la empresa
         del usuario autenticado. Filtrable por sucursal y tipo de ajuste.
       summary: Listar ajustes de inventario
@@ -277,7 +277,7 @@ paths:
                 $ref: '#/components/schemas/PaginatedInventoryAdjustmentListList'
           description: ''
     post:
-      operationId: adjustments_create
+      operationId: v1_adjustments_create
       description: |2
 
         Crea un ajuste de inventario y actualiza el stock de la sucursal en una sola operación atómica.
@@ -328,7 +328,7 @@ paths:
           description: ''
   /v1/adjustments/{id}/:
     get:
-      operationId: adjustments_retrieve
+      operationId: v1_adjustments_retrieve
       description: Retorna el ajuste de inventario completo con todos sus ítems (`details`),
         incluyendo nombre y SKU de cada producto y los snapshots de cantidad antes/cambio/después.
       summary: Obtener detalle de ajuste de inventario
@@ -349,9 +349,9 @@ paths:
           description: ''
   /v1/branch/:
     get:
-      operationId: branch_list
+      operationId: v1_branch_list
       tags:
-      - branch
+      - v1
       responses:
         '200':
           content:
@@ -362,9 +362,9 @@ paths:
                   $ref: '#/components/schemas/Branch'
           description: ''
     post:
-      operationId: branch_create
+      operationId: v1_branch_create
       tags:
-      - branch
+      - v1
       requestBody:
         content:
           application/json:
@@ -386,7 +386,7 @@ paths:
           description: ''
   /v1/branch/{id}/:
     get:
-      operationId: branch_retrieve
+      operationId: v1_branch_retrieve
       parameters:
       - in: path
         name: id
@@ -394,7 +394,7 @@ paths:
           type: string
         required: true
       tags:
-      - branch
+      - v1
       responses:
         '200':
           content:
@@ -403,7 +403,7 @@ paths:
                 $ref: '#/components/schemas/Branch'
           description: ''
     put:
-      operationId: branch_update
+      operationId: v1_branch_update
       parameters:
       - in: path
         name: id
@@ -411,7 +411,7 @@ paths:
           type: string
         required: true
       tags:
-      - branch
+      - v1
       requestBody:
         content:
           application/json:
@@ -432,7 +432,7 @@ paths:
                 $ref: '#/components/schemas/Branch'
           description: ''
     patch:
-      operationId: branch_partial_update
+      operationId: v1_branch_partial_update
       parameters:
       - in: path
         name: id
@@ -440,7 +440,7 @@ paths:
           type: string
         required: true
       tags:
-      - branch
+      - v1
       requestBody:
         content:
           application/json:
@@ -460,7 +460,7 @@ paths:
                 $ref: '#/components/schemas/Branch'
           description: ''
     delete:
-      operationId: branch_destroy
+      operationId: v1_branch_destroy
       parameters:
       - in: path
         name: id
@@ -468,15 +468,15 @@ paths:
           type: string
         required: true
       tags:
-      - branch
+      - v1
       responses:
         '204':
           description: No response body
   /v1/category/:
     get:
-      operationId: category_list
+      operationId: v1_category_list
       tags:
-      - category
+      - v1
       responses:
         '200':
           content:
@@ -487,9 +487,9 @@ paths:
                   $ref: '#/components/schemas/Category'
           description: ''
     post:
-      operationId: category_create
+      operationId: v1_category_create
       tags:
-      - category
+      - v1
       requestBody:
         content:
           application/json:
@@ -511,7 +511,7 @@ paths:
           description: ''
   /v1/category/{id}/:
     get:
-      operationId: category_retrieve
+      operationId: v1_category_retrieve
       parameters:
       - in: path
         name: id
@@ -519,7 +519,7 @@ paths:
           type: string
         required: true
       tags:
-      - category
+      - v1
       responses:
         '200':
           content:
@@ -528,7 +528,7 @@ paths:
                 $ref: '#/components/schemas/Category'
           description: ''
     put:
-      operationId: category_update
+      operationId: v1_category_update
       parameters:
       - in: path
         name: id
@@ -536,7 +536,7 @@ paths:
           type: string
         required: true
       tags:
-      - category
+      - v1
       requestBody:
         content:
           application/json:
@@ -557,7 +557,7 @@ paths:
                 $ref: '#/components/schemas/Category'
           description: ''
     patch:
-      operationId: category_partial_update
+      operationId: v1_category_partial_update
       parameters:
       - in: path
         name: id
@@ -565,7 +565,7 @@ paths:
           type: string
         required: true
       tags:
-      - category
+      - v1
       requestBody:
         content:
           application/json:
@@ -585,7 +585,7 @@ paths:
                 $ref: '#/components/schemas/Category'
           description: ''
     delete:
-      operationId: category_destroy
+      operationId: v1_category_destroy
       parameters:
       - in: path
         name: id
@@ -593,15 +593,15 @@ paths:
           type: string
         required: true
       tags:
-      - category
+      - v1
       responses:
         '204':
           description: No response body
   /v1/company/:
     get:
-      operationId: company_retrieve
+      operationId: v1_company_retrieve
       tags:
-      - company
+      - v1
       responses:
         '200':
           content:
@@ -610,9 +610,9 @@ paths:
                 $ref: '#/components/schemas/Company'
           description: ''
     post:
-      operationId: company_create
+      operationId: v1_company_create
       tags:
-      - company
+      - v1
       requestBody:
         content:
           application/json:
@@ -635,9 +635,9 @@ paths:
                 $ref: '#/components/schemas/Company'
           description: ''
     put:
-      operationId: company_update
+      operationId: v1_company_update
       tags:
-      - company
+      - v1
       requestBody:
         content:
           application/json:
@@ -658,9 +658,9 @@ paths:
                 $ref: '#/components/schemas/Company'
           description: ''
     patch:
-      operationId: company_partial_update
+      operationId: v1_company_partial_update
       tags:
-      - company
+      - v1
       requestBody:
         content:
           application/json:
@@ -681,9 +681,9 @@ paths:
           description: ''
   /v1/customers/:
     get:
-      operationId: customers_list
+      operationId: v1_customers_list
       tags:
-      - customers
+      - v1
       responses:
         '200':
           content:
@@ -694,9 +694,9 @@ paths:
                   $ref: '#/components/schemas/Customer'
           description: ''
     post:
-      operationId: customers_create
+      operationId: v1_customers_create
       tags:
-      - customers
+      - v1
       requestBody:
         content:
           application/json:
@@ -718,7 +718,7 @@ paths:
           description: ''
   /v1/customers/{id}/:
     get:
-      operationId: customers_retrieve
+      operationId: v1_customers_retrieve
       parameters:
       - in: path
         name: id
@@ -726,7 +726,7 @@ paths:
           type: string
         required: true
       tags:
-      - customers
+      - v1
       responses:
         '200':
           content:
@@ -735,7 +735,7 @@ paths:
                 $ref: '#/components/schemas/Customer'
           description: ''
     put:
-      operationId: customers_update
+      operationId: v1_customers_update
       parameters:
       - in: path
         name: id
@@ -743,7 +743,7 @@ paths:
           type: string
         required: true
       tags:
-      - customers
+      - v1
       requestBody:
         content:
           application/json:
@@ -764,7 +764,7 @@ paths:
                 $ref: '#/components/schemas/Customer'
           description: ''
     patch:
-      operationId: customers_partial_update
+      operationId: v1_customers_partial_update
       parameters:
       - in: path
         name: id
@@ -772,7 +772,7 @@ paths:
           type: string
         required: true
       tags:
-      - customers
+      - v1
       requestBody:
         content:
           application/json:
@@ -792,7 +792,7 @@ paths:
                 $ref: '#/components/schemas/Customer'
           description: ''
     delete:
-      operationId: customers_destroy
+      operationId: v1_customers_destroy
       parameters:
       - in: path
         name: id
@@ -800,13 +800,13 @@ paths:
           type: string
         required: true
       tags:
-      - customers
+      - v1
       responses:
         '204':
           description: No response body
   /v1/exchange-rates/{id}/:
     get:
-      operationId: exchange_rates_retrieve
+      operationId: v1_exchange_rates_retrieve
       parameters:
       - in: path
         name: id
@@ -814,7 +814,7 @@ paths:
           type: string
         required: true
       tags:
-      - exchange-rates
+      - v1
       security:
       - {}
       responses:
@@ -822,9 +822,9 @@ paths:
           description: No response body
   /v1/exchange-rates/history/:
     get:
-      operationId: exchange_rates_history_retrieve
+      operationId: v1_exchange_rates_history_retrieve
       tags:
-      - exchange-rates
+      - v1
       security:
       - {}
       responses:
@@ -832,9 +832,9 @@ paths:
           description: No response body
   /v1/exchange-rates/today/:
     get:
-      operationId: exchange_rates_today_retrieve
+      operationId: v1_exchange_rates_today_retrieve
       tags:
-      - exchange-rates
+      - v1
       security:
       - {}
       responses:
@@ -842,9 +842,9 @@ paths:
           description: No response body
   /v1/login/:
     post:
-      operationId: login_create
+      operationId: v1_login_create
       tags:
-      - login
+      - v1
       security:
       - {}
       responses:
@@ -852,17 +852,17 @@ paths:
           description: No response body
   /v1/logout/:
     post:
-      operationId: logout_create
+      operationId: v1_logout_create
       tags:
-      - logout
+      - v1
       responses:
         '200':
           description: No response body
   /v1/measurement/:
     get:
-      operationId: measurement_list
+      operationId: v1_measurement_list
       tags:
-      - measurement
+      - v1
       responses:
         '200':
           content:
@@ -873,9 +873,9 @@ paths:
                   $ref: '#/components/schemas/MeasurementUnit'
           description: ''
     post:
-      operationId: measurement_create
+      operationId: v1_measurement_create
       tags:
-      - measurement
+      - v1
       requestBody:
         content:
           application/json:
@@ -897,7 +897,7 @@ paths:
           description: ''
   /v1/measurement/{id}/:
     get:
-      operationId: measurement_retrieve
+      operationId: v1_measurement_retrieve
       parameters:
       - in: path
         name: id
@@ -905,7 +905,7 @@ paths:
           type: string
         required: true
       tags:
-      - measurement
+      - v1
       responses:
         '200':
           content:
@@ -914,7 +914,7 @@ paths:
                 $ref: '#/components/schemas/MeasurementUnit'
           description: ''
     put:
-      operationId: measurement_update
+      operationId: v1_measurement_update
       parameters:
       - in: path
         name: id
@@ -922,7 +922,7 @@ paths:
           type: string
         required: true
       tags:
-      - measurement
+      - v1
       requestBody:
         content:
           application/json:
@@ -943,7 +943,7 @@ paths:
                 $ref: '#/components/schemas/MeasurementUnit'
           description: ''
     patch:
-      operationId: measurement_partial_update
+      operationId: v1_measurement_partial_update
       parameters:
       - in: path
         name: id
@@ -951,7 +951,7 @@ paths:
           type: string
         required: true
       tags:
-      - measurement
+      - v1
       requestBody:
         content:
           application/json:
@@ -971,7 +971,7 @@ paths:
                 $ref: '#/components/schemas/MeasurementUnit'
           description: ''
     delete:
-      operationId: measurement_destroy
+      operationId: v1_measurement_destroy
       parameters:
       - in: path
         name: id
@@ -979,15 +979,15 @@ paths:
           type: string
         required: true
       tags:
-      - measurement
+      - v1
       responses:
         '204':
           description: No response body
   /v1/product/:
     get:
-      operationId: product_list
+      operationId: v1_product_list
       tags:
-      - product
+      - v1
       responses:
         '200':
           content:
@@ -998,9 +998,9 @@ paths:
                   $ref: '#/components/schemas/ProductMaster'
           description: ''
     post:
-      operationId: product_create
+      operationId: v1_product_create
       tags:
-      - product
+      - v1
       requestBody:
         content:
           application/json:
@@ -1022,9 +1022,9 @@ paths:
           description: ''
   /v1/product-branch-stock/:
     get:
-      operationId: product_branch_stock_list
+      operationId: v1_product_branch_stock_list
       tags:
-      - product-branch-stock
+      - v1
       responses:
         '200':
           content:
@@ -1036,7 +1036,7 @@ paths:
           description: ''
   /v1/product/{id}/:
     get:
-      operationId: product_retrieve
+      operationId: v1_product_retrieve
       parameters:
       - in: path
         name: id
@@ -1044,7 +1044,7 @@ paths:
           type: string
         required: true
       tags:
-      - product
+      - v1
       responses:
         '200':
           content:
@@ -1053,7 +1053,7 @@ paths:
                 $ref: '#/components/schemas/ProductWriteDetail'
           description: ''
     put:
-      operationId: product_update
+      operationId: v1_product_update
       parameters:
       - in: path
         name: id
@@ -1061,7 +1061,7 @@ paths:
           type: string
         required: true
       tags:
-      - product
+      - v1
       requestBody:
         content:
           application/json:
@@ -1082,7 +1082,7 @@ paths:
                 $ref: '#/components/schemas/ProductWriteDetail'
           description: ''
     patch:
-      operationId: product_partial_update
+      operationId: v1_product_partial_update
       parameters:
       - in: path
         name: id
@@ -1090,7 +1090,7 @@ paths:
           type: string
         required: true
       tags:
-      - product
+      - v1
       requestBody:
         content:
           application/json:
@@ -1110,7 +1110,7 @@ paths:
                 $ref: '#/components/schemas/ProductWriteDetail'
           description: ''
     delete:
-      operationId: product_destroy
+      operationId: v1_product_destroy
       parameters:
       - in: path
         name: id
@@ -1118,15 +1118,15 @@ paths:
           type: string
         required: true
       tags:
-      - product
+      - v1
       responses:
         '204':
           description: No response body
   /v1/providers/:
     get:
-      operationId: providers_list
+      operationId: v1_providers_list
       tags:
-      - providers
+      - v1
       responses:
         '200':
           content:
@@ -1137,9 +1137,9 @@ paths:
                   $ref: '#/components/schemas/Provider'
           description: ''
     post:
-      operationId: providers_create
+      operationId: v1_providers_create
       tags:
-      - providers
+      - v1
       requestBody:
         content:
           application/json:
@@ -1161,7 +1161,7 @@ paths:
           description: ''
   /v1/providers/{id}/:
     get:
-      operationId: providers_retrieve
+      operationId: v1_providers_retrieve
       parameters:
       - in: path
         name: id
@@ -1169,7 +1169,7 @@ paths:
           type: string
         required: true
       tags:
-      - providers
+      - v1
       responses:
         '200':
           content:
@@ -1178,7 +1178,7 @@ paths:
                 $ref: '#/components/schemas/Provider'
           description: ''
     put:
-      operationId: providers_update
+      operationId: v1_providers_update
       parameters:
       - in: path
         name: id
@@ -1186,7 +1186,7 @@ paths:
           type: string
         required: true
       tags:
-      - providers
+      - v1
       requestBody:
         content:
           application/json:
@@ -1207,7 +1207,7 @@ paths:
                 $ref: '#/components/schemas/Provider'
           description: ''
     patch:
-      operationId: providers_partial_update
+      operationId: v1_providers_partial_update
       parameters:
       - in: path
         name: id
@@ -1215,7 +1215,7 @@ paths:
           type: string
         required: true
       tags:
-      - providers
+      - v1
       requestBody:
         content:
           application/json:
@@ -1235,7 +1235,7 @@ paths:
                 $ref: '#/components/schemas/Provider'
           description: ''
     delete:
-      operationId: providers_destroy
+      operationId: v1_providers_destroy
       parameters:
       - in: path
         name: id
@@ -1243,18 +1243,18 @@ paths:
           type: string
         required: true
       tags:
-      - providers
+      - v1
       responses:
         '204':
           description: No response body
   /v1/refresh/:
     post:
-      operationId: refresh_create
+      operationId: v1_refresh_create
       description: |-
         Takes a refresh type JSON web token and returns an access type JSON web
         token if the refresh token is valid.
       tags:
-      - refresh
+      - v1
       requestBody:
         content:
           application/json:
@@ -1278,9 +1278,9 @@ paths:
           description: ''
   /v1/register/:
     post:
-      operationId: register_create
+      operationId: v1_register_create
       tags:
-      - register
+      - v1
       requestBody:
         content:
           application/json:
@@ -1302,9 +1302,88 @@ paths:
               schema:
                 $ref: '#/components/schemas/RegisterUser'
           description: ''
+  /v1/sale-payments/:
+    get:
+      operationId: v1_customer_sale_payments_list
+      description: |-
+        Lista los pagos de ventas de la compañía del usuario, atravesando todas las ventas. Filtrar por `customer_id` devuelve el historial de pagos de un cliente, que es la única forma de ver juntos los pagos que se registraron como un mismo cobro.
+
+        Incluye las devoluciones, que aparecen con montos negativos y con `reverses` apuntando al pago que cancelan.
+      summary: Listar pagos de ventas
+      parameters:
+      - in: query
+        name: customer_id
+        schema:
+          type: string
+        description: Filtrar por el cliente dueño de la venta.
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: sale_id
+        schema:
+          type: string
+        description: Filtrar por una venta puntual.
+      tags:
+      - Sales
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedCustomerSalePaymentListList'
+          description: ''
+  /v1/sale-payments/reverse/:
+    post:
+      operationId: v1_sale_payments_reverse_create
+      description: |-
+        Registra la devolución de uno o más pagos mediante asientos compensatorios: por cada pago se crea uno nuevo con los montos negados que referencia al original. El pago original nunca se modifica ni se elimina.
+
+        La operación es atómica y todo-o-nada: si algún pago de la lista no se puede devolver, no se aplica ninguno.
+
+        Reglas:
+        - Un pago solo puede devolverse una vez.
+        - Una devolución no puede devolverse.
+        - El estado de pago de cada venta afectada se recalcula automáticamente.
+        - Se reutilizan los montos almacenados en el pago original; no se consulta la tasa de cambio actual.
+      summary: Devolver pagos de ventas
+      tags:
+      - Sales
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SalePaymentReverseRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SalePaymentReverseRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SalePaymentReverseRequest'
+        required: true
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SalePaymentReversalResult'
+          description: ''
+        '400':
+          description: Algún pago ya fue devuelto, o es una devolución.
+        '404':
+          description: Algún pago no existe o no pertenece a la compañía.
   /v1/sales/:
     get:
-      operationId: sales_list
+      operationId: v1_sales_list
       description: |-
         List all sales or create a new sale.
         Supports nested creation of sale details.
@@ -1322,7 +1401,7 @@ paths:
         schema:
           type: integer
       tags:
-      - sales
+      - v1
       responses:
         '200':
           content:
@@ -1331,12 +1410,12 @@ paths:
                 $ref: '#/components/schemas/PaginatedSaleListList'
           description: ''
     post:
-      operationId: sales_create
+      operationId: v1_sales_create
       description: |-
         List all sales or create a new sale.
         Supports nested creation of sale details.
       tags:
-      - sales
+      - v1
       requestBody:
         content:
           application/json:
@@ -1358,7 +1437,7 @@ paths:
           description: ''
   /v1/sales/{id}/:
     get:
-      operationId: sales_retrieve
+      operationId: v1_sales_retrieve
       description: |-
         Retrieve, update, or delete a sale.
         Delete operation is soft delete (sets state=False).
@@ -1369,7 +1448,7 @@ paths:
           type: string
         required: true
       tags:
-      - sales
+      - v1
       responses:
         '200':
           content:
@@ -1378,7 +1457,7 @@ paths:
                 $ref: '#/components/schemas/Sale'
           description: ''
     put:
-      operationId: sales_update
+      operationId: v1_sales_update
       description: |-
         Retrieve, update, or delete a sale.
         Delete operation is soft delete (sets state=False).
@@ -1389,7 +1468,7 @@ paths:
           type: string
         required: true
       tags:
-      - sales
+      - v1
       requestBody:
         content:
           application/json:
@@ -1410,7 +1489,7 @@ paths:
                 $ref: '#/components/schemas/Sale'
           description: ''
     patch:
-      operationId: sales_partial_update
+      operationId: v1_sales_partial_update
       description: |-
         Retrieve, update, or delete a sale.
         Delete operation is soft delete (sets state=False).
@@ -1421,7 +1500,7 @@ paths:
           type: string
         required: true
       tags:
-      - sales
+      - v1
       requestBody:
         content:
           application/json:
@@ -1441,7 +1520,7 @@ paths:
                 $ref: '#/components/schemas/Sale'
           description: ''
     delete:
-      operationId: sales_destroy
+      operationId: v1_sales_destroy
       description: |-
         Retrieve, update, or delete a sale.
         Delete operation is soft delete (sets state=False).
@@ -1452,13 +1531,13 @@ paths:
           type: string
         required: true
       tags:
-      - sales
+      - v1
       responses:
         '204':
           description: No response body
   /v1/sales/{sale_id}/payments/:
     get:
-      operationId: sales_payments_list
+      operationId: v1_sales_payments_list
       description: |-
         List payments for a sale or create a new payment.
         Nested under /sales/<sale_id>/payments/
@@ -1469,7 +1548,7 @@ paths:
           type: string
         required: true
       tags:
-      - sales
+      - v1
       responses:
         '200':
           content:
@@ -1480,7 +1559,7 @@ paths:
                   $ref: '#/components/schemas/SalePayment'
           description: ''
     post:
-      operationId: sales_payments_create
+      operationId: v1_sales_payments_create
       description: |-
         List payments for a sale or create a new payment.
         Nested under /sales/<sale_id>/payments/
@@ -1491,7 +1570,7 @@ paths:
           type: string
         required: true
       tags:
-      - sales
+      - v1
       requestBody:
         content:
           application/json:
@@ -1513,24 +1592,24 @@ paths:
           description: ''
   /v1/user-branches/:
     get:
-      operationId: user_branches_retrieve
+      operationId: v1_user_branches_retrieve
       tags:
-      - user-branches
+      - v1
       responses:
         '200':
           description: No response body
     put:
-      operationId: user_branches_update
+      operationId: v1_user_branches_update
       tags:
-      - user-branches
+      - v1
       responses:
         '200':
           description: No response body
   /v1/user-info/:
     get:
-      operationId: user_info_retrieve
+      operationId: v1_user_info_retrieve
       tags:
-      - user-info
+      - v1
       responses:
         '200':
           content:
@@ -1539,9 +1618,9 @@ paths:
                 $ref: '#/components/schemas/CustomUser'
           description: ''
     put:
-      operationId: user_info_update
+      operationId: v1_user_info_update
       tags:
-      - user-info
+      - v1
       requestBody:
         content:
           application/json:
@@ -1562,9 +1641,9 @@ paths:
                 $ref: '#/components/schemas/CustomUser'
           description: ''
     patch:
-      operationId: user_info_partial_update
+      operationId: v1_user_info_partial_update
       tags:
-      - user-info
+      - v1
       requestBody:
         content:
           application/json:
@@ -1617,7 +1696,7 @@ components:
           readOnly: true
         payment_status:
           allOf:
-          - $ref: '#/components/schemas/PaymentStatus2d7Enum'
+          - $ref: '#/components/schemas/PaymentStatus0cfEnum'
           readOnly: true
         seq_number:
           type: integer
@@ -1729,7 +1808,7 @@ components:
           readOnly: true
         payment_status:
           allOf:
-          - $ref: '#/components/schemas/PaymentStatus2d7Enum'
+          - $ref: '#/components/schemas/PaymentStatus0cfEnum'
           readOnly: true
         branch:
           type: string
@@ -1925,6 +2004,25 @@ components:
         * `SAMPLE` - Muestra
         * `TRANSFER_IN` - Entrada por traslado
         * `TRANSFER_OUT` - Salida por traslado
+    AffectedSale:
+      type: object
+      description: Recomputed state of a sale touched by a reversal.
+      properties:
+        sale_id:
+          type: string
+          readOnly: true
+        payment_status:
+          type: string
+          readOnly: true
+        total_paid:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          readOnly: true
+      required:
+      - payment_status
+      - sale_id
+      - total_paid
     Branch:
       type: object
       properties:
@@ -2167,6 +2265,96 @@ components:
           nullable: true
       required:
       - name
+    CustomerSalePaymentList:
+      type: object
+      description: |-
+        Read-only serializer for listing a customer's payments across every sale.
+
+        Denormalizes the sale it belongs to, because the nested per-sale payment
+        endpoint never exposed it and the client has no other way to tell which sale
+        a payment affected.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        sale:
+          type: string
+          format: uuid
+          readOnly: true
+        sale_seq_number:
+          type: integer
+          readOnly: true
+        customer:
+          type: string
+          readOnly: true
+        payment_date:
+          type: string
+          format: date-time
+          readOnly: true
+        currency:
+          type: string
+          readOnly: true
+        payment_method:
+          type: string
+          readOnly: true
+        REF:
+          type: string
+          readOnly: true
+          nullable: true
+        discount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          readOnly: true
+        total_amount_usd:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          readOnly: true
+        total_amount_ves:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          readOnly: true
+        exchange_rate:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        reverses:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        reversal_reason:
+          type: string
+          readOnly: true
+          nullable: true
+        is_reversed:
+          type: boolean
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - REF
+      - created_at
+      - currency
+      - customer
+      - discount
+      - exchange_rate
+      - id
+      - is_reversed
+      - payment_date
+      - payment_method
+      - reversal_reason
+      - reverses
+      - sale
+      - sale_seq_number
+      - total_amount_usd
+      - total_amount_ves
     InventoryAdjustmentDetailRead:
       type: object
       properties:
@@ -2356,6 +2544,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/AccountList'
+    PaginatedCustomerSalePaymentListList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/CustomerSalePaymentList'
     PaginatedInventoryAdjustmentListList:
       type: object
       required:
@@ -2608,7 +2819,7 @@ components:
             additionalProperties: {}
           writeOnly: true
           description: List of sale details with 'product' (ULID) and 'quantity' fields
-    PaymentStatus2d7Enum:
+    PaymentStatus0cfEnum:
       enum:
       - PENDING
       - PARTIALLY_PAID
@@ -2618,7 +2829,7 @@ components:
         * `PENDING` - Pending
         * `PARTIALLY_PAID` - Partially Paid
         * `PAID` - Paid
-    PaymentStatusAb7Enum:
+    PaymentStatusC54Enum:
       enum:
       - PENDING
       - PARTIALLY_PAID
@@ -2969,7 +3180,7 @@ components:
           readOnly: true
         payment_status:
           allOf:
-          - $ref: '#/components/schemas/PaymentStatusAb7Enum'
+          - $ref: '#/components/schemas/PaymentStatusC54Enum'
           readOnly: true
         seq_number:
           type: integer
@@ -3087,7 +3298,7 @@ components:
           readOnly: true
         payment_status:
           allOf:
-          - $ref: '#/components/schemas/PaymentStatusAb7Enum'
+          - $ref: '#/components/schemas/PaymentStatusC54Enum'
           readOnly: true
         branch:
           type: string
@@ -3139,6 +3350,10 @@ components:
           type: string
           format: date-time
           readOnly: true
+        REF:
+          type: string
+          nullable: true
+          maxLength: 100
         discount:
           type: string
           format: decimal
@@ -3162,13 +3377,28 @@ components:
           type: string
           format: date-time
           readOnly: true
+        reverses:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        reversal_reason:
+          type: string
+          readOnly: true
+          nullable: true
+        is_reversed:
+          type: boolean
+          readOnly: true
       required:
       - created_at
       - currency
       - exchange_rate
       - id
+      - is_reversed
       - payment_date
       - payment_method
+      - reversal_reason
+      - reverses
       - total_amount_usd
       - total_amount_ves
     SalePaymentRequest:
@@ -3184,6 +3414,10 @@ components:
         payment_method:
           type: string
           minLength: 1
+        REF:
+          type: string
+          nullable: true
+          maxLength: 100
         discount:
           type: string
           format: decimal
@@ -3198,6 +3432,45 @@ components:
       - amount
       - currency
       - payment_method
+    SalePaymentReversalResult:
+      type: object
+      description: |-
+        Read serializer for the reversal response.
+
+        Returns the recomputed sale state alongside the created rows so the client
+        can refresh without a second round trip.
+      properties:
+        reversals:
+          type: array
+          items:
+            $ref: '#/components/schemas/CustomerSalePaymentList'
+          readOnly: true
+        affected_sales:
+          type: array
+          items:
+            $ref: '#/components/schemas/AffectedSale'
+          readOnly: true
+      required:
+      - affected_sales
+      - reversals
+    SalePaymentReverseRequest:
+      type: object
+      description: Write serializer for reversing one or more payments in a single
+        action.
+      properties:
+        payment_ids:
+          type: array
+          items:
+            type: string
+            minLength: 1
+          description: IDs of the payments to reverse, at most 100. Applied all-or-nothing.
+          maxItems: 100
+        reason:
+          type: string
+          description: Optional note stored on every compensating payment created.
+          maxLength: 255
+      required:
+      - payment_ids
     SaleRequest:
       type: object
       description: |-
