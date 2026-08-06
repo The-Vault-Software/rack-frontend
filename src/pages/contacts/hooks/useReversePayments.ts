@@ -12,7 +12,7 @@ import {
  * The message can live either on the error itself or on `error.body`,
  * depending on how the transport surfaced the response.
  */
-function extractErrorDetail(error: unknown): string | undefined {
+export function extractErrorDetail(error: unknown): string | undefined {
   if (typeof error !== 'object' || error === null) return undefined;
 
   const candidates: unknown[] = [error, (error as { body?: unknown }).body];

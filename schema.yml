@@ -679,6 +679,134 @@ paths:
               schema:
                 $ref: '#/components/schemas/Company'
           description: ''
+  /v1/customer-payments/:
+    get:
+      operationId: v1_customer_payments_list
+      description: |-
+        Lista los ``CustomerPayment`` de la compañía del usuario, alcance por las sucursales asignadas, newest-first.
+
+        Cada cobro expone la fecha, método, moneda, totales registrados (snapshot al momento del cobro), el monto aún reembolsable (suma de los hijos activos que no tienen una devolución activa apuntándoles) y la cantidad de ventas afectadas.
+
+        - Un cobro totalmente devuelto permanece listado con monto reembolsable de cero.
+        - Una devolución individual de uno de los hijos reduce el monto reembolsable pero no toca los totales registrados.
+        - ``customer_id`` (opcional) restringe la lista a los cobros de un cliente puntual.
+      summary: Listar cobros agrupados de cliente
+      parameters:
+      - in: query
+        name: customer_id
+        schema:
+          type: string
+        description: Filtrar por el cliente que recibió el cobro.
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - Sales
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedCustomerPaymentListList'
+          description: ''
+    post:
+      operationId: v1_customer_payments_create
+      description: |-
+        Registra un cobro que cubre varias ventas de un cliente como un único `CustomerPayment` atómico con sus hijos `SalePayment`, asignando el monto oldest-first entre las ventas pendientes (`sale_ids` opcional restringe el subconjunto).
+
+        Reglas:
+        - La operación es atómica: cualquier falla deja la base de datos sin cambios.
+        - id de venta desconocido → 404.
+        - venta fuera de la sucursal del cobro o de otro cliente → 403.
+        - subconjunto sin venta pendiente asignable → 400.
+        - Monto no positivo → 400.
+        - El remanente por sobrepago se descarta (no se crea crédito, las ventas nunca quedan OVERPAID).
+        - Totales y FK de tasa son snapshots al momento del cobro.
+      summary: Registrar cobro agrupado de cliente
+      tags:
+      - Sales
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CustomerPaymentCreateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CustomerPaymentCreateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CustomerPaymentCreateRequest'
+        required: true
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerPaymentRegistrationResult'
+          description: ''
+        '400':
+          description: Monto no positivo, o subconjunto sin venta pendiente asignable.
+        '403':
+          description: Venta fuera del alcance de sucursal/customer del cobro, o sucursal
+            sin acceso.
+        '404':
+          description: id de venta desconocido, o venta fuera de la compañía.
+  /v1/customer-payments/{id}/reverse/:
+    post:
+      operationId: v1_customer_payments_reverse_create
+      description: |-
+        Reversa, en una sola transacción, exactamente los hijos activos del grupo que aún no tienen una devolución activa, reutilizando la misma maquinaria de filas compensatorias que la devolución individual: por cada hijo se crea un nuevo `SalePayment` con los montos negados que referencia al original. El original nunca se modifica ni se elimina.
+
+        Reglas:
+        - Omite los hijos ya devueltos individualmente (no duplica filas).
+        - Si nada queda por devolver → 400 y no se crea ninguna fila.
+        - La operación es atómica: cualquier falla deja la base de datos sin cambios.
+        - Se aplica `HasBranchAccess` + alcance por `request.user.company` y las sucursales asignadas del usuario. El mismo rol que la devolución individual; no se introduce un rol nuevo.
+        - El estado de cada venta afectada se recalcula con la misma lógica de siempre.
+        - Los montos tomados son los almacenados en el hijo original; no se consulta la tasa de cambio actual.
+        - Cada fila compensatoria y cada cambio de estado de venta producen un renglón de `django-simple-history` atribuido al usuario actuante.
+      summary: Devolver cobro agrupado
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - Sales
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CustomerPaymentReverseRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CustomerPaymentReverseRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CustomerPaymentReverseRequest'
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SalePaymentReversalResult'
+          description: ''
+        '400':
+          description: Nada queda por devolver en este grupo.
+        '403':
+          description: El grupo pertenece a una sucursal a la que no tiene acceso.
+        '404':
+          description: El grupo no existe o no pertenece a su compañía.
   /v1/customers/:
     get:
       operationId: v1_customers_list
@@ -2240,6 +2368,253 @@ components:
       - created_at
       - id
       - name
+    CustomerPaymentCreateRequest:
+      type: object
+      description: |-
+        Write-only payload for ``POST /v1/customer-payments/``.
+
+        Only validates the request body. Allocation, branch/company scoping,
+        customer scoping, atomicity and persistence are owned by the service and
+        the view, so this serializer NEVER creates rows. Mirrors the "Registration
+        home: Service" architecture decision.
+
+        Request contract (design.md): the bulk payment is registered against ONE
+        customer at ONE branch; ``sale_ids`` optionally restricts allocation to a
+        subset of that customer's pending sales. The submitted amount is in
+        ``currency``; the service converts to USD/VES snapshots.
+      properties:
+        customer_id:
+          type: string
+          minLength: 1
+          description: ULID of the customer whose pending sales are paid.
+        branch:
+          type: string
+          minLength: 1
+          description: ULID of the branch this cobro is registered at.
+        amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          description: Submitted payment amount, in `currency`.
+        currency:
+          type: string
+          minLength: 1
+          maxLength: 3
+        payment_method:
+          type: string
+          minLength: 1
+        discount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          default: '0.00'
+          description: Discount percentage applied uniformly to both legs, mirroring
+            the legacy SalePaymentSerializer semantics.
+        sale_ids:
+          type: array
+          items:
+            type: string
+            minLength: 1
+          nullable: true
+          description: Optional ULID subset restricting allocation. When absent, all
+            of the customer's pending sales oldest-first are allocated.
+      required:
+      - amount
+      - branch
+      - currency
+      - customer_id
+      - payment_method
+    CustomerPaymentDetail:
+      type: object
+      description: |-
+        Read serializer for a single ``CustomerPayment`` group.
+
+        Carries the registration-time snapshots: currency, method, totals, rate
+        FK, and the branch/customer the group was registered at. The list
+        serializer (Phase 4) layers ``remaining_refundable_usd`` and
+        ``sales_count`` on top of this shape.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        branch:
+          type: string
+          format: uuid
+          readOnly: true
+        customer:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        currency:
+          type: string
+          readOnly: true
+        payment_method:
+          type: string
+          readOnly: true
+        discount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          readOnly: true
+        total_amount_usd:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          readOnly: true
+        total_amount_ves:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          readOnly: true
+        exchange_rate:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        payment_date:
+          type: string
+          format: date-time
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - branch
+      - created_at
+      - currency
+      - customer
+      - discount
+      - exchange_rate
+      - id
+      - payment_date
+      - payment_method
+      - total_amount_usd
+      - total_amount_ves
+    CustomerPaymentList:
+      type: object
+      description: |-
+        Read serializer for listing ``CustomerPayment`` groups.
+
+        Carries the registration-time snapshots (date, method, currency,
+        registered totals) and the three Phase-4 annotations the spec's Group
+        Listing requirement mandates:
+
+        - ``remaining_refundable_usd`` / ``remaining_refundable_ves``: sum of
+          the group's active children that have no active reversal pointing at
+          them. A fully reversed group sums to zero but stays listed (spec).
+        - ``sales_count``: the number of DISTINCT sales touched by the group's
+          active positive allocations, regardless of whether those children
+          have later been reversed individually or as part of a group reverse
+          (the original rows are preserved by every reversal path; sales stay
+          "affected" by the original registration).
+
+        These are NOT computed here: the view's ``get_queryset`` annotates them
+        so the list path is a single query, never N+1. The serializer only
+        declares the shape.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        branch:
+          type: string
+          format: uuid
+          readOnly: true
+        customer:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        payment_date:
+          type: string
+          format: date-time
+          readOnly: true
+        payment_method:
+          type: string
+          readOnly: true
+        currency:
+          type: string
+          readOnly: true
+        total_amount_usd:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          readOnly: true
+        total_amount_ves:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          readOnly: true
+        remaining_refundable_usd:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          readOnly: true
+        remaining_refundable_ves:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          readOnly: true
+        sales_count:
+          type: integer
+          readOnly: true
+      required:
+      - branch
+      - currency
+      - customer
+      - id
+      - payment_date
+      - payment_method
+      - remaining_refundable_usd
+      - remaining_refundable_ves
+      - sales_count
+      - total_amount_usd
+      - total_amount_ves
+    CustomerPaymentRegistrationResult:
+      type: object
+      description: |-
+        Response body for ``POST /v1/customer-payments/``.
+
+        Shape: ``{group, children, affected_sales}`` (spec: Atomic Bulk
+        Registration, "a successful response MUST include the group, its
+        children, and the recomputed status of every affected sale").
+      properties:
+        group:
+          allOf:
+          - $ref: '#/components/schemas/CustomerPaymentDetail'
+          readOnly: true
+        children:
+          type: array
+          items:
+            $ref: '#/components/schemas/CustomerSalePaymentList'
+          readOnly: true
+        affected_sales:
+          type: array
+          items:
+            $ref: '#/components/schemas/AffectedSale'
+          readOnly: true
+      required:
+      - affected_sales
+      - children
+      - group
+    CustomerPaymentReverseRequest:
+      type: object
+      description: |-
+        Write payload for ``POST /v1/customer-payments/<id>/reverse/``.
+
+        Only an optional ``reason`` is accepted: the group id comes from the URL,
+        and the remaining-children set is computed by the service, not supplied by
+        the client. Mirrors the legacy ``SalePaymentReverseSerializer`` reason
+        field so the two reversal paths stay symmetric.
+      properties:
+        reason:
+          type: string
+          description: Optional note stored on every compensating payment created
+            by this group reversal.
+          maxLength: 255
     CustomerRequest:
       type: object
       properties:
@@ -2544,6 +2919,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/AccountList'
+    PaginatedCustomerPaymentListList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/CustomerPaymentList'
     PaginatedCustomerSalePaymentListList:
       type: object
       required:
@@ -3352,8 +3750,8 @@ components:
           readOnly: true
         REF:
           type: string
+          readOnly: true
           nullable: true
-          maxLength: 100
         discount:
           type: string
           format: decimal
@@ -3390,6 +3788,7 @@ components:
           type: boolean
           readOnly: true
       required:
+      - REF
       - created_at
       - currency
       - exchange_rate
@@ -3414,10 +3813,6 @@ components:
         payment_method:
           type: string
           minLength: 1
-        REF:
-          type: string
-          nullable: true
-          maxLength: 100
         discount:
           type: string
           format: decimal

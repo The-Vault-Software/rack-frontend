@@ -216,6 +216,109 @@ export const zCustomer = z.object({
     ]).optional()
 });
 
+/**
+ * Write-only payload for ``POST /v1/customer-payments/``.
+ *
+ * Only validates the request body. Allocation, branch/company scoping,
+ * customer scoping, atomicity and persistence are owned by the service and
+ * the view, so this serializer NEVER creates rows. Mirrors the "Registration
+ * home: Service" architecture decision.
+ *
+ * Request contract (design.md): the bulk payment is registered against ONE
+ * customer at ONE branch; ``sale_ids`` optionally restricts allocation to a
+ * subset of that customer's pending sales. The submitted amount is in
+ * ``currency``; the service converts to USD/VES snapshots.
+ */
+export const zCustomerPaymentCreateRequest = z.object({
+    customer_id: z.string().min(1),
+    branch: z.string().min(1),
+    amount: z.string().regex(/^-?\d{0,8}(?:\.\d{0,2})?$/),
+    currency: z.string().min(1).max(3),
+    payment_method: z.string().min(1),
+    discount: z.string().regex(/^-?\d{0,8}(?:\.\d{0,2})?$/).optional().default('0.00'),
+    sale_ids: z.union([
+        z.array(z.string().min(1)),
+        z.null()
+    ]).optional()
+});
+
+/**
+ * Read serializer for a single ``CustomerPayment`` group.
+ *
+ * Carries the registration-time snapshots: currency, method, totals, rate
+ * FK, and the branch/customer the group was registered at. The list
+ * serializer (Phase 4) layers ``remaining_refundable_usd`` and
+ * ``sales_count`` on top of this shape.
+ */
+export const zCustomerPaymentDetail = z.object({
+    id: z.string().uuid().readonly(),
+    branch: z.string().uuid().readonly(),
+    customer: z.union([
+        z.string().uuid().readonly(),
+        z.null()
+    ]).readonly(),
+    currency: z.string().readonly(),
+    payment_method: z.string().readonly(),
+    discount: z.string().regex(/^-?\d{0,8}(?:\.\d{0,2})?$/).readonly(),
+    total_amount_usd: z.string().regex(/^-?\d{0,10}(?:\.\d{0,2})?$/).readonly(),
+    total_amount_ves: z.string().regex(/^-?\d{0,10}(?:\.\d{0,2})?$/).readonly(),
+    exchange_rate: z.union([
+        z.string().uuid().readonly(),
+        z.null()
+    ]).readonly(),
+    payment_date: z.string().datetime().readonly(),
+    created_at: z.string().datetime().readonly()
+});
+
+/**
+ * Read serializer for listing ``CustomerPayment`` groups.
+ *
+ * Carries the registration-time snapshots (date, method, currency,
+ * registered totals) and the three Phase-4 annotations the spec's Group
+ * Listing requirement mandates:
+ *
+ * - ``remaining_refundable_usd`` / ``remaining_refundable_ves``: sum of
+ * the group's active children that have no active reversal pointing at
+ * them. A fully reversed group sums to zero but stays listed (spec).
+ * - ``sales_count``: the number of DISTINCT sales touched by the group's
+ * active positive allocations, regardless of whether those children
+ * have later been reversed individually or as part of a group reverse
+ * (the original rows are preserved by every reversal path; sales stay
+ * "affected" by the original registration).
+ *
+ * These are NOT computed here: the view's ``get_queryset`` annotates them
+ * so the list path is a single query, never N+1. The serializer only
+ * declares the shape.
+ */
+export const zCustomerPaymentList = z.object({
+    id: z.string().uuid().readonly(),
+    branch: z.string().uuid().readonly(),
+    customer: z.union([
+        z.string().uuid().readonly(),
+        z.null()
+    ]).readonly(),
+    payment_date: z.string().datetime().readonly(),
+    payment_method: z.string().readonly(),
+    currency: z.string().readonly(),
+    total_amount_usd: z.string().regex(/^-?\d{0,10}(?:\.\d{0,2})?$/).readonly(),
+    total_amount_ves: z.string().regex(/^-?\d{0,10}(?:\.\d{0,2})?$/).readonly(),
+    remaining_refundable_usd: z.string().regex(/^-?\d{0,10}(?:\.\d{0,2})?$/).readonly(),
+    remaining_refundable_ves: z.string().regex(/^-?\d{0,10}(?:\.\d{0,2})?$/).readonly(),
+    sales_count: z.number().int().readonly()
+});
+
+/**
+ * Write payload for ``POST /v1/customer-payments/<id>/reverse/``.
+ *
+ * Only an optional ``reason`` is accepted: the group id comes from the URL,
+ * and the remaining-children set is computed by the service, not supplied by
+ * the client. Mirrors the legacy ``SalePaymentReverseSerializer`` reason
+ * field so the two reversal paths stay symmetric.
+ */
+export const zCustomerPaymentReverseRequest = z.object({
+    reason: z.string().max(255).optional()
+});
+
 export const zCustomerRequest = z.object({
     name: z.string().min(1).max(200),
     phone: z.union([
@@ -274,6 +377,19 @@ export const zCustomerSalePaymentList = z.object({
     created_at: z.string().datetime().readonly()
 });
 
+/**
+ * Response body for ``POST /v1/customer-payments/``.
+ *
+ * Shape: ``{group, children, affected_sales}`` (spec: Atomic Bulk
+ * Registration, "a successful response MUST include the group, its
+ * children, and the recomputed status of every affected sale").
+ */
+export const zCustomerPaymentRegistrationResult = z.object({
+    group: zCustomerPaymentDetail,
+    children: z.array(zCustomerSalePaymentList).readonly(),
+    affected_sales: z.array(zAffectedSale).readonly()
+});
+
 export const zInventoryAdjustmentDetailRead = z.object({
     id: z.string().uuid().readonly(),
     seq_number: z.number().int().readonly(),
@@ -330,6 +446,19 @@ export const zMeasurementUnit = z.object({
 export const zMeasurementUnitRequest = z.object({
     name: z.string().min(1).max(200),
     decimals: z.boolean().optional()
+});
+
+export const zPaginatedCustomerPaymentListList = z.object({
+    count: z.number().int(),
+    next: z.union([
+        z.string().url(),
+        z.null()
+    ]).optional(),
+    previous: z.union([
+        z.string().url(),
+        z.null()
+    ]).optional(),
+    results: z.array(zCustomerPaymentList)
 });
 
 export const zPaginatedCustomerSalePaymentListList = z.object({
@@ -822,9 +951,9 @@ export const zSalePayment = z.object({
     payment_method: z.string(),
     payment_date: z.string().datetime().readonly(),
     REF: z.union([
-        z.string().max(100),
+        z.string().readonly(),
         z.null()
-    ]).optional(),
+    ]).readonly(),
     discount: z.string().regex(/^-?\d{0,8}(?:\.\d{0,2})?$/).optional(),
     total_amount_usd: z.string().regex(/^-?\d{0,10}(?:\.\d{0,2})?$/).readonly(),
     total_amount_ves: z.string().regex(/^-?\d{0,10}(?:\.\d{0,2})?$/).readonly(),
@@ -851,10 +980,6 @@ export const zSalePayment = z.object({
 export const zSalePaymentRequest = z.object({
     currency: z.string().min(1).max(3),
     payment_method: z.string().min(1),
-    REF: z.union([
-        z.string().max(100),
-        z.null()
-    ]).optional(),
     discount: z.string().regex(/^-?\d{0,8}(?:\.\d{0,2})?$/).optional()
 });
 
@@ -1028,6 +1153,19 @@ export const zMeasurementUnitWritable = z.object({
 });
 
 export const zPaginatedAccountListListWritable = z.object({
+    count: z.number().int(),
+    next: z.union([
+        z.string().url(),
+        z.null()
+    ]).optional(),
+    previous: z.union([
+        z.string().url(),
+        z.null()
+    ]).optional(),
+    results: z.array(z.unknown())
+});
+
+export const zPaginatedCustomerPaymentListListWritable = z.object({
     count: z.number().int(),
     next: z.union([
         z.string().url(),
@@ -1221,10 +1359,6 @@ export const zSaleDetailWritable = z.object({
 export const zSalePaymentWritable = z.object({
     currency: z.string().max(3),
     payment_method: z.string(),
-    REF: z.union([
-        z.string().max(100),
-        z.null()
-    ]).optional(),
     discount: z.string().regex(/^-?\d{0,8}(?:\.\d{0,2})?$/).optional()
 });
 
@@ -1235,10 +1369,6 @@ export const zSalePaymentWritable = z.object({
 export const zSalePaymentRequestWritable = z.object({
     currency: z.string().min(1).max(3),
     payment_method: z.string().min(1),
-    REF: z.union([
-        z.string().max(100),
-        z.null()
-    ]).optional(),
     discount: z.string().regex(/^-?\d{0,8}(?:\.\d{0,2})?$/).optional(),
     amount: z.string().regex(/^-?\d{0,8}(?:\.\d{0,2})?$/)
 });
@@ -1527,6 +1657,36 @@ export const zV1CompanyUpdateData = z.object({
 });
 
 export const zV1CompanyUpdateResponse = zCompany;
+
+export const zV1CustomerPaymentsListData = z.object({
+    body: z.never().optional(),
+    path: z.never().optional(),
+    query: z.object({
+        customer_id: z.string().optional(),
+        page: z.number().int().optional(),
+        page_size: z.number().int().optional()
+    }).optional()
+});
+
+export const zV1CustomerPaymentsListResponse = zPaginatedCustomerPaymentListList;
+
+export const zV1CustomerPaymentsCreateData = z.object({
+    body: zCustomerPaymentCreateRequest,
+    path: z.never().optional(),
+    query: z.never().optional()
+});
+
+export const zV1CustomerPaymentsCreateResponse = zCustomerPaymentRegistrationResult;
+
+export const zV1CustomerPaymentsReverseCreateData = z.object({
+    body: zCustomerPaymentReverseRequest.optional(),
+    path: z.object({
+        id: z.string()
+    }),
+    query: z.never().optional()
+});
+
+export const zV1CustomerPaymentsReverseCreateResponse = zSalePaymentReversalResult;
 
 export const zV1CustomersListData = z.object({
     body: z.never().optional(),

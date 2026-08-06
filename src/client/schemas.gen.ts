@@ -719,6 +719,262 @@ export const CustomerSchema = {
     ]
 } as const;
 
+export const CustomerPaymentCreateRequestSchema = {
+    type: 'object',
+    description: 'Write-only payload for ``POST /v1/customer-payments/``.\n\nOnly validates the request body. Allocation, branch/company scoping,\ncustomer scoping, atomicity and persistence are owned by the service and\nthe view, so this serializer NEVER creates rows. Mirrors the "Registration\nhome: Service" architecture decision.\n\nRequest contract (design.md): the bulk payment is registered against ONE\ncustomer at ONE branch; ``sale_ids`` optionally restricts allocation to a\nsubset of that customer\'s pending sales. The submitted amount is in\n``currency``; the service converts to USD/VES snapshots.',
+    properties: {
+        customer_id: {
+            type: 'string',
+            minLength: 1,
+            description: 'ULID of the customer whose pending sales are paid.'
+        },
+        branch: {
+            type: 'string',
+            minLength: 1,
+            description: 'ULID of the branch this cobro is registered at.'
+        },
+        amount: {
+            type: 'string',
+            format: 'decimal',
+            pattern: '^-?\\d{0,8}(?:\\.\\d{0,2})?$',
+            description: 'Submitted payment amount, in `currency`.'
+        },
+        currency: {
+            type: 'string',
+            minLength: 1,
+            maxLength: 3
+        },
+        payment_method: {
+            type: 'string',
+            minLength: 1
+        },
+        discount: {
+            type: 'string',
+            format: 'decimal',
+            pattern: '^-?\\d{0,8}(?:\\.\\d{0,2})?$',
+            default: '0.00',
+            description: 'Discount percentage applied uniformly to both legs, mirroring the legacy SalePaymentSerializer semantics.'
+        },
+        sale_ids: {
+            type: 'array',
+            items: {
+                type: 'string',
+                minLength: 1
+            },
+            nullable: true,
+            description: 'Optional ULID subset restricting allocation. When absent, all of the customer\'s pending sales oldest-first are allocated.'
+        }
+    },
+    required: [
+        'amount',
+        'branch',
+        'currency',
+        'customer_id',
+        'payment_method'
+    ]
+} as const;
+
+export const CustomerPaymentDetailSchema = {
+    type: 'object',
+    description: 'Read serializer for a single ``CustomerPayment`` group.\n\nCarries the registration-time snapshots: currency, method, totals, rate\nFK, and the branch/customer the group was registered at. The list\nserializer (Phase 4) layers ``remaining_refundable_usd`` and\n``sales_count`` on top of this shape.',
+    properties: {
+        id: {
+            type: 'string',
+            format: 'uuid',
+            readOnly: true
+        },
+        branch: {
+            type: 'string',
+            format: 'uuid',
+            readOnly: true
+        },
+        customer: {
+            type: 'string',
+            format: 'uuid',
+            readOnly: true,
+            nullable: true
+        },
+        currency: {
+            type: 'string',
+            readOnly: true
+        },
+        payment_method: {
+            type: 'string',
+            readOnly: true
+        },
+        discount: {
+            type: 'string',
+            format: 'decimal',
+            pattern: '^-?\\d{0,8}(?:\\.\\d{0,2})?$',
+            readOnly: true
+        },
+        total_amount_usd: {
+            type: 'string',
+            format: 'decimal',
+            pattern: '^-?\\d{0,10}(?:\\.\\d{0,2})?$',
+            readOnly: true
+        },
+        total_amount_ves: {
+            type: 'string',
+            format: 'decimal',
+            pattern: '^-?\\d{0,10}(?:\\.\\d{0,2})?$',
+            readOnly: true
+        },
+        exchange_rate: {
+            type: 'string',
+            format: 'uuid',
+            readOnly: true,
+            nullable: true
+        },
+        payment_date: {
+            type: 'string',
+            format: 'date-time',
+            readOnly: true
+        },
+        created_at: {
+            type: 'string',
+            format: 'date-time',
+            readOnly: true
+        }
+    },
+    required: [
+        'branch',
+        'created_at',
+        'currency',
+        'customer',
+        'discount',
+        'exchange_rate',
+        'id',
+        'payment_date',
+        'payment_method',
+        'total_amount_usd',
+        'total_amount_ves'
+    ]
+} as const;
+
+export const CustomerPaymentListSchema = {
+    type: 'object',
+    description: 'Read serializer for listing ``CustomerPayment`` groups.\n\nCarries the registration-time snapshots (date, method, currency,\nregistered totals) and the three Phase-4 annotations the spec\'s Group\nListing requirement mandates:\n\n- ``remaining_refundable_usd`` / ``remaining_refundable_ves``: sum of\n  the group\'s active children that have no active reversal pointing at\n  them. A fully reversed group sums to zero but stays listed (spec).\n- ``sales_count``: the number of DISTINCT sales touched by the group\'s\n  active positive allocations, regardless of whether those children\n  have later been reversed individually or as part of a group reverse\n  (the original rows are preserved by every reversal path; sales stay\n  "affected" by the original registration).\n\nThese are NOT computed here: the view\'s ``get_queryset`` annotates them\nso the list path is a single query, never N+1. The serializer only\ndeclares the shape.',
+    properties: {
+        id: {
+            type: 'string',
+            format: 'uuid',
+            readOnly: true
+        },
+        branch: {
+            type: 'string',
+            format: 'uuid',
+            readOnly: true
+        },
+        customer: {
+            type: 'string',
+            format: 'uuid',
+            readOnly: true,
+            nullable: true
+        },
+        payment_date: {
+            type: 'string',
+            format: 'date-time',
+            readOnly: true
+        },
+        payment_method: {
+            type: 'string',
+            readOnly: true
+        },
+        currency: {
+            type: 'string',
+            readOnly: true
+        },
+        total_amount_usd: {
+            type: 'string',
+            format: 'decimal',
+            pattern: '^-?\\d{0,10}(?:\\.\\d{0,2})?$',
+            readOnly: true
+        },
+        total_amount_ves: {
+            type: 'string',
+            format: 'decimal',
+            pattern: '^-?\\d{0,10}(?:\\.\\d{0,2})?$',
+            readOnly: true
+        },
+        remaining_refundable_usd: {
+            type: 'string',
+            format: 'decimal',
+            pattern: '^-?\\d{0,10}(?:\\.\\d{0,2})?$',
+            readOnly: true
+        },
+        remaining_refundable_ves: {
+            type: 'string',
+            format: 'decimal',
+            pattern: '^-?\\d{0,10}(?:\\.\\d{0,2})?$',
+            readOnly: true
+        },
+        sales_count: {
+            type: 'integer',
+            readOnly: true
+        }
+    },
+    required: [
+        'branch',
+        'currency',
+        'customer',
+        'id',
+        'payment_date',
+        'payment_method',
+        'remaining_refundable_usd',
+        'remaining_refundable_ves',
+        'sales_count',
+        'total_amount_usd',
+        'total_amount_ves'
+    ]
+} as const;
+
+export const CustomerPaymentRegistrationResultSchema = {
+    type: 'object',
+    description: 'Response body for ``POST /v1/customer-payments/``.\n\nShape: ``{group, children, affected_sales}`` (spec: Atomic Bulk\nRegistration, "a successful response MUST include the group, its\nchildren, and the recomputed status of every affected sale").',
+    properties: {
+        group: {
+            allOf: [
+                {
+                    $ref: '#/components/schemas/CustomerPaymentDetail'
+                }
+            ],
+            readOnly: true
+        },
+        children: {
+            type: 'array',
+            items: {
+                $ref: '#/components/schemas/CustomerSalePaymentList'
+            },
+            readOnly: true
+        },
+        affected_sales: {
+            type: 'array',
+            items: {
+                $ref: '#/components/schemas/AffectedSale'
+            },
+            readOnly: true
+        }
+    },
+    required: [
+        'affected_sales',
+        'children',
+        'group'
+    ]
+} as const;
+
+export const CustomerPaymentReverseRequestSchema = {
+    type: 'object',
+    description: 'Write payload for ``POST /v1/customer-payments/<id>/reverse/``.\n\nOnly an optional ``reason`` is accepted: the group id comes from the URL,\nand the remaining-children set is computed by the service, not supplied by\nthe client. Mirrors the legacy ``SalePaymentReverseSerializer`` reason\nfield so the two reversal paths stay symmetric.',
+    properties: {
+        reason: {
+            type: 'string',
+            description: 'Optional note stored on every compensating payment created by this group reversal.',
+            maxLength: 255
+        }
+    }
+} as const;
+
 export const CustomerRequestSchema = {
     type: 'object',
     properties: {
@@ -1100,6 +1356,38 @@ export const PaginatedAccountListListSchema = {
             type: 'array',
             items: {
                 $ref: '#/components/schemas/AccountList'
+            }
+        }
+    }
+} as const;
+
+export const PaginatedCustomerPaymentListListSchema = {
+    type: 'object',
+    required: [
+        'count',
+        'results'
+    ],
+    properties: {
+        count: {
+            type: 'integer',
+            example: 123
+        },
+        next: {
+            type: 'string',
+            nullable: true,
+            format: 'uri',
+            example: 'http://api.example.org/accounts/?page=4'
+        },
+        previous: {
+            type: 'string',
+            nullable: true,
+            format: 'uri',
+            example: 'http://api.example.org/accounts/?page=2'
+        },
+        results: {
+            type: 'array',
+            items: {
+                $ref: '#/components/schemas/CustomerPaymentList'
             }
         }
     }
@@ -2124,8 +2412,8 @@ export const SalePaymentSchema = {
         },
         REF: {
             type: 'string',
-            nullable: true,
-            maxLength: 100
+            readOnly: true,
+            nullable: true
         },
         discount: {
             type: 'string',
@@ -2172,6 +2460,7 @@ export const SalePaymentSchema = {
         }
     },
     required: [
+        'REF',
         'created_at',
         'currency',
         'exchange_rate',
@@ -2198,11 +2487,6 @@ export const SalePaymentRequestSchema = {
         payment_method: {
             type: 'string',
             minLength: 1
-        },
-        REF: {
-            type: 'string',
-            nullable: true,
-            maxLength: 100
         },
         discount: {
             type: 'string',
@@ -2627,6 +2911,35 @@ export const PaginatedAccountListListWritableSchema = {
     }
 } as const;
 
+export const PaginatedCustomerPaymentListListWritableSchema = {
+    type: 'object',
+    required: [
+        'count',
+        'results'
+    ],
+    properties: {
+        count: {
+            type: 'integer',
+            example: 123
+        },
+        next: {
+            type: 'string',
+            nullable: true,
+            format: 'uri',
+            example: 'http://api.example.org/accounts/?page=4'
+        },
+        previous: {
+            type: 'string',
+            nullable: true,
+            format: 'uri',
+            example: 'http://api.example.org/accounts/?page=2'
+        },
+        results: {
+            type: 'array'
+        }
+    }
+} as const;
+
 export const PaginatedCustomerSalePaymentListListWritableSchema = {
     type: 'object',
     required: [
@@ -3016,11 +3329,6 @@ export const SalePaymentWritableSchema = {
         payment_method: {
             type: 'string'
         },
-        REF: {
-            type: 'string',
-            nullable: true,
-            maxLength: 100
-        },
         discount: {
             type: 'string',
             format: 'decimal',
@@ -3045,11 +3353,6 @@ export const SalePaymentRequestWritableSchema = {
         payment_method: {
             type: 'string',
             minLength: 1
-        },
-        REF: {
-            type: 'string',
-            nullable: true,
-            maxLength: 100
         },
         discount: {
             type: 'string',

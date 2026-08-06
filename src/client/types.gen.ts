@@ -199,6 +199,128 @@ export type Customer = {
     changed_by?: number | null;
 };
 
+/**
+ * Write-only payload for ``POST /v1/customer-payments/``.
+ *
+ * Only validates the request body. Allocation, branch/company scoping,
+ * customer scoping, atomicity and persistence are owned by the service and
+ * the view, so this serializer NEVER creates rows. Mirrors the "Registration
+ * home: Service" architecture decision.
+ *
+ * Request contract (design.md): the bulk payment is registered against ONE
+ * customer at ONE branch; ``sale_ids`` optionally restricts allocation to a
+ * subset of that customer's pending sales. The submitted amount is in
+ * ``currency``; the service converts to USD/VES snapshots.
+ */
+export type CustomerPaymentCreateRequest = {
+    /**
+     * ULID of the customer whose pending sales are paid.
+     */
+    customer_id: string;
+    /**
+     * ULID of the branch this cobro is registered at.
+     */
+    branch: string;
+    /**
+     * Submitted payment amount, in `currency`.
+     */
+    amount: string;
+    currency: string;
+    payment_method: string;
+    /**
+     * Discount percentage applied uniformly to both legs, mirroring the legacy SalePaymentSerializer semantics.
+     */
+    discount?: string;
+    /**
+     * Optional ULID subset restricting allocation. When absent, all of the customer's pending sales oldest-first are allocated.
+     */
+    sale_ids?: Array<string> | null;
+};
+
+/**
+ * Read serializer for a single ``CustomerPayment`` group.
+ *
+ * Carries the registration-time snapshots: currency, method, totals, rate
+ * FK, and the branch/customer the group was registered at. The list
+ * serializer (Phase 4) layers ``remaining_refundable_usd`` and
+ * ``sales_count`` on top of this shape.
+ */
+export type CustomerPaymentDetail = {
+    readonly id: string;
+    readonly branch: string;
+    readonly customer: string | null;
+    readonly currency: string;
+    readonly payment_method: string;
+    readonly discount: string;
+    readonly total_amount_usd: string;
+    readonly total_amount_ves: string;
+    readonly exchange_rate: string | null;
+    readonly payment_date: string;
+    readonly created_at: string;
+};
+
+/**
+ * Read serializer for listing ``CustomerPayment`` groups.
+ *
+ * Carries the registration-time snapshots (date, method, currency,
+ * registered totals) and the three Phase-4 annotations the spec's Group
+ * Listing requirement mandates:
+ *
+ * - ``remaining_refundable_usd`` / ``remaining_refundable_ves``: sum of
+ * the group's active children that have no active reversal pointing at
+ * them. A fully reversed group sums to zero but stays listed (spec).
+ * - ``sales_count``: the number of DISTINCT sales touched by the group's
+ * active positive allocations, regardless of whether those children
+ * have later been reversed individually or as part of a group reverse
+ * (the original rows are preserved by every reversal path; sales stay
+ * "affected" by the original registration).
+ *
+ * These are NOT computed here: the view's ``get_queryset`` annotates them
+ * so the list path is a single query, never N+1. The serializer only
+ * declares the shape.
+ */
+export type CustomerPaymentList = {
+    readonly id: string;
+    readonly branch: string;
+    readonly customer: string | null;
+    readonly payment_date: string;
+    readonly payment_method: string;
+    readonly currency: string;
+    readonly total_amount_usd: string;
+    readonly total_amount_ves: string;
+    readonly remaining_refundable_usd: string;
+    readonly remaining_refundable_ves: string;
+    readonly sales_count: number;
+};
+
+/**
+ * Response body for ``POST /v1/customer-payments/``.
+ *
+ * Shape: ``{group, children, affected_sales}`` (spec: Atomic Bulk
+ * Registration, "a successful response MUST include the group, its
+ * children, and the recomputed status of every affected sale").
+ */
+export type CustomerPaymentRegistrationResult = {
+    group: CustomerPaymentDetail;
+    readonly children: Array<CustomerSalePaymentList>;
+    readonly affected_sales: Array<AffectedSale>;
+};
+
+/**
+ * Write payload for ``POST /v1/customer-payments/<id>/reverse/``.
+ *
+ * Only an optional ``reason`` is accepted: the group id comes from the URL,
+ * and the remaining-children set is computed by the service, not supplied by
+ * the client. Mirrors the legacy ``SalePaymentReverseSerializer`` reason
+ * field so the two reversal paths stay symmetric.
+ */
+export type CustomerPaymentReverseRequest = {
+    /**
+     * Optional note stored on every compensating payment created by this group reversal.
+     */
+    reason?: string;
+};
+
 export type CustomerRequest = {
     name: string;
     phone?: string | null;
@@ -284,6 +406,13 @@ export type PaginatedAccountListList = {
     next?: string | null;
     previous?: string | null;
     results: Array<AccountList>;
+};
+
+export type PaginatedCustomerPaymentListList = {
+    count: number;
+    next?: string | null;
+    previous?: string | null;
+    results: Array<CustomerPaymentList>;
 };
 
 export type PaginatedCustomerSalePaymentListList = {
@@ -577,7 +706,7 @@ export type SalePayment = {
     currency: string;
     payment_method: string;
     readonly payment_date: string;
-    REF?: string | null;
+    readonly REF: string | null;
     discount?: string;
     readonly total_amount_usd: string;
     readonly total_amount_ves: string;
@@ -595,7 +724,6 @@ export type SalePayment = {
 export type SalePaymentRequest = {
     currency: string;
     payment_method: string;
-    REF?: string | null;
     discount?: string;
 };
 
@@ -752,6 +880,13 @@ export type PaginatedAccountListListWritable = {
     results: Array<unknown>;
 };
 
+export type PaginatedCustomerPaymentListListWritable = {
+    count: number;
+    next?: string | null;
+    previous?: string | null;
+    results: Array<unknown>;
+};
+
 export type PaginatedCustomerSalePaymentListListWritable = {
     count: number;
     next?: string | null;
@@ -883,7 +1018,6 @@ export type SaleDetailWritable = {
 export type SalePaymentWritable = {
     currency: string;
     payment_method: string;
-    REF?: string | null;
     discount?: string;
 };
 
@@ -894,7 +1028,6 @@ export type SalePaymentWritable = {
 export type SalePaymentRequestWritable = {
     currency: string;
     payment_method: string;
-    REF?: string | null;
     discount?: string;
     /**
      * Payment amount in the specified currency
@@ -1332,6 +1465,90 @@ export type V1CompanyUpdateResponses = {
 };
 
 export type V1CompanyUpdateResponse = V1CompanyUpdateResponses[keyof V1CompanyUpdateResponses];
+
+export type V1CustomerPaymentsListData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Filtrar por el cliente que recibió el cobro.
+         */
+        customer_id?: string;
+        /**
+         * A page number within the paginated result set.
+         */
+        page?: number;
+        /**
+         * Number of results to return per page.
+         */
+        page_size?: number;
+    };
+    url: '/v1/customer-payments/';
+};
+
+export type V1CustomerPaymentsListResponses = {
+    200: PaginatedCustomerPaymentListList;
+};
+
+export type V1CustomerPaymentsListResponse = V1CustomerPaymentsListResponses[keyof V1CustomerPaymentsListResponses];
+
+export type V1CustomerPaymentsCreateData = {
+    body: CustomerPaymentCreateRequest;
+    path?: never;
+    query?: never;
+    url: '/v1/customer-payments/';
+};
+
+export type V1CustomerPaymentsCreateErrors = {
+    /**
+     * Monto no positivo, o subconjunto sin venta pendiente asignable.
+     */
+    400: unknown;
+    /**
+     * Venta fuera del alcance de sucursal/customer del cobro, o sucursal sin acceso.
+     */
+    403: unknown;
+    /**
+     * id de venta desconocido, o venta fuera de la compañía.
+     */
+    404: unknown;
+};
+
+export type V1CustomerPaymentsCreateResponses = {
+    201: CustomerPaymentRegistrationResult;
+};
+
+export type V1CustomerPaymentsCreateResponse = V1CustomerPaymentsCreateResponses[keyof V1CustomerPaymentsCreateResponses];
+
+export type V1CustomerPaymentsReverseCreateData = {
+    body?: CustomerPaymentReverseRequest;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/v1/customer-payments/{id}/reverse/';
+};
+
+export type V1CustomerPaymentsReverseCreateErrors = {
+    /**
+     * Nada queda por devolver en este grupo.
+     */
+    400: unknown;
+    /**
+     * El grupo pertenece a una sucursal a la que no tiene acceso.
+     */
+    403: unknown;
+    /**
+     * El grupo no existe o no pertenece a su compañía.
+     */
+    404: unknown;
+};
+
+export type V1CustomerPaymentsReverseCreateResponses = {
+    201: SalePaymentReversalResult;
+};
+
+export type V1CustomerPaymentsReverseCreateResponse = V1CustomerPaymentsReverseCreateResponses[keyof V1CustomerPaymentsReverseCreateResponses];
 
 export type V1CustomersListData = {
     body?: never;

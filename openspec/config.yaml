@@ -1,0 +1,58 @@
+schema: spec-driven
+
+context: |
+  Stack: React 19 + TypeScript 5.9 + Vite 7, Tailwind v4, TanStack Query v5,
+         React Router v7, React Hook Form + Zod, Headless UI + Lucide + Framer Motion.
+  API: openapi-ts (Hey API) generates src/client/ from schema.yml — never edit manually.
+  Auth: HttpOnly cookies + CSRF token interceptor + 401 auto-refresh (v1RefreshCreate).
+  State: TanStack Query (server), React Context (Auth + Branch), useState (UI). No Redux.
+  Architecture: Provider hierarchy QueryClient > Auth > Branch > Toaster > Router;
+                layers are src/components/ui, src/components/{domain}, src/pages/{domain}.
+  Multi-branch tenancy; mobile + desktop via useMediaQuery; multi-currency USD/VES.
+  Testing: no test runner installed — strict TDD unavailable.
+
+strict_tdd: false
+
+testing:
+  runner: none
+  layers:
+    unit: false
+    integration: false
+    e2e: false
+  coverage:
+    available: false
+    command: ""
+  quality:
+    linter: "npm run lint"
+    type_checker: "tsc -b"
+    formatter: ""
+
+rules:
+  proposal:
+    - Include rollback plan for risky changes
+    - Call out any change that touches src/client (must come from schema.yml regeneration)
+  specs:
+    - Use Given/When/Then for scenarios
+    - Use RFC 2119 keywords (MUST, SHALL, SHOULD, MAY)
+    - Note UI copy in Spanish; technical identifiers in English
+  design:
+    - Document architecture decisions with rationale
+    - Preserve provider hierarchy unless change explicitly justifies reordering
+  tasks:
+    - Group by phase, use hierarchical numbering
+    - Keep tasks completable in one session
+  apply:
+    guidelines:
+      - Follow existing code patterns in src/components/ui, src/components/{domain}, src/pages/{domain}
+      - Never manually edit src/client/* — regenerate via `npm run generate-api`
+      - Prefer generated TanStack Query hooks over raw SDK functions
+    tdd: false
+    test_command: ""
+  verify:
+    test_command: ""
+    build_command: "npm run build"
+    lint_command: "npm run lint"
+    coverage_threshold: 0
+  archive:
+    - Warn before merging destructive deltas
+    - Confirm schema.yml changes are reflected in regenerated src/client

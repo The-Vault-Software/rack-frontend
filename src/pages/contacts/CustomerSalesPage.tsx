@@ -8,13 +8,21 @@ import type { SaleList, Sale } from '../../client/types.gen';
 import { useState } from 'react';
 import { format } from 'date-fns';
 import { cn } from '../../lib/utils';
-import { v1CustomersRetrieveOptions, v1SalesListOptions, v1SalesPaymentsCreateMutation } from '../../client/@tanstack/react-query.gen';
+import {
+  v1CustomersRetrieveOptions,
+  v1CustomersRetrieveQueryKey,
+  v1CustomerPaymentsCreateMutation,
+  v1SalesListOptions,
+  v1SalesPaymentsListQueryKey,
+  v1SalesRetrieveQueryKey,
+} from '../../client/@tanstack/react-query.gen';
 import PaymentForm from '../../pages/accounts/components/PaymentForm';
 import { type PaymentFormValues } from '../../pages/accounts/hooks/usePaymentCalculations';
 import Modal from '../../components/ui/Modal';
 import { useQueryClient, useMutation } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { useExchangeRates } from '../../hooks/useExchangeRates';
+import { useBranch } from '../../context/BranchContext';
+import { extractErrorDetail } from './hooks/useReversePayments';
 import ReversePaymentsModal from './components/ReversePaymentsModal';
 
 export default function CustomerSalesPage() {
@@ -32,10 +40,13 @@ export default function CustomerSalesPage() {
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [isReverseModalOpen, setIsReverseModalOpen] = useState(false);
   const queryClient = useQueryClient();
-  const { rates } = useExchangeRates();
+  const { selectedBranch } = useBranch();
 
-  const saleMutation = useMutation({
-    ...v1SalesPaymentsCreateMutation(),
+  // One atomic bulk registration call replacing the legacy per-sale loop.
+  // Allocation is delegated to the backend (POST /v1/customer-payments/),
+  // so the cashier sees exactly one success toast and no partial-success UI.
+  const customerPaymentMutation = useMutation({
+    ...v1CustomerPaymentsCreateMutation(),
   });
 
   const { data: salesData, isLoading: isLoadingSales } = useQuery({
@@ -59,54 +70,58 @@ export default function CustomerSalesPage() {
   }, 0);
 
   const handleBulkPayment = async (data: PaymentFormValues) => {
-    if (!rates) return;
+    // The bulk endpoint scopes the cobro to one customer + one branch, then
+    // allocates the amount oldest-first across that customer's pending sales
+    // server-side. Allocation data (bcv rate, per-sale conversion, sort) is
+    // no longer computed by the client — the backend owns the snapshot.
+    if (!id || !selectedBranch?.id) return;
 
-    const bcv_rate = parseFloat(rates.bcv_rate);
-    const conversionRate = data.currency === 'VES' ? bcv_rate : 1;
-    let remainingAmount = parseFloat(data.amount);
+    // USD-only discount guard (legacy frontend quirk): the discount is applied
+    // only when the payment currency is USD. This intentionally does NOT
+    // align with the backend's uniform SalePaymentSerializer semantics; the
+    // backend still receives discount in either currency and stores it as-is.
+    const finalDiscount = (data.currency === 'USD' && data.discount) ? data.discount : '0.00';
 
-    // Sort pending sales by date (oldest first)
-    const sortedSales = [...pendingSales].sort((a, b) => 
-      new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
-    );
+    try {
+      const result = await customerPaymentMutation.mutateAsync({
+        body: {
+          customer_id: id,
+          branch: selectedBranch.id,
+          amount: data.amount,
+          currency: data.currency,
+          payment_method: data.payment_method,
+          discount: finalDiscount,
+          // sale_ids intentionally omitted (Option B): selective-sale payment
+          // can be added later without a contract break.
+        },
+      });
 
-    let paymentCount = 0;
-
-    for (const sale of sortedSales) {
-      if (remainingAmount <= 0.01) break; // Use a small epsilon for float comparison logic
-
-      const totalUSD = parseFloat(sale.total_amount_usd);
-      const paidUSD = parseFloat(sale.total_paid);
-      const pendingUSD = totalUSD - paidUSD;
-      
-      const pendingInCurrency = pendingUSD * conversionRate;
-      const paymentForThisSale = Math.min(remainingAmount, pendingInCurrency);
-
-      if (paymentForThisSale > 0) {
-        // Prepare payload - discount is applied equally if present
-        const finalDiscount = (data.currency === 'USD' && data.discount) ? data.discount : '0.00';
-        
-        await saleMutation.mutateAsync({
-           path: { sale_id: sale.id },
-           body: {
-             amount: paymentForThisSale.toFixed(2),
-             currency: data.currency,
-             payment_method: data.payment_method,
-             discount: finalDiscount
-           }
-        });
-
-        remainingAmount -= paymentForThisSale;
-        paymentCount++;
-      }
-    }
-
-    if (paymentCount > 0) {
-      toast.success(`Se registraron ${paymentCount} pagos exitosamente.`);
+      // Exactly one success toast. Atomic backend registration means there
+      // are no partial-success states to surface.
+      toast.success('Se registró el pago exitosamente.');
       setIsPaymentModalOpen(false);
+
+      // Invalidate the sale aggregates plus the per-sale keys touched by the
+      // bulk call (reported via affected_sales) and the customer retrieve so
+      // any customer-derived debt refreshes. Mirrors useReversePayments.
       queryClient.invalidateQueries({ queryKey: [{ _id: 'v1SalesList' }] });
-    } else {
-      toast.info("No se realizó ningún pago (monto insuficiente o sin deuda).");
+      queryClient.invalidateQueries({ queryKey: [{ _id: 'v1CustomerSalePaymentsList' }] });
+      result.affected_sales.forEach(({ sale_id }) => {
+        queryClient.invalidateQueries({
+          queryKey: v1SalesRetrieveQueryKey({ path: { id: sale_id } }),
+        });
+        queryClient.invalidateQueries({
+          queryKey: v1SalesPaymentsListQueryKey({ path: { sale_id } }),
+        });
+      });
+      queryClient.invalidateQueries({
+        queryKey: v1CustomersRetrieveQueryKey({ path: { id } }),
+      });
+    } catch (error) {
+      // Surface the backend `detail` message; keep the payment modal open with
+      // the entered values (react-hook-form preserves them) so the cashier
+      // can adjust and retry without re-typing.
+      toast.error(extractErrorDetail(error) ?? 'Error al registrar el pago');
     }
   };
 

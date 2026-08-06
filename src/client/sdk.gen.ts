@@ -2,7 +2,7 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { V1AccountsCreateData, V1AccountsCreateResponses, V1AccountsDestroyData, V1AccountsDestroyResponses, V1AccountsListData, V1AccountsListResponses, V1AccountsPartialUpdateData, V1AccountsPartialUpdateResponses, V1AccountsPaymentsCreateData, V1AccountsPaymentsCreateResponses, V1AccountsPaymentsListData, V1AccountsPaymentsListResponses, V1AccountsRetrieveData, V1AccountsRetrieveResponses, V1AccountsUpdateData, V1AccountsUpdateResponses, V1AdjustmentsCreateData, V1AdjustmentsCreateResponses, V1AdjustmentsListData, V1AdjustmentsListResponses, V1AdjustmentsRetrieveData, V1AdjustmentsRetrieveResponses, V1BranchCreateData, V1BranchCreateResponses, V1BranchDestroyData, V1BranchDestroyResponses, V1BranchListData, V1BranchListResponses, V1BranchPartialUpdateData, V1BranchPartialUpdateResponses, V1BranchRetrieveData, V1BranchRetrieveResponses, V1BranchUpdateData, V1BranchUpdateResponses, V1CategoryCreateData, V1CategoryCreateResponses, V1CategoryDestroyData, V1CategoryDestroyResponses, V1CategoryListData, V1CategoryListResponses, V1CategoryPartialUpdateData, V1CategoryPartialUpdateResponses, V1CategoryRetrieveData, V1CategoryRetrieveResponses, V1CategoryUpdateData, V1CategoryUpdateResponses, V1CompanyCreateData, V1CompanyCreateResponses, V1CompanyPartialUpdateData, V1CompanyPartialUpdateResponses, V1CompanyRetrieveData, V1CompanyRetrieveResponses, V1CompanyUpdateData, V1CompanyUpdateResponses, V1CustomerSalePaymentsListData, V1CustomerSalePaymentsListResponses, V1CustomersCreateData, V1CustomersCreateResponses, V1CustomersDestroyData, V1CustomersDestroyResponses, V1CustomersListData, V1CustomersListResponses, V1CustomersPartialUpdateData, V1CustomersPartialUpdateResponses, V1CustomersRetrieveData, V1CustomersRetrieveResponses, V1CustomersUpdateData, V1CustomersUpdateResponses, V1ExchangeRatesHistoryRetrieveData, V1ExchangeRatesHistoryRetrieveResponses, V1ExchangeRatesRetrieveData, V1ExchangeRatesRetrieveResponses, V1ExchangeRatesTodayRetrieveData, V1ExchangeRatesTodayRetrieveResponses, V1LoginCreateData, V1LoginCreateResponses, V1LogoutCreateData, V1LogoutCreateResponses, V1MeasurementCreateData, V1MeasurementCreateResponses, V1MeasurementDestroyData, V1MeasurementDestroyResponses, V1MeasurementListData, V1MeasurementListResponses, V1MeasurementPartialUpdateData, V1MeasurementPartialUpdateResponses, V1MeasurementRetrieveData, V1MeasurementRetrieveResponses, V1MeasurementUpdateData, V1MeasurementUpdateResponses, V1ProductBranchStockListData, V1ProductBranchStockListResponses, V1ProductCreateData, V1ProductCreateResponses, V1ProductDestroyData, V1ProductDestroyResponses, V1ProductListData, V1ProductListResponses, V1ProductPartialUpdateData, V1ProductPartialUpdateResponses, V1ProductRetrieveData, V1ProductRetrieveResponses, V1ProductUpdateData, V1ProductUpdateResponses, V1ProvidersCreateData, V1ProvidersCreateResponses, V1ProvidersDestroyData, V1ProvidersDestroyResponses, V1ProvidersListData, V1ProvidersListResponses, V1ProvidersPartialUpdateData, V1ProvidersPartialUpdateResponses, V1ProvidersRetrieveData, V1ProvidersRetrieveResponses, V1ProvidersUpdateData, V1ProvidersUpdateResponses, V1RefreshCreateData, V1RefreshCreateResponses, V1RegisterCreateData, V1RegisterCreateResponses, V1SalePaymentsReverseCreateData, V1SalePaymentsReverseCreateErrors, V1SalePaymentsReverseCreateResponses, V1SalesCreateData, V1SalesCreateResponses, V1SalesDestroyData, V1SalesDestroyResponses, V1SalesListData, V1SalesListResponses, V1SalesPartialUpdateData, V1SalesPartialUpdateResponses, V1SalesPaymentsCreateData, V1SalesPaymentsCreateResponses, V1SalesPaymentsListData, V1SalesPaymentsListResponses, V1SalesRetrieveData, V1SalesRetrieveResponses, V1SalesUpdateData, V1SalesUpdateResponses, V1UserBranchesRetrieveData, V1UserBranchesRetrieveResponses, V1UserBranchesUpdateData, V1UserBranchesUpdateResponses, V1UserInfoPartialUpdateData, V1UserInfoPartialUpdateResponses, V1UserInfoRetrieveData, V1UserInfoRetrieveResponses, V1UserInfoUpdateData, V1UserInfoUpdateResponses } from './types.gen';
+import type { V1AccountsCreateData, V1AccountsCreateResponses, V1AccountsDestroyData, V1AccountsDestroyResponses, V1AccountsListData, V1AccountsListResponses, V1AccountsPartialUpdateData, V1AccountsPartialUpdateResponses, V1AccountsPaymentsCreateData, V1AccountsPaymentsCreateResponses, V1AccountsPaymentsListData, V1AccountsPaymentsListResponses, V1AccountsRetrieveData, V1AccountsRetrieveResponses, V1AccountsUpdateData, V1AccountsUpdateResponses, V1AdjustmentsCreateData, V1AdjustmentsCreateResponses, V1AdjustmentsListData, V1AdjustmentsListResponses, V1AdjustmentsRetrieveData, V1AdjustmentsRetrieveResponses, V1BranchCreateData, V1BranchCreateResponses, V1BranchDestroyData, V1BranchDestroyResponses, V1BranchListData, V1BranchListResponses, V1BranchPartialUpdateData, V1BranchPartialUpdateResponses, V1BranchRetrieveData, V1BranchRetrieveResponses, V1BranchUpdateData, V1BranchUpdateResponses, V1CategoryCreateData, V1CategoryCreateResponses, V1CategoryDestroyData, V1CategoryDestroyResponses, V1CategoryListData, V1CategoryListResponses, V1CategoryPartialUpdateData, V1CategoryPartialUpdateResponses, V1CategoryRetrieveData, V1CategoryRetrieveResponses, V1CategoryUpdateData, V1CategoryUpdateResponses, V1CompanyCreateData, V1CompanyCreateResponses, V1CompanyPartialUpdateData, V1CompanyPartialUpdateResponses, V1CompanyRetrieveData, V1CompanyRetrieveResponses, V1CompanyUpdateData, V1CompanyUpdateResponses, V1CustomerPaymentsCreateData, V1CustomerPaymentsCreateErrors, V1CustomerPaymentsCreateResponses, V1CustomerPaymentsListData, V1CustomerPaymentsListResponses, V1CustomerPaymentsReverseCreateData, V1CustomerPaymentsReverseCreateErrors, V1CustomerPaymentsReverseCreateResponses, V1CustomerSalePaymentsListData, V1CustomerSalePaymentsListResponses, V1CustomersCreateData, V1CustomersCreateResponses, V1CustomersDestroyData, V1CustomersDestroyResponses, V1CustomersListData, V1CustomersListResponses, V1CustomersPartialUpdateData, V1CustomersPartialUpdateResponses, V1CustomersRetrieveData, V1CustomersRetrieveResponses, V1CustomersUpdateData, V1CustomersUpdateResponses, V1ExchangeRatesHistoryRetrieveData, V1ExchangeRatesHistoryRetrieveResponses, V1ExchangeRatesRetrieveData, V1ExchangeRatesRetrieveResponses, V1ExchangeRatesTodayRetrieveData, V1ExchangeRatesTodayRetrieveResponses, V1LoginCreateData, V1LoginCreateResponses, V1LogoutCreateData, V1LogoutCreateResponses, V1MeasurementCreateData, V1MeasurementCreateResponses, V1MeasurementDestroyData, V1MeasurementDestroyResponses, V1MeasurementListData, V1MeasurementListResponses, V1MeasurementPartialUpdateData, V1MeasurementPartialUpdateResponses, V1MeasurementRetrieveData, V1MeasurementRetrieveResponses, V1MeasurementUpdateData, V1MeasurementUpdateResponses, V1ProductBranchStockListData, V1ProductBranchStockListResponses, V1ProductCreateData, V1ProductCreateResponses, V1ProductDestroyData, V1ProductDestroyResponses, V1ProductListData, V1ProductListResponses, V1ProductPartialUpdateData, V1ProductPartialUpdateResponses, V1ProductRetrieveData, V1ProductRetrieveResponses, V1ProductUpdateData, V1ProductUpdateResponses, V1ProvidersCreateData, V1ProvidersCreateResponses, V1ProvidersDestroyData, V1ProvidersDestroyResponses, V1ProvidersListData, V1ProvidersListResponses, V1ProvidersPartialUpdateData, V1ProvidersPartialUpdateResponses, V1ProvidersRetrieveData, V1ProvidersRetrieveResponses, V1ProvidersUpdateData, V1ProvidersUpdateResponses, V1RefreshCreateData, V1RefreshCreateResponses, V1RegisterCreateData, V1RegisterCreateResponses, V1SalePaymentsReverseCreateData, V1SalePaymentsReverseCreateErrors, V1SalePaymentsReverseCreateResponses, V1SalesCreateData, V1SalesCreateResponses, V1SalesDestroyData, V1SalesDestroyResponses, V1SalesListData, V1SalesListResponses, V1SalesPartialUpdateData, V1SalesPartialUpdateResponses, V1SalesPaymentsCreateData, V1SalesPaymentsCreateResponses, V1SalesPaymentsListData, V1SalesPaymentsListResponses, V1SalesRetrieveData, V1SalesRetrieveResponses, V1SalesUpdateData, V1SalesUpdateResponses, V1UserBranchesRetrieveData, V1UserBranchesRetrieveResponses, V1UserBranchesUpdateData, V1UserBranchesUpdateResponses, V1UserInfoPartialUpdateData, V1UserInfoPartialUpdateResponses, V1UserInfoRetrieveData, V1UserInfoRetrieveResponses, V1UserInfoUpdateData, V1UserInfoUpdateResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -251,6 +251,65 @@ export const v1CompanyCreate = <ThrowOnError extends boolean = false>(options: O
 
 export const v1CompanyUpdate = <ThrowOnError extends boolean = false>(options: Options<V1CompanyUpdateData, ThrowOnError>) => (options.client ?? client).put<V1CompanyUpdateResponses, unknown, ThrowOnError>({
     url: '/v1/company/',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Listar cobros agrupados de cliente
+ *
+ * Lista los ``CustomerPayment`` de la compañía del usuario, alcance por las sucursales asignadas, newest-first.
+ *
+ * Cada cobro expone la fecha, método, moneda, totales registrados (snapshot al momento del cobro), el monto aún reembolsable (suma de los hijos activos que no tienen una devolución activa apuntándoles) y la cantidad de ventas afectadas.
+ *
+ * - Un cobro totalmente devuelto permanece listado con monto reembolsable de cero.
+ * - Una devolución individual de uno de los hijos reduce el monto reembolsable pero no toca los totales registrados.
+ * - ``customer_id`` (opcional) restringe la lista a los cobros de un cliente puntual.
+ */
+export const v1CustomerPaymentsList = <ThrowOnError extends boolean = false>(options?: Options<V1CustomerPaymentsListData, ThrowOnError>) => (options?.client ?? client).get<V1CustomerPaymentsListResponses, unknown, ThrowOnError>({ url: '/v1/customer-payments/', ...options });
+
+/**
+ * Registrar cobro agrupado de cliente
+ *
+ * Registra un cobro que cubre varias ventas de un cliente como un único `CustomerPayment` atómico con sus hijos `SalePayment`, asignando el monto oldest-first entre las ventas pendientes (`sale_ids` opcional restringe el subconjunto).
+ *
+ * Reglas:
+ * - La operación es atómica: cualquier falla deja la base de datos sin cambios.
+ * - id de venta desconocido → 404.
+ * - venta fuera de la sucursal del cobro o de otro cliente → 403.
+ * - subconjunto sin venta pendiente asignable → 400.
+ * - Monto no positivo → 400.
+ * - El remanente por sobrepago se descarta (no se crea crédito, las ventas nunca quedan OVERPAID).
+ * - Totales y FK de tasa son snapshots al momento del cobro.
+ */
+export const v1CustomerPaymentsCreate = <ThrowOnError extends boolean = false>(options: Options<V1CustomerPaymentsCreateData, ThrowOnError>) => (options.client ?? client).post<V1CustomerPaymentsCreateResponses, V1CustomerPaymentsCreateErrors, ThrowOnError>({
+    url: '/v1/customer-payments/',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Devolver cobro agrupado
+ *
+ * Reversa, en una sola transacción, exactamente los hijos activos del grupo que aún no tienen una devolución activa, reutilizando la misma maquinaria de filas compensatorias que la devolución individual: por cada hijo se crea un nuevo `SalePayment` con los montos negados que referencia al original. El original nunca se modifica ni se elimina.
+ *
+ * Reglas:
+ * - Omite los hijos ya devueltos individualmente (no duplica filas).
+ * - Si nada queda por devolver → 400 y no se crea ninguna fila.
+ * - La operación es atómica: cualquier falla deja la base de datos sin cambios.
+ * - Se aplica `HasBranchAccess` + alcance por `request.user.company` y las sucursales asignadas del usuario. El mismo rol que la devolución individual; no se introduce un rol nuevo.
+ * - El estado de cada venta afectada se recalcula con la misma lógica de siempre.
+ * - Los montos tomados son los almacenados en el hijo original; no se consulta la tasa de cambio actual.
+ * - Cada fila compensatoria y cada cambio de estado de venta producen un renglón de `django-simple-history` atribuido al usuario actuante.
+ */
+export const v1CustomerPaymentsReverseCreate = <ThrowOnError extends boolean = false>(options: Options<V1CustomerPaymentsReverseCreateData, ThrowOnError>) => (options.client ?? client).post<V1CustomerPaymentsReverseCreateResponses, V1CustomerPaymentsReverseCreateErrors, ThrowOnError>({
+    url: '/v1/customer-payments/{id}/reverse/',
     ...options,
     headers: {
         'Content-Type': 'application/json',
