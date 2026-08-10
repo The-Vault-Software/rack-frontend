@@ -9,11 +9,19 @@ import {
   v1CustomersListQueryKey 
 } from '../../client/@tanstack/react-query.gen';
 import type { Customer, CustomerRequest } from '../../client/types.gen';
+import { normalizeVenezuelanPhone } from '../../lib/phone';
 
 const customerFormSchema = z.object({
   name: z.string().min(1, 'El nombre es obligatorio').max(200, 'Máximo 200 caracteres'),
   email: z.string().email('Email inválido').or(z.literal('')).nullable().optional(),
-  phone: z.string().max(40, 'Máximo 40 caracteres').nullable().optional(),
+  phone: z
+    .string()
+    .max(40, 'Máximo 40 caracteres')
+    .nullable()
+    .optional()
+    .refine((value) => !value || normalizeVenezuelanPhone(value) !== null, {
+      message: 'Número inválido. Ej: +58 412-1234567, 0412-1234567 o 412-1234567',
+    }),
   document: z.string().max(40, 'Máximo 40 caracteres').nullable().optional(),
 });
 
@@ -63,7 +71,8 @@ export default function CustomerForm({ initialData, onSuccess }: CustomerFormPro
     const payload: CustomerRequest = {
       name: data.name,
       email: data.email || null,
-      phone: data.phone || null,
+      // Validation already rejected anything unnormalizable, so this is E.164.
+      phone: normalizeVenezuelanPhone(data.phone),
       document: data.document || null,
     };
 

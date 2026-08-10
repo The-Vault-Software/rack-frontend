@@ -8,6 +8,7 @@ import type { SaleList, Sale } from '../../client/types.gen';
 import { useState } from 'react';
 import { format } from 'date-fns';
 import { cn } from '../../lib/utils';
+import { toWhatsAppNumber } from '../../lib/phone';
 import {
   v1CustomersRetrieveOptions,
   v1CustomersRetrieveQueryKey,
@@ -184,9 +185,18 @@ export default function CustomerSalesPage() {
         alert('Este cliente no tiene un número de teléfono registrado.');
         return;
       }
-      
-      const cleanPhone = customer.phone.replace(/\D/g, '');
-      const whatsappUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
+
+      // Records created before phone normalization may hold any format.
+      const whatsappNumber = toWhatsAppNumber(customer.phone);
+      if (!whatsappNumber) {
+        alert(
+          'El número de teléfono de este cliente no tiene un formato válido. ' +
+          'Edítalo e ingrésalo como +58 412-1234567, 0412-1234567 o 412-1234567.'
+        );
+        return;
+      }
+
+      const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
       window.open(whatsappUrl, '_blank');
       
     } catch (error) {
