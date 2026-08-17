@@ -17,6 +17,8 @@ import AnalyticsPage from './pages/analytics/AnalyticsPage';
 import PrintSalePage from './pages/print/PrintSalePage';
 import PrintAccountPage from './pages/print/PrintAccountPage';
 import InventoryAdjustmentsPage from './pages/inventory-adjustments/InventoryAdjustmentsPage';
+import { SuperUserLayout } from './components/layouts/SuperUserLayout';
+import LicenseAdminPage from './pages/admin/LicenseAdminPage';
 
 export const router = createBrowserRouter([
     {
@@ -52,6 +54,18 @@ export const router = createBrowserRouter([
                     {
                          path: '/dashboard',
                          element: <DashboardPage />
+                    },
+                    {
+                        // Cross-tenant admin surface. SuperUserLayout is a
+                        // convenience gate; IsSuperUser on the API is what
+                        // actually protects the data.
+                        element: <SuperUserLayout />,
+                        children: [
+                            {
+                                path: '/admin/licenses',
+                                element: <LicenseAdminPage />
+                            },
+                        ]
                     },
                     {
                         path: '/inventory',

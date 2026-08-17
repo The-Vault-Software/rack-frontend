@@ -44,16 +44,15 @@ export default function CreateCompanyPage() {
   });
 
   const onSubmit = (data: CreateCompanyFormValues) => {
-    // We need to provide defaults for required fields max_branches and license_date
-    const licenseDate = new Date();
-    licenseDate.setFullYear(licenseDate.getFullYear() + 1); // 1 year license
-    
+    // max_branches and license_date are deliberately not sent. Licensing is
+    // server-authoritative: the backend assigns the trial period itself and
+    // ignores anything a client supplies. This form used to send a licence
+    // dated a year out, which the server no longer honours — and which the
+    // generated client no longer types.
     createCompany.mutate({
         body: {
             name: data.name,
             email: data.email,
-            max_branches: 1, // Default
-            license_date: licenseDate.toISOString().split('T')[0] // YYYY-MM-DD
         }
     });
   };

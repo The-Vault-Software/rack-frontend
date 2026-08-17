@@ -2,7 +2,7 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { V1AccountsCreateData, V1AccountsCreateResponses, V1AccountsDestroyData, V1AccountsDestroyResponses, V1AccountsListData, V1AccountsListResponses, V1AccountsPartialUpdateData, V1AccountsPartialUpdateResponses, V1AccountsPaymentsCreateData, V1AccountsPaymentsCreateResponses, V1AccountsPaymentsListData, V1AccountsPaymentsListResponses, V1AccountsRetrieveData, V1AccountsRetrieveResponses, V1AccountsUpdateData, V1AccountsUpdateResponses, V1AdjustmentsCreateData, V1AdjustmentsCreateResponses, V1AdjustmentsListData, V1AdjustmentsListResponses, V1AdjustmentsRetrieveData, V1AdjustmentsRetrieveResponses, V1BranchCreateData, V1BranchCreateResponses, V1BranchDestroyData, V1BranchDestroyResponses, V1BranchListData, V1BranchListResponses, V1BranchPartialUpdateData, V1BranchPartialUpdateResponses, V1BranchRetrieveData, V1BranchRetrieveResponses, V1BranchUpdateData, V1BranchUpdateResponses, V1CategoryCreateData, V1CategoryCreateResponses, V1CategoryDestroyData, V1CategoryDestroyResponses, V1CategoryListData, V1CategoryListResponses, V1CategoryPartialUpdateData, V1CategoryPartialUpdateResponses, V1CategoryRetrieveData, V1CategoryRetrieveResponses, V1CategoryUpdateData, V1CategoryUpdateResponses, V1CompanyCreateData, V1CompanyCreateResponses, V1CompanyPartialUpdateData, V1CompanyPartialUpdateResponses, V1CompanyRetrieveData, V1CompanyRetrieveResponses, V1CompanyUpdateData, V1CompanyUpdateResponses, V1CustomerPaymentsCreateData, V1CustomerPaymentsCreateErrors, V1CustomerPaymentsCreateResponses, V1CustomerPaymentsListData, V1CustomerPaymentsListResponses, V1CustomerPaymentsReverseCreateData, V1CustomerPaymentsReverseCreateErrors, V1CustomerPaymentsReverseCreateResponses, V1CustomerSalePaymentsListData, V1CustomerSalePaymentsListResponses, V1CustomersCreateData, V1CustomersCreateResponses, V1CustomersDestroyData, V1CustomersDestroyResponses, V1CustomersListData, V1CustomersListResponses, V1CustomersPartialUpdateData, V1CustomersPartialUpdateResponses, V1CustomersRetrieveData, V1CustomersRetrieveResponses, V1CustomersUpdateData, V1CustomersUpdateResponses, V1ExchangeRatesHistoryRetrieveData, V1ExchangeRatesHistoryRetrieveResponses, V1ExchangeRatesRetrieveData, V1ExchangeRatesRetrieveResponses, V1ExchangeRatesTodayRetrieveData, V1ExchangeRatesTodayRetrieveResponses, V1LoginCreateData, V1LoginCreateResponses, V1LogoutCreateData, V1LogoutCreateResponses, V1MeasurementCreateData, V1MeasurementCreateResponses, V1MeasurementDestroyData, V1MeasurementDestroyResponses, V1MeasurementListData, V1MeasurementListResponses, V1MeasurementPartialUpdateData, V1MeasurementPartialUpdateResponses, V1MeasurementRetrieveData, V1MeasurementRetrieveResponses, V1MeasurementUpdateData, V1MeasurementUpdateResponses, V1ProductBranchStockListData, V1ProductBranchStockListResponses, V1ProductCreateData, V1ProductCreateResponses, V1ProductDestroyData, V1ProductDestroyResponses, V1ProductListData, V1ProductListResponses, V1ProductPartialUpdateData, V1ProductPartialUpdateResponses, V1ProductRetrieveData, V1ProductRetrieveResponses, V1ProductUpdateData, V1ProductUpdateResponses, V1ProvidersCreateData, V1ProvidersCreateResponses, V1ProvidersDestroyData, V1ProvidersDestroyResponses, V1ProvidersListData, V1ProvidersListResponses, V1ProvidersPartialUpdateData, V1ProvidersPartialUpdateResponses, V1ProvidersRetrieveData, V1ProvidersRetrieveResponses, V1ProvidersUpdateData, V1ProvidersUpdateResponses, V1RefreshCreateData, V1RefreshCreateResponses, V1RegisterCreateData, V1RegisterCreateResponses, V1SalePaymentsReverseCreateData, V1SalePaymentsReverseCreateErrors, V1SalePaymentsReverseCreateResponses, V1SalesCreateData, V1SalesCreateResponses, V1SalesDestroyData, V1SalesDestroyResponses, V1SalesListData, V1SalesListResponses, V1SalesPartialUpdateData, V1SalesPartialUpdateResponses, V1SalesPaymentsCreateData, V1SalesPaymentsCreateResponses, V1SalesPaymentsListData, V1SalesPaymentsListResponses, V1SalesRetrieveData, V1SalesRetrieveResponses, V1SalesUpdateData, V1SalesUpdateResponses, V1UserBranchesRetrieveData, V1UserBranchesRetrieveResponses, V1UserBranchesUpdateData, V1UserBranchesUpdateResponses, V1UserInfoPartialUpdateData, V1UserInfoPartialUpdateResponses, V1UserInfoRetrieveData, V1UserInfoRetrieveResponses, V1UserInfoUpdateData, V1UserInfoUpdateResponses } from './types.gen';
+import type { V1AccountsCreateData, V1AccountsCreateResponses, V1AccountsDestroyData, V1AccountsDestroyResponses, V1AccountsListData, V1AccountsListResponses, V1AccountsPartialUpdateData, V1AccountsPartialUpdateResponses, V1AccountsPaymentsCreateData, V1AccountsPaymentsCreateResponses, V1AccountsPaymentsListData, V1AccountsPaymentsListResponses, V1AccountsRetrieveData, V1AccountsRetrieveResponses, V1AccountsUpdateData, V1AccountsUpdateResponses, V1AdjustmentsCreateData, V1AdjustmentsCreateResponses, V1AdjustmentsListData, V1AdjustmentsListResponses, V1AdjustmentsRetrieveData, V1AdjustmentsRetrieveResponses, V1AdminCompaniesLicenseExtendCreateData, V1AdminCompaniesLicenseExtendCreateResponses, V1AdminCompaniesLicenseRestoreCreateData, V1AdminCompaniesLicenseRestoreCreateErrors, V1AdminCompaniesLicenseRestoreCreateResponses, V1AdminCompaniesLicenseRevokeCreateData, V1AdminCompaniesLicenseRevokeCreateErrors, V1AdminCompaniesLicenseRevokeCreateResponses, V1AdminCompaniesListData, V1AdminCompaniesListResponses, V1BranchCreateData, V1BranchCreateResponses, V1BranchDestroyData, V1BranchDestroyResponses, V1BranchListData, V1BranchListResponses, V1BranchPartialUpdateData, V1BranchPartialUpdateResponses, V1BranchRetrieveData, V1BranchRetrieveResponses, V1BranchUpdateData, V1BranchUpdateResponses, V1CategoryCreateData, V1CategoryCreateResponses, V1CategoryDestroyData, V1CategoryDestroyResponses, V1CategoryListData, V1CategoryListResponses, V1CategoryPartialUpdateData, V1CategoryPartialUpdateResponses, V1CategoryRetrieveData, V1CategoryRetrieveResponses, V1CategoryUpdateData, V1CategoryUpdateResponses, V1CompanyCreateData, V1CompanyCreateResponses, V1CompanyPartialUpdateData, V1CompanyPartialUpdateResponses, V1CompanyRetrieveData, V1CompanyRetrieveResponses, V1CompanyUpdateData, V1CompanyUpdateResponses, V1CustomerPaymentsCreateData, V1CustomerPaymentsCreateErrors, V1CustomerPaymentsCreateResponses, V1CustomerPaymentsListData, V1CustomerPaymentsListResponses, V1CustomerPaymentsReverseCreateData, V1CustomerPaymentsReverseCreateErrors, V1CustomerPaymentsReverseCreateResponses, V1CustomerSalePaymentsListData, V1CustomerSalePaymentsListResponses, V1CustomersCreateData, V1CustomersCreateResponses, V1CustomersDestroyData, V1CustomersDestroyResponses, V1CustomersListData, V1CustomersListResponses, V1CustomersPartialUpdateData, V1CustomersPartialUpdateResponses, V1CustomersRetrieveData, V1CustomersRetrieveResponses, V1CustomersUpdateData, V1CustomersUpdateResponses, V1ExchangeRatesHistoryRetrieveData, V1ExchangeRatesHistoryRetrieveResponses, V1ExchangeRatesRetrieveData, V1ExchangeRatesRetrieveResponses, V1ExchangeRatesTodayRetrieveData, V1ExchangeRatesTodayRetrieveResponses, V1LoginCreateData, V1LoginCreateResponses, V1LogoutCreateData, V1LogoutCreateResponses, V1MeasurementCreateData, V1MeasurementCreateResponses, V1MeasurementDestroyData, V1MeasurementDestroyResponses, V1MeasurementListData, V1MeasurementListResponses, V1MeasurementPartialUpdateData, V1MeasurementPartialUpdateResponses, V1MeasurementRetrieveData, V1MeasurementRetrieveResponses, V1MeasurementUpdateData, V1MeasurementUpdateResponses, V1ProductBranchStockListData, V1ProductBranchStockListResponses, V1ProductCreateData, V1ProductCreateResponses, V1ProductDestroyData, V1ProductDestroyResponses, V1ProductListData, V1ProductListResponses, V1ProductPartialUpdateData, V1ProductPartialUpdateResponses, V1ProductRetrieveData, V1ProductRetrieveResponses, V1ProductUpdateData, V1ProductUpdateResponses, V1ProvidersCreateData, V1ProvidersCreateResponses, V1ProvidersDestroyData, V1ProvidersDestroyResponses, V1ProvidersListData, V1ProvidersListResponses, V1ProvidersPartialUpdateData, V1ProvidersPartialUpdateResponses, V1ProvidersRetrieveData, V1ProvidersRetrieveResponses, V1ProvidersUpdateData, V1ProvidersUpdateResponses, V1RefreshCreateData, V1RefreshCreateResponses, V1RegisterCreateData, V1RegisterCreateResponses, V1SalePaymentsReverseCreateData, V1SalePaymentsReverseCreateErrors, V1SalePaymentsReverseCreateResponses, V1SalesCreateData, V1SalesCreateResponses, V1SalesDestroyData, V1SalesDestroyResponses, V1SalesListData, V1SalesListResponses, V1SalesPartialUpdateData, V1SalesPartialUpdateResponses, V1SalesPaymentsCreateData, V1SalesPaymentsCreateResponses, V1SalesPaymentsListData, V1SalesPaymentsListResponses, V1SalesRetrieveData, V1SalesRetrieveResponses, V1SalesUpdateData, V1SalesUpdateResponses, V1UserBranchesRetrieveData, V1UserBranchesRetrieveResponses, V1UserBranchesUpdateData, V1UserBranchesUpdateResponses, V1UserInfoPartialUpdateData, V1UserInfoPartialUpdateResponses, V1UserInfoRetrieveData, V1UserInfoRetrieveResponses, V1UserInfoUpdateData, V1UserInfoUpdateResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -162,6 +162,64 @@ export const v1AdjustmentsCreate = <ThrowOnError extends boolean = false>(option
  * Retorna el ajuste de inventario completo con todos sus ítems (`details`), incluyendo nombre y SKU de cada producto y los snapshots de cantidad antes/cambio/después.
  */
 export const v1AdjustmentsRetrieve = <ThrowOnError extends boolean = false>(options: Options<V1AdjustmentsRetrieveData, ThrowOnError>) => (options.client ?? client).get<V1AdjustmentsRetrieveResponses, unknown, ThrowOnError>({ url: '/v1/adjustments/{id}/', ...options });
+
+/**
+ * Base for every `/v1/admin/` view.
+ *
+ * This is the FIRST deliberately cross-tenant surface in the codebase.
+ * Every other list view scopes its queryset to `request.user.company`
+ * (see `ContactsAPITestCase` isolation coverage); admin views intentionally
+ * do not. `IsSuperUser` — not tenant scoping — is what gates that, and it
+ * applies to GET as well as every mutation (no SAFE_METHODS exemption).
+ */
+export const v1AdminCompaniesList = <ThrowOnError extends boolean = false>(options?: Options<V1AdminCompaniesListData, ThrowOnError>) => (options?.client ?? client).get<V1AdminCompaniesListResponses, unknown, ThrowOnError>({ url: '/v1/admin/companies/', ...options });
+
+/**
+ * Base for every `/v1/admin/` view.
+ *
+ * This is the FIRST deliberately cross-tenant surface in the codebase.
+ * Every other list view scopes its queryset to `request.user.company`
+ * (see `ContactsAPITestCase` isolation coverage); admin views intentionally
+ * do not. `IsSuperUser` — not tenant scoping — is what gates that, and it
+ * applies to GET as well as every mutation (no SAFE_METHODS exemption).
+ */
+export const v1AdminCompaniesLicenseExtendCreate = <ThrowOnError extends boolean = false>(options: Options<V1AdminCompaniesLicenseExtendCreateData, ThrowOnError>) => (options.client ?? client).post<V1AdminCompaniesLicenseExtendCreateResponses, unknown, ThrowOnError>({
+    url: '/v1/admin/companies/{company_id}/license/extend/',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Base for every `/v1/admin/` view.
+ *
+ * This is the FIRST deliberately cross-tenant surface in the codebase.
+ * Every other list view scopes its queryset to `request.user.company`
+ * (see `ContactsAPITestCase` isolation coverage); admin views intentionally
+ * do not. `IsSuperUser` — not tenant scoping — is what gates that, and it
+ * applies to GET as well as every mutation (no SAFE_METHODS exemption).
+ */
+export const v1AdminCompaniesLicenseRestoreCreate = <ThrowOnError extends boolean = false>(options: Options<V1AdminCompaniesLicenseRestoreCreateData, ThrowOnError>) => (options.client ?? client).post<V1AdminCompaniesLicenseRestoreCreateResponses, V1AdminCompaniesLicenseRestoreCreateErrors, ThrowOnError>({ url: '/v1/admin/companies/{company_id}/license/restore/', ...options });
+
+/**
+ * Base for every `/v1/admin/` view.
+ *
+ * This is the FIRST deliberately cross-tenant surface in the codebase.
+ * Every other list view scopes its queryset to `request.user.company`
+ * (see `ContactsAPITestCase` isolation coverage); admin views intentionally
+ * do not. `IsSuperUser` — not tenant scoping — is what gates that, and it
+ * applies to GET as well as every mutation (no SAFE_METHODS exemption).
+ */
+export const v1AdminCompaniesLicenseRevokeCreate = <ThrowOnError extends boolean = false>(options: Options<V1AdminCompaniesLicenseRevokeCreateData, ThrowOnError>) => (options.client ?? client).post<V1AdminCompaniesLicenseRevokeCreateResponses, V1AdminCompaniesLicenseRevokeCreateErrors, ThrowOnError>({
+    url: '/v1/admin/companies/{company_id}/license/revoke/',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 export const v1BranchList = <ThrowOnError extends boolean = false>(options?: Options<V1BranchListData, ThrowOnError>) => (options?.client ?? client).get<V1BranchListResponses, unknown, ThrowOnError>({ url: '/v1/branch/', ...options });
 

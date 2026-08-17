@@ -394,6 +394,48 @@ export const AdjustmentTypeEnumSchema = {
     description: '* `INITIAL_LOAD` - Carga inicial\n* `MANUAL_INCREASE` - Incremento manual\n* `MANUAL_DECREASE` - Decremento manual\n* `COUNT_CORRECTION` - Corrección por conteo físico\n* `DAMAGE` - Daño / merma\n* `SAMPLE` - Muestra\n* `TRANSFER_IN` - Entrada por traslado\n* `TRANSFER_OUT` - Salida por traslado'
 } as const;
 
+export const AdminCompanyLicenseSchema = {
+    type: 'object',
+    properties: {
+        id: {
+            type: 'string',
+            format: 'uuid',
+            readOnly: true
+        },
+        name: {
+            type: 'string',
+            readOnly: true
+        },
+        email: {
+            type: 'string',
+            format: 'email',
+            readOnly: true
+        },
+        rif: {
+            type: 'string',
+            readOnly: true,
+            nullable: true
+        },
+        license_date: {
+            type: 'string',
+            format: 'date',
+            readOnly: true
+        },
+        status: {
+            type: 'string',
+            readOnly: true
+        }
+    },
+    required: [
+        'email',
+        'id',
+        'license_date',
+        'name',
+        'rif',
+        'status'
+    ]
+} as const;
+
 export const AffectedSaleSchema = {
     type: 'object',
     description: 'Recomputed state of a sale touched by a reversal.',
@@ -537,12 +579,12 @@ export const CompanySchema = {
         },
         max_branches: {
             type: 'integer',
-            maximum: 2147483647,
-            minimum: 0
+            readOnly: true
         },
         license_date: {
             type: 'string',
-            format: 'date'
+            format: 'date',
+            readOnly: true
         },
         id: {
             type: 'string',
@@ -577,21 +619,10 @@ export const CompanyRequestSchema = {
             type: 'string',
             nullable: true,
             maxLength: 12
-        },
-        max_branches: {
-            type: 'integer',
-            maximum: 2147483647,
-            minimum: 0
-        },
-        license_date: {
-            type: 'string',
-            format: 'date'
         }
     },
     required: [
         'email',
-        'license_date',
-        'max_branches',
         'name'
     ]
 } as const;
@@ -622,11 +653,27 @@ export const CustomUserSchema = {
                 type: 'string',
                 format: 'uuid'
             }
+        },
+        role: {
+            allOf: [
+                {
+                    $ref: '#/components/schemas/RoleEnum'
+                }
+            ],
+            readOnly: true
+        },
+        is_superuser: {
+            type: 'boolean',
+            readOnly: true,
+            title: 'Superuser status',
+            description: 'Designates that this user has all permissions without explicitly assigning them.'
         }
     },
     required: [
         'company_id',
-        'email'
+        'email',
+        'is_superuser',
+        'role'
     ]
 } as const;
 
@@ -1290,6 +1337,36 @@ export const InventoryAdjustmentWriteRequestSchema = {
     ]
 } as const;
 
+export const LicenseExtendRequestSchema = {
+    type: 'object',
+    properties: {
+        days: {
+            type: 'integer',
+            maximum: 730,
+            minimum: 1
+        }
+    },
+    required: [
+        'days'
+    ]
+} as const;
+
+export const LicenseRevokeRequestSchema = {
+    type: 'object',
+    properties: {
+        reason: {
+            $ref: '#/components/schemas/ReasonEnum'
+        },
+        note: {
+            type: 'string',
+            nullable: true
+        }
+    },
+    required: [
+        'reason'
+    ]
+} as const;
+
 export const MeasurementUnitSchema = {
     type: 'object',
     properties: {
@@ -1356,6 +1433,38 @@ export const PaginatedAccountListListSchema = {
             type: 'array',
             items: {
                 $ref: '#/components/schemas/AccountList'
+            }
+        }
+    }
+} as const;
+
+export const PaginatedAdminCompanyLicenseListSchema = {
+    type: 'object',
+    required: [
+        'count',
+        'results'
+    ],
+    properties: {
+        count: {
+            type: 'integer',
+            example: 123
+        },
+        next: {
+            type: 'string',
+            nullable: true,
+            format: 'uri',
+            example: 'http://api.example.org/accounts/?page=4'
+        },
+        previous: {
+            type: 'string',
+            nullable: true,
+            format: 'uri',
+            example: 'http://api.example.org/accounts/?page=2'
+        },
+        results: {
+            type: 'array',
+            items: {
+                $ref: '#/components/schemas/AdminCompanyLicense'
             }
         }
     }
@@ -1561,15 +1670,6 @@ export const PatchedCompanyRequestSchema = {
             type: 'string',
             nullable: true,
             maxLength: 12
-        },
-        max_branches: {
-            type: 'integer',
-            maximum: 2147483647,
-            minimum: 0
-        },
-        license_date: {
-            type: 'string',
-            format: 'date'
         }
     }
 } as const;
@@ -2100,6 +2200,17 @@ export const ProviderRequestSchema = {
     ]
 } as const;
 
+export const ReasonEnumSchema = {
+    enum: [
+        'NON_PAYMENT',
+        'FRAUD',
+        'CUSTOMER_REQUEST',
+        'OTHER'
+    ],
+    type: 'string',
+    description: '* `NON_PAYMENT` - Non-payment\n* `FRAUD` - Fraud\n* `CUSTOMER_REQUEST` - Customer request\n* `OTHER` - Other'
+} as const;
+
 export const RegisterUserSchema = {
     type: 'object',
     properties: {
@@ -2158,6 +2269,16 @@ export const RegisterUserRequestSchema = {
         'email',
         'username'
     ]
+} as const;
+
+export const RoleEnumSchema = {
+    enum: [
+        'OWNER',
+        'MANAGER',
+        'EMPLOYEE'
+    ],
+    type: 'string',
+    description: '* `OWNER` - Owner\n* `MANAGER` - Manager\n* `EMPLOYEE` - Employee'
 } as const;
 
 export const SaleSchema = {
@@ -2777,22 +2898,45 @@ export const CompanyWritableSchema = {
             type: 'string',
             nullable: true,
             maxLength: 12
-        },
-        max_branches: {
-            type: 'integer',
-            maximum: 2147483647,
-            minimum: 0
-        },
-        license_date: {
-            type: 'string',
-            format: 'date'
         }
     },
     required: [
         'email',
-        'license_date',
-        'max_branches',
         'name'
+    ]
+} as const;
+
+export const CustomUserWritableSchema = {
+    type: 'object',
+    properties: {
+        email: {
+            type: 'string',
+            format: 'email',
+            maxLength: 254
+        },
+        first_name: {
+            type: 'string',
+            maxLength: 150
+        },
+        last_name: {
+            type: 'string',
+            maxLength: 150
+        },
+        company_id: {
+            type: 'string',
+            format: 'uuid'
+        },
+        branch_ids: {
+            type: 'array',
+            items: {
+                type: 'string',
+                format: 'uuid'
+            }
+        }
+    },
+    required: [
+        'company_id',
+        'email'
     ]
 } as const;
 
@@ -2883,6 +3027,35 @@ export const MeasurementUnitWritableSchema = {
 } as const;
 
 export const PaginatedAccountListListWritableSchema = {
+    type: 'object',
+    required: [
+        'count',
+        'results'
+    ],
+    properties: {
+        count: {
+            type: 'integer',
+            example: 123
+        },
+        next: {
+            type: 'string',
+            nullable: true,
+            format: 'uri',
+            example: 'http://api.example.org/accounts/?page=4'
+        },
+        previous: {
+            type: 'string',
+            nullable: true,
+            format: 'uri',
+            example: 'http://api.example.org/accounts/?page=2'
+        },
+        results: {
+            type: 'array'
+        }
+    }
+} as const;
+
+export const PaginatedAdminCompanyLicenseListWritableSchema = {
     type: 'object',
     required: [
         'count',
