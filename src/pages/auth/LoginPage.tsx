@@ -10,6 +10,7 @@ import { v1LoginCreateMutation, v1UserInfoRetrieveOptions } from '../../client/@
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { Loader2 } from 'lucide-react';
+import { isLicenseInactive } from '../../lib/licenseGate';
 
 const loginSchema = z.object({
   email: z.string().email({ message: "Por favor ingresa un email válido" }),
@@ -53,7 +54,12 @@ export default function LoginPage() {
     },
     onError: (error) => {
       console.error(error);
-      toast.error("Credenciales inválidas o error en el servidor.");
+      // A 402 already latched in the response interceptor before this
+      // handler runs — onError cannot see the HTTP status itself, since
+      // throwOnError discards it and throws only the parsed body.
+      if (!isLicenseInactive()) {
+        toast.error("Credenciales inválidas o error en el servidor.");
+      }
     },
   });
 

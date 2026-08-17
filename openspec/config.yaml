@@ -9,19 +9,22 @@ context: |
   Architecture: Provider hierarchy QueryClient > Auth > Branch > Toaster > Router;
                 layers are src/components/ui, src/components/{domain}, src/pages/{domain}.
   Multi-branch tenancy; mobile + desktop via useMediaQuery; multi-currency USD/VES.
-  Testing: no test runner installed — strict TDD unavailable.
+  Testing: vitest + jsdom + @testing-library/react. `npm test` runs once, `npm run test:watch` watches,
+           `npm run test:coverage` reports v8 coverage. Vitest globals are OFF — import describe/it/expect/vi
+           from 'vitest' explicitly. src/test/setup.ts registers jest-dom and afterEach(cleanup); the cleanup
+           is required, not decorative, because globals are off. Coverage excludes src/client (generated).
 
-strict_tdd: false
+strict_tdd: true
 
 testing:
-  runner: none
+  runner: vitest
   layers:
-    unit: false
-    integration: false
+    unit: true
+    integration: true
     e2e: false
   coverage:
-    available: false
-    command: ""
+    available: true
+    command: "npm run test:coverage"
   quality:
     linter: "npm run lint"
     type_checker: "tsc -b"
@@ -46,10 +49,10 @@ rules:
       - Follow existing code patterns in src/components/ui, src/components/{domain}, src/pages/{domain}
       - Never manually edit src/client/* — regenerate via `npm run generate-api`
       - Prefer generated TanStack Query hooks over raw SDK functions
-    tdd: false
-    test_command: ""
+    tdd: true
+    test_command: "npm test"
   verify:
-    test_command: ""
+    test_command: "npm test"
     build_command: "npm run build"
     lint_command: "npm run lint"
     coverage_threshold: 0
