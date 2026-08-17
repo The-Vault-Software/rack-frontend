@@ -122,6 +122,15 @@ export type AdjustmentDetailItem = {
  */
 export type AdjustmentTypeEnum = 'INITIAL_LOAD' | 'MANUAL_INCREASE' | 'MANUAL_DECREASE' | 'COUNT_CORRECTION' | 'DAMAGE' | 'SAMPLE' | 'TRANSFER_IN' | 'TRANSFER_OUT';
 
+export type AdminCompanyLicense = {
+    readonly id: string;
+    readonly name: string;
+    readonly email: string;
+    readonly rif: string | null;
+    readonly license_date: string;
+    readonly status: string;
+};
+
 /**
  * Recomputed state of a sale touched by a reversal.
  */
@@ -159,8 +168,8 @@ export type Company = {
     name: string;
     email: string;
     rif?: string | null;
-    max_branches: number;
-    license_date: string;
+    readonly max_branches: number;
+    readonly license_date: string;
     readonly id: string;
 };
 
@@ -168,8 +177,6 @@ export type CompanyRequest = {
     name: string;
     email: string;
     rif?: string | null;
-    max_branches: number;
-    license_date: string;
 };
 
 export type CustomUser = {
@@ -178,6 +185,13 @@ export type CustomUser = {
     last_name?: string;
     company_id: string;
     branch_ids?: Array<string>;
+    role: RoleEnum;
+    /**
+     * Superuser status
+     *
+     * Designates that this user has all permissions without explicitly assigning them.
+     */
+    readonly is_superuser: boolean;
 };
 
 export type CustomUserRequest = {
@@ -390,6 +404,15 @@ export type InventoryAdjustmentWriteRequest = {
     notes?: string | null;
 };
 
+export type LicenseExtendRequest = {
+    days: number;
+};
+
+export type LicenseRevokeRequest = {
+    reason: ReasonEnum;
+    note?: string | null;
+};
+
 export type MeasurementUnit = {
     name: string;
     decimals?: boolean;
@@ -406,6 +429,13 @@ export type PaginatedAccountListList = {
     next?: string | null;
     previous?: string | null;
     results: Array<AccountList>;
+};
+
+export type PaginatedAdminCompanyLicenseList = {
+    count: number;
+    next?: string | null;
+    previous?: string | null;
+    results: Array<AdminCompanyLicense>;
 };
 
 export type PaginatedCustomerPaymentListList = {
@@ -461,8 +491,6 @@ export type PatchedCompanyRequest = {
     name?: string;
     email?: string;
     rif?: string | null;
-    max_branches?: number;
-    license_date?: string;
 };
 
 export type PatchedCustomUserRequest = {
@@ -617,6 +645,14 @@ export type ProviderRequest = {
     changed_by?: number | null;
 };
 
+/**
+ * * `NON_PAYMENT` - Non-payment
+ * * `FRAUD` - Fraud
+ * * `CUSTOMER_REQUEST` - Customer request
+ * * `OTHER` - Other
+ */
+export type ReasonEnum = 'NON_PAYMENT' | 'FRAUD' | 'CUSTOMER_REQUEST' | 'OTHER';
+
 export type RegisterUser = {
     email: string;
     first_name?: string;
@@ -636,6 +672,13 @@ export type RegisterUserRequest = {
      */
     username: string;
 };
+
+/**
+ * * `OWNER` - Owner
+ * * `MANAGER` - Manager
+ * * `EMPLOYEE` - Employee
+ */
+export type RoleEnum = 'OWNER' | 'MANAGER' | 'EMPLOYEE';
 
 /**
  * Main serializer for creating and viewing sales.
@@ -843,8 +886,14 @@ export type CompanyWritable = {
     name: string;
     email: string;
     rif?: string | null;
-    max_branches: number;
-    license_date: string;
+};
+
+export type CustomUserWritable = {
+    email: string;
+    first_name?: string;
+    last_name?: string;
+    company_id: string;
+    branch_ids?: Array<string>;
 };
 
 export type CustomerWritable = {
@@ -874,6 +923,13 @@ export type MeasurementUnitWritable = {
 };
 
 export type PaginatedAccountListListWritable = {
+    count: number;
+    next?: string | null;
+    previous?: string | null;
+    results: Array<unknown>;
+};
+
+export type PaginatedAdminCompanyLicenseListWritable = {
     count: number;
     next?: string | null;
     previous?: string | null;
@@ -1235,6 +1291,95 @@ export type V1AdjustmentsRetrieveResponses = {
 };
 
 export type V1AdjustmentsRetrieveResponse = V1AdjustmentsRetrieveResponses[keyof V1AdjustmentsRetrieveResponses];
+
+export type V1AdminCompaniesListData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * A page number within the paginated result set.
+         */
+        page?: number;
+        /**
+         * Number of results to return per page.
+         */
+        page_size?: number;
+        /**
+         * A search term.
+         */
+        search?: string;
+        /**
+         * Filter by derived licence state.
+         */
+        status?: 'ACTIVE' | 'EXPIRED' | 'REVOKED';
+    };
+    url: '/v1/admin/companies/';
+};
+
+export type V1AdminCompaniesListResponses = {
+    200: PaginatedAdminCompanyLicenseList;
+};
+
+export type V1AdminCompaniesListResponse = V1AdminCompaniesListResponses[keyof V1AdminCompaniesListResponses];
+
+export type V1AdminCompaniesLicenseExtendCreateData = {
+    body: LicenseExtendRequest;
+    path: {
+        company_id: string;
+    };
+    query?: never;
+    url: '/v1/admin/companies/{company_id}/license/extend/';
+};
+
+export type V1AdminCompaniesLicenseExtendCreateResponses = {
+    200: AdminCompanyLicense;
+};
+
+export type V1AdminCompaniesLicenseExtendCreateResponse = V1AdminCompaniesLicenseExtendCreateResponses[keyof V1AdminCompaniesLicenseExtendCreateResponses];
+
+export type V1AdminCompaniesLicenseRestoreCreateData = {
+    body?: never;
+    path: {
+        company_id: string;
+    };
+    query?: never;
+    url: '/v1/admin/companies/{company_id}/license/restore/';
+};
+
+export type V1AdminCompaniesLicenseRestoreCreateErrors = {
+    /**
+     * Not revoked, so there is nothing to restore.
+     */
+    409: unknown;
+};
+
+export type V1AdminCompaniesLicenseRestoreCreateResponses = {
+    200: AdminCompanyLicense;
+};
+
+export type V1AdminCompaniesLicenseRestoreCreateResponse = V1AdminCompaniesLicenseRestoreCreateResponses[keyof V1AdminCompaniesLicenseRestoreCreateResponses];
+
+export type V1AdminCompaniesLicenseRevokeCreateData = {
+    body: LicenseRevokeRequest;
+    path: {
+        company_id: string;
+    };
+    query?: never;
+    url: '/v1/admin/companies/{company_id}/license/revoke/';
+};
+
+export type V1AdminCompaniesLicenseRevokeCreateErrors = {
+    /**
+     * Already revoked. Nothing is mutated: the original timestamp, reason and note are left unchanged.
+     */
+    409: unknown;
+};
+
+export type V1AdminCompaniesLicenseRevokeCreateResponses = {
+    200: AdminCompanyLicense;
+};
+
+export type V1AdminCompaniesLicenseRevokeCreateResponse = V1AdminCompaniesLicenseRevokeCreateResponses[keyof V1AdminCompaniesLicenseRevokeCreateResponses];
 
 export type V1BranchListData = {
     body?: never;

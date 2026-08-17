@@ -347,6 +347,161 @@ paths:
               schema:
                 $ref: '#/components/schemas/InventoryAdjustmentDetailRead'
           description: ''
+  /v1/admin/companies/:
+    get:
+      operationId: v1_admin_companies_list
+      description: |-
+        Base for every `/v1/admin/` view.
+
+        This is the FIRST deliberately cross-tenant surface in the codebase.
+        Every other list view scopes its queryset to `request.user.company`
+        (see `ContactsAPITestCase` isolation coverage); admin views intentionally
+        do not. `IsSuperUser` — not tenant scoping — is what gates that, and it
+        applies to GET as well as every mutation (no SAFE_METHODS exemption).
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: status
+        schema:
+          type: string
+          enum:
+          - ACTIVE
+          - EXPIRED
+          - REVOKED
+        description: Filter by derived licence state.
+      tags:
+      - v1
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedAdminCompanyLicenseList'
+          description: ''
+  /v1/admin/companies/{company_id}/license/extend/:
+    post:
+      operationId: v1_admin_companies_license_extend_create
+      description: |-
+        Base for every `/v1/admin/` view.
+
+        This is the FIRST deliberately cross-tenant surface in the codebase.
+        Every other list view scopes its queryset to `request.user.company`
+        (see `ContactsAPITestCase` isolation coverage); admin views intentionally
+        do not. `IsSuperUser` — not tenant scoping — is what gates that, and it
+        applies to GET as well as every mutation (no SAFE_METHODS exemption).
+      parameters:
+      - in: path
+        name: company_id
+        schema:
+          type: string
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LicenseExtendRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/LicenseExtendRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/LicenseExtendRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminCompanyLicense'
+          description: ''
+  /v1/admin/companies/{company_id}/license/restore/:
+    post:
+      operationId: v1_admin_companies_license_restore_create
+      description: |-
+        Base for every `/v1/admin/` view.
+
+        This is the FIRST deliberately cross-tenant surface in the codebase.
+        Every other list view scopes its queryset to `request.user.company`
+        (see `ContactsAPITestCase` isolation coverage); admin views intentionally
+        do not. `IsSuperUser` — not tenant scoping — is what gates that, and it
+        applies to GET as well as every mutation (no SAFE_METHODS exemption).
+      parameters:
+      - in: path
+        name: company_id
+        schema:
+          type: string
+        required: true
+      tags:
+      - v1
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminCompanyLicense'
+          description: ''
+        '409':
+          description: Not revoked, so there is nothing to restore.
+  /v1/admin/companies/{company_id}/license/revoke/:
+    post:
+      operationId: v1_admin_companies_license_revoke_create
+      description: |-
+        Base for every `/v1/admin/` view.
+
+        This is the FIRST deliberately cross-tenant surface in the codebase.
+        Every other list view scopes its queryset to `request.user.company`
+        (see `ContactsAPITestCase` isolation coverage); admin views intentionally
+        do not. `IsSuperUser` — not tenant scoping — is what gates that, and it
+        applies to GET as well as every mutation (no SAFE_METHODS exemption).
+      parameters:
+      - in: path
+        name: company_id
+        schema:
+          type: string
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LicenseRevokeRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/LicenseRevokeRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/LicenseRevokeRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminCompanyLicense'
+          description: ''
+        '409':
+          description: 'Already revoked. Nothing is mutated: the original timestamp,
+            reason and note are left unchanged.'
   /v1/branch/:
     get:
       operationId: v1_branch_list
@@ -2132,6 +2287,38 @@ components:
         * `SAMPLE` - Muestra
         * `TRANSFER_IN` - Entrada por traslado
         * `TRANSFER_OUT` - Salida por traslado
+    AdminCompanyLicense:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          readOnly: true
+        email:
+          type: string
+          format: email
+          readOnly: true
+        rif:
+          type: string
+          readOnly: true
+          nullable: true
+        license_date:
+          type: string
+          format: date
+          readOnly: true
+        status:
+          type: string
+          readOnly: true
+      required:
+      - email
+      - id
+      - license_date
+      - name
+      - rif
+      - status
     AffectedSale:
       type: object
       description: Recomputed state of a sale touched by a reversal.
@@ -2237,11 +2424,11 @@ components:
           maxLength: 12
         max_branches:
           type: integer
-          maximum: 2147483647
-          minimum: 0
+          readOnly: true
         license_date:
           type: string
           format: date
+          readOnly: true
         id:
           type: string
           format: uuid
@@ -2268,17 +2455,8 @@ components:
           type: string
           nullable: true
           maxLength: 12
-        max_branches:
-          type: integer
-          maximum: 2147483647
-          minimum: 0
-        license_date:
-          type: string
-          format: date
       required:
       - email
-      - license_date
-      - max_branches
       - name
     CustomUser:
       type: object
@@ -2301,9 +2479,21 @@ components:
           items:
             type: string
             format: uuid
+        role:
+          allOf:
+          - $ref: '#/components/schemas/RoleEnum'
+          readOnly: true
+        is_superuser:
+          type: boolean
+          readOnly: true
+          title: Superuser status
+          description: Designates that this user has all permissions without explicitly
+            assigning them.
       required:
       - company_id
       - email
+      - is_superuser
+      - role
     CustomUserRequest:
       type: object
       properties:
@@ -2870,6 +3060,25 @@ components:
       - branch
       - details
       - reason
+    LicenseExtendRequest:
+      type: object
+      properties:
+        days:
+          type: integer
+          maximum: 730
+          minimum: 1
+      required:
+      - days
+    LicenseRevokeRequest:
+      type: object
+      properties:
+        reason:
+          $ref: '#/components/schemas/ReasonEnum'
+        note:
+          type: string
+          nullable: true
+      required:
+      - reason
     MeasurementUnit:
       type: object
       properties:
@@ -2919,6 +3128,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/AccountList'
+    PaginatedAdminCompanyLicenseList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdminCompanyLicense'
     PaginatedCustomerPaymentListList:
       type: object
       required:
@@ -3076,13 +3308,6 @@ components:
           type: string
           nullable: true
           maxLength: 12
-        max_branches:
-          type: integer
-          maximum: 2147483647
-          minimum: 0
-        license_date:
-          type: string
-          format: date
     PatchedCustomUserRequest:
       type: object
       properties:
@@ -3483,6 +3708,18 @@ components:
           nullable: true
       required:
       - name
+    ReasonEnum:
+      enum:
+      - NON_PAYMENT
+      - FRAUD
+      - CUSTOMER_REQUEST
+      - OTHER
+      type: string
+      description: |-
+        * `NON_PAYMENT` - Non-payment
+        * `FRAUD` - Fraud
+        * `CUSTOMER_REQUEST` - Customer request
+        * `OTHER` - Other
     RegisterUser:
       type: object
       properties:
@@ -3547,6 +3784,16 @@ components:
       - email
       - password
       - username
+    RoleEnum:
+      enum:
+      - OWNER
+      - MANAGER
+      - EMPLOYEE
+      type: string
+      description: |-
+        * `OWNER` - Owner
+        * `MANAGER` - Manager
+        * `EMPLOYEE` - Employee
     Sale:
       type: object
       description: |-

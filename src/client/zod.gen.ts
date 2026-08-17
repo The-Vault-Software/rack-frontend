@@ -103,6 +103,18 @@ export const zAdjustmentTypeEnum = z.enum([
     'TRANSFER_OUT'
 ]);
 
+export const zAdminCompanyLicense = z.object({
+    id: z.string().uuid().readonly(),
+    name: z.string().readonly(),
+    email: z.string().email().readonly(),
+    rif: z.union([
+        z.string().readonly(),
+        z.null()
+    ]).readonly(),
+    license_date: z.string().date().readonly(),
+    status: z.string().readonly()
+});
+
 /**
  * Recomputed state of a sale touched by a reversal.
  */
@@ -161,8 +173,8 @@ export const zCompany = z.object({
         z.string().max(12),
         z.null()
     ]).optional(),
-    max_branches: z.number().int().gte(0).lte(2147483647),
-    license_date: z.string().date(),
+    max_branches: z.number().int().readonly(),
+    license_date: z.string().date().readonly(),
     id: z.string().uuid().readonly()
 });
 
@@ -172,17 +184,7 @@ export const zCompanyRequest = z.object({
     rif: z.union([
         z.string().max(12),
         z.null()
-    ]).optional(),
-    max_branches: z.number().int().gte(0).lte(2147483647),
-    license_date: z.string().date()
-});
-
-export const zCustomUser = z.object({
-    email: z.string().email().max(254),
-    first_name: z.string().max(150).optional(),
-    last_name: z.string().max(150).optional(),
-    company_id: z.string().uuid(),
-    branch_ids: z.array(z.string().uuid()).optional()
+    ]).optional()
 });
 
 export const zCustomUserRequest = z.object({
@@ -437,6 +439,10 @@ export const zInventoryAdjustmentWriteRequest = z.object({
     ]).optional()
 });
 
+export const zLicenseExtendRequest = z.object({
+    days: z.number().int().gte(1).lte(730)
+});
+
 export const zMeasurementUnit = z.object({
     name: z.string().max(200),
     decimals: z.boolean().optional(),
@@ -446,6 +452,19 @@ export const zMeasurementUnit = z.object({
 export const zMeasurementUnitRequest = z.object({
     name: z.string().min(1).max(200),
     decimals: z.boolean().optional()
+});
+
+export const zPaginatedAdminCompanyLicenseList = z.object({
+    count: z.number().int(),
+    next: z.union([
+        z.string().url(),
+        z.null()
+    ]).optional(),
+    previous: z.union([
+        z.string().url(),
+        z.null()
+    ]).optional(),
+    results: z.array(zAdminCompanyLicense)
 });
 
 export const zPaginatedCustomerPaymentListList = z.object({
@@ -526,9 +545,7 @@ export const zPatchedCompanyRequest = z.object({
     rif: z.union([
         z.string().max(12),
         z.null()
-    ]).optional(),
-    max_branches: z.number().int().gte(0).lte(2147483647).optional(),
-    license_date: z.string().date().optional()
+    ]).optional()
 });
 
 export const zPatchedCustomUserRequest = z.object({
@@ -848,6 +865,27 @@ export const zProviderRequest = z.object({
     ]).optional()
 });
 
+/**
+ * * `NON_PAYMENT` - Non-payment
+ * * `FRAUD` - Fraud
+ * * `CUSTOMER_REQUEST` - Customer request
+ * * `OTHER` - Other
+ */
+export const zReasonEnum = z.enum([
+    'NON_PAYMENT',
+    'FRAUD',
+    'CUSTOMER_REQUEST',
+    'OTHER'
+]);
+
+export const zLicenseRevokeRequest = z.object({
+    reason: zReasonEnum,
+    note: z.union([
+        z.string(),
+        z.null()
+    ]).optional()
+});
+
 export const zRegisterUser = z.object({
     email: z.string().email().max(254),
     first_name: z.string().max(150).optional(),
@@ -860,6 +898,27 @@ export const zRegisterUserRequest = z.object({
     first_name: z.string().max(150).optional(),
     last_name: z.string().max(150).optional(),
     username: z.string().min(1).max(150).regex(/^[\w.@+-]+$/)
+});
+
+/**
+ * * `OWNER` - Owner
+ * * `MANAGER` - Manager
+ * * `EMPLOYEE` - Employee
+ */
+export const zRoleEnum = z.enum([
+    'OWNER',
+    'MANAGER',
+    'EMPLOYEE'
+]);
+
+export const zCustomUser = z.object({
+    email: z.string().email().max(254),
+    first_name: z.string().max(150).optional(),
+    last_name: z.string().max(150).optional(),
+    company_id: z.string().uuid(),
+    branch_ids: z.array(z.string().uuid()).optional(),
+    role: zRoleEnum,
+    is_superuser: z.boolean().readonly()
 });
 
 /**
@@ -1111,9 +1170,15 @@ export const zCompanyWritable = z.object({
     rif: z.union([
         z.string().max(12),
         z.null()
-    ]).optional(),
-    max_branches: z.number().int().gte(0).lte(2147483647),
-    license_date: z.string().date()
+    ]).optional()
+});
+
+export const zCustomUserWritable = z.object({
+    email: z.string().email().max(254),
+    first_name: z.string().max(150).optional(),
+    last_name: z.string().max(150).optional(),
+    company_id: z.string().uuid(),
+    branch_ids: z.array(z.string().uuid()).optional()
 });
 
 export const zCustomerWritable = z.object({
@@ -1153,6 +1218,19 @@ export const zMeasurementUnitWritable = z.object({
 });
 
 export const zPaginatedAccountListListWritable = z.object({
+    count: z.number().int(),
+    next: z.union([
+        z.string().url(),
+        z.null()
+    ]).optional(),
+    previous: z.union([
+        z.string().url(),
+        z.null()
+    ]).optional(),
+    results: z.array(z.unknown())
+});
+
+export const zPaginatedAdminCompanyLicenseListWritable = z.object({
     count: z.number().int(),
     next: z.union([
         z.string().url(),
@@ -1507,6 +1585,53 @@ export const zV1AdjustmentsRetrieveData = z.object({
 });
 
 export const zV1AdjustmentsRetrieveResponse = zInventoryAdjustmentDetailRead;
+
+export const zV1AdminCompaniesListData = z.object({
+    body: z.never().optional(),
+    path: z.never().optional(),
+    query: z.object({
+        page: z.number().int().optional(),
+        page_size: z.number().int().optional(),
+        search: z.string().optional(),
+        status: z.enum([
+            'ACTIVE',
+            'EXPIRED',
+            'REVOKED'
+        ]).optional()
+    }).optional()
+});
+
+export const zV1AdminCompaniesListResponse = zPaginatedAdminCompanyLicenseList;
+
+export const zV1AdminCompaniesLicenseExtendCreateData = z.object({
+    body: zLicenseExtendRequest,
+    path: z.object({
+        company_id: z.string()
+    }),
+    query: z.never().optional()
+});
+
+export const zV1AdminCompaniesLicenseExtendCreateResponse = zAdminCompanyLicense;
+
+export const zV1AdminCompaniesLicenseRestoreCreateData = z.object({
+    body: z.never().optional(),
+    path: z.object({
+        company_id: z.string()
+    }),
+    query: z.never().optional()
+});
+
+export const zV1AdminCompaniesLicenseRestoreCreateResponse = zAdminCompanyLicense;
+
+export const zV1AdminCompaniesLicenseRevokeCreateData = z.object({
+    body: zLicenseRevokeRequest,
+    path: z.object({
+        company_id: z.string()
+    }),
+    query: z.never().optional()
+});
+
+export const zV1AdminCompaniesLicenseRevokeCreateResponse = zAdminCompanyLicense;
 
 export const zV1BranchListData = z.object({
     body: z.never().optional(),
