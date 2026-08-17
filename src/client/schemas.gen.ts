@@ -574,8 +574,7 @@ export const CompanySchema = {
         },
         rif: {
             type: 'string',
-            nullable: true,
-            maxLength: 12
+            nullable: true
         },
         max_branches: {
             type: 'integer',
@@ -590,6 +589,31 @@ export const CompanySchema = {
             type: 'string',
             format: 'uuid',
             readOnly: true
+        },
+        fiscal_state: {
+            type: 'string',
+            nullable: true,
+            maxLength: 100
+        },
+        fiscal_city: {
+            type: 'string',
+            nullable: true,
+            maxLength: 100
+        },
+        fiscal_municipality: {
+            type: 'string',
+            nullable: true,
+            maxLength: 100
+        },
+        fiscal_street: {
+            type: 'string',
+            nullable: true,
+            maxLength: 255
+        },
+        fiscal_postal_code: {
+            type: 'string',
+            nullable: true,
+            maxLength: 20
         }
     },
     required: [
@@ -618,7 +642,32 @@ export const CompanyRequestSchema = {
         rif: {
             type: 'string',
             nullable: true,
-            maxLength: 12
+            minLength: 1
+        },
+        fiscal_state: {
+            type: 'string',
+            nullable: true,
+            maxLength: 100
+        },
+        fiscal_city: {
+            type: 'string',
+            nullable: true,
+            maxLength: 100
+        },
+        fiscal_municipality: {
+            type: 'string',
+            nullable: true,
+            maxLength: 100
+        },
+        fiscal_street: {
+            type: 'string',
+            nullable: true,
+            maxLength: 255
+        },
+        fiscal_postal_code: {
+            type: 'string',
+            nullable: true,
+            maxLength: 20
         }
     },
     required: [
@@ -645,7 +694,8 @@ export const CustomUserSchema = {
         },
         company_id: {
             type: 'string',
-            format: 'uuid'
+            format: 'uuid',
+            readOnly: true
         },
         branch_ids: {
             type: 'array',
@@ -694,10 +744,6 @@ export const CustomUserRequestSchema = {
             type: 'string',
             maxLength: 150
         },
-        company_id: {
-            type: 'string',
-            format: 'uuid'
-        },
         branch_ids: {
             type: 'array',
             items: {
@@ -707,7 +753,6 @@ export const CustomUserRequestSchema = {
         }
     },
     required: [
-        'company_id',
         'email'
     ]
 } as const;
@@ -1669,7 +1714,32 @@ export const PatchedCompanyRequestSchema = {
         rif: {
             type: 'string',
             nullable: true,
-            maxLength: 12
+            minLength: 1
+        },
+        fiscal_state: {
+            type: 'string',
+            nullable: true,
+            maxLength: 100
+        },
+        fiscal_city: {
+            type: 'string',
+            nullable: true,
+            maxLength: 100
+        },
+        fiscal_municipality: {
+            type: 'string',
+            nullable: true,
+            maxLength: 100
+        },
+        fiscal_street: {
+            type: 'string',
+            nullable: true,
+            maxLength: 255
+        },
+        fiscal_postal_code: {
+            type: 'string',
+            nullable: true,
+            maxLength: 20
         }
     }
 } as const;
@@ -1690,10 +1760,6 @@ export const PatchedCustomUserRequestSchema = {
         last_name: {
             type: 'string',
             maxLength: 150
-        },
-        company_id: {
-            type: 'string',
-            format: 'uuid'
         },
         branch_ids: {
             type: 'array',
@@ -2213,6 +2279,7 @@ export const ReasonEnumSchema = {
 
 export const RegisterUserSchema = {
     type: 'object',
+    description: 'Shared username/email validation and user-creation logic for every\n/v1/ serializer that creates a CustomUser (design.md decision 7).\n\nPR 2\'s OnboardingUserSerializer reuses this class with an ANONYMOUS\ncaller. Zero references to self.context[\'request\'] anywhere in this\nclass — enforced by\nBaseUserCreateSerializerSeamTestCase, not by convention. Referencing\nthe request here would make AnonymousUser.company raise and turn\nonboarding into a 500 for a bug introduced in the authenticated path.',
     properties: {
         email: {
             type: 'string',
@@ -2242,6 +2309,7 @@ export const RegisterUserSchema = {
 
 export const RegisterUserRequestSchema = {
     type: 'object',
+    description: 'Shared username/email validation and user-creation logic for every\n/v1/ serializer that creates a CustomUser (design.md decision 7).\n\nPR 2\'s OnboardingUserSerializer reuses this class with an ANONYMOUS\ncaller. Zero references to self.context[\'request\'] anywhere in this\nclass — enforced by\nBaseUserCreateSerializerSeamTestCase, not by convention. Referencing\nthe request here would make AnonymousUser.company raise and turn\nonboarding into a 500 for a bug introduced in the authenticated path.',
     properties: {
         email: {
             type: 'string',
@@ -2896,8 +2964,32 @@ export const CompanyWritableSchema = {
         },
         rif: {
             type: 'string',
+            nullable: true
+        },
+        fiscal_state: {
+            type: 'string',
             nullable: true,
-            maxLength: 12
+            maxLength: 100
+        },
+        fiscal_city: {
+            type: 'string',
+            nullable: true,
+            maxLength: 100
+        },
+        fiscal_municipality: {
+            type: 'string',
+            nullable: true,
+            maxLength: 100
+        },
+        fiscal_street: {
+            type: 'string',
+            nullable: true,
+            maxLength: 255
+        },
+        fiscal_postal_code: {
+            type: 'string',
+            nullable: true,
+            maxLength: 20
         }
     },
     required: [
@@ -2922,10 +3014,6 @@ export const CustomUserWritableSchema = {
             type: 'string',
             maxLength: 150
         },
-        company_id: {
-            type: 'string',
-            format: 'uuid'
-        },
         branch_ids: {
             type: 'array',
             items: {
@@ -2935,7 +3023,6 @@ export const CustomUserWritableSchema = {
         }
     },
     required: [
-        'company_id',
         'email'
     ]
 } as const;
@@ -3401,6 +3488,7 @@ export const ProviderWritableSchema = {
 
 export const RegisterUserRequestWritableSchema = {
     type: 'object',
+    description: 'Shared username/email validation and user-creation logic for every\n/v1/ serializer that creates a CustomUser (design.md decision 7).\n\nPR 2\'s OnboardingUserSerializer reuses this class with an ANONYMOUS\ncaller. Zero references to self.context[\'request\'] anywhere in this\nclass — enforced by\nBaseUserCreateSerializerSeamTestCase, not by convention. Referencing\nthe request here would make AnonymousUser.company raise and turn\nonboarding into a 500 for a bug introduced in the authenticated path.',
     properties: {
         email: {
             type: 'string',
@@ -3413,20 +3501,6 @@ export const RegisterUserRequestWritableSchema = {
             writeOnly: true,
             minLength: 1,
             maxLength: 128
-        },
-        company_id: {
-            type: 'string',
-            format: 'uuid',
-            writeOnly: true
-        },
-        branch_ids: {
-            type: 'array',
-            items: {
-                type: 'string',
-                format: 'uuid',
-                writeOnly: true
-            },
-            writeOnly: true
         },
         first_name: {
             type: 'string',
@@ -3442,10 +3516,18 @@ export const RegisterUserRequestWritableSchema = {
             description: 'Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only.',
             pattern: '^[\\w.@+-]+$',
             maxLength: 150
+        },
+        branch_ids: {
+            type: 'array',
+            items: {
+                type: 'string',
+                format: 'uuid',
+                writeOnly: true
+            },
+            writeOnly: true
         }
     },
     required: [
-        'company_id',
         'email',
         'password',
         'username'

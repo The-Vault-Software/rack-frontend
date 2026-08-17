@@ -170,19 +170,59 @@ export const zCompany = z.object({
     name: z.string().max(100),
     email: z.string().email().max(200),
     rif: z.union([
-        z.string().max(12),
+        z.string(),
         z.null()
     ]).optional(),
     max_branches: z.number().int().readonly(),
     license_date: z.string().date().readonly(),
-    id: z.string().uuid().readonly()
+    id: z.string().uuid().readonly(),
+    fiscal_state: z.union([
+        z.string().max(100),
+        z.null()
+    ]).optional(),
+    fiscal_city: z.union([
+        z.string().max(100),
+        z.null()
+    ]).optional(),
+    fiscal_municipality: z.union([
+        z.string().max(100),
+        z.null()
+    ]).optional(),
+    fiscal_street: z.union([
+        z.string().max(255),
+        z.null()
+    ]).optional(),
+    fiscal_postal_code: z.union([
+        z.string().max(20),
+        z.null()
+    ]).optional()
 });
 
 export const zCompanyRequest = z.object({
     name: z.string().min(1).max(100),
     email: z.string().email().min(1).max(200),
     rif: z.union([
-        z.string().max(12),
+        z.string().min(1),
+        z.null()
+    ]).optional(),
+    fiscal_state: z.union([
+        z.string().max(100),
+        z.null()
+    ]).optional(),
+    fiscal_city: z.union([
+        z.string().max(100),
+        z.null()
+    ]).optional(),
+    fiscal_municipality: z.union([
+        z.string().max(100),
+        z.null()
+    ]).optional(),
+    fiscal_street: z.union([
+        z.string().max(255),
+        z.null()
+    ]).optional(),
+    fiscal_postal_code: z.union([
+        z.string().max(20),
         z.null()
     ]).optional()
 });
@@ -191,7 +231,6 @@ export const zCustomUserRequest = z.object({
     email: z.string().email().min(1).max(254),
     first_name: z.string().max(150).optional(),
     last_name: z.string().max(150).optional(),
-    company_id: z.string().uuid(),
     branch_ids: z.array(z.string().uuid()).optional()
 });
 
@@ -543,7 +582,27 @@ export const zPatchedCompanyRequest = z.object({
     name: z.string().min(1).max(100).optional(),
     email: z.string().email().min(1).max(200).optional(),
     rif: z.union([
-        z.string().max(12),
+        z.string().min(1),
+        z.null()
+    ]).optional(),
+    fiscal_state: z.union([
+        z.string().max(100),
+        z.null()
+    ]).optional(),
+    fiscal_city: z.union([
+        z.string().max(100),
+        z.null()
+    ]).optional(),
+    fiscal_municipality: z.union([
+        z.string().max(100),
+        z.null()
+    ]).optional(),
+    fiscal_street: z.union([
+        z.string().max(255),
+        z.null()
+    ]).optional(),
+    fiscal_postal_code: z.union([
+        z.string().max(20),
         z.null()
     ]).optional()
 });
@@ -552,7 +611,6 @@ export const zPatchedCustomUserRequest = z.object({
     email: z.string().email().min(1).max(254).optional(),
     first_name: z.string().max(150).optional(),
     last_name: z.string().max(150).optional(),
-    company_id: z.string().uuid().optional(),
     branch_ids: z.array(z.string().uuid()).optional()
 });
 
@@ -886,6 +944,17 @@ export const zLicenseRevokeRequest = z.object({
     ]).optional()
 });
 
+/**
+ * Shared username/email validation and user-creation logic for every
+ * /v1/ serializer that creates a CustomUser (design.md decision 7).
+ *
+ * PR 2's OnboardingUserSerializer reuses this class with an ANONYMOUS
+ * caller. Zero references to self.context['request'] anywhere in this
+ * class — enforced by
+ * BaseUserCreateSerializerSeamTestCase, not by convention. Referencing
+ * the request here would make AnonymousUser.company raise and turn
+ * onboarding into a 500 for a bug introduced in the authenticated path.
+ */
 export const zRegisterUser = z.object({
     email: z.string().email().max(254),
     first_name: z.string().max(150).optional(),
@@ -893,6 +962,17 @@ export const zRegisterUser = z.object({
     username: z.string().max(150).regex(/^[\w.@+-]+$/)
 });
 
+/**
+ * Shared username/email validation and user-creation logic for every
+ * /v1/ serializer that creates a CustomUser (design.md decision 7).
+ *
+ * PR 2's OnboardingUserSerializer reuses this class with an ANONYMOUS
+ * caller. Zero references to self.context['request'] anywhere in this
+ * class — enforced by
+ * BaseUserCreateSerializerSeamTestCase, not by convention. Referencing
+ * the request here would make AnonymousUser.company raise and turn
+ * onboarding into a 500 for a bug introduced in the authenticated path.
+ */
 export const zRegisterUserRequest = z.object({
     email: z.string().email().min(1).max(254),
     first_name: z.string().max(150).optional(),
@@ -915,7 +995,7 @@ export const zCustomUser = z.object({
     email: z.string().email().max(254),
     first_name: z.string().max(150).optional(),
     last_name: z.string().max(150).optional(),
-    company_id: z.string().uuid(),
+    company_id: z.string().uuid().readonly(),
     branch_ids: z.array(z.string().uuid()).optional(),
     role: zRoleEnum,
     is_superuser: z.boolean().readonly()
@@ -1168,7 +1248,27 @@ export const zCompanyWritable = z.object({
     name: z.string().max(100),
     email: z.string().email().max(200),
     rif: z.union([
-        z.string().max(12),
+        z.string(),
+        z.null()
+    ]).optional(),
+    fiscal_state: z.union([
+        z.string().max(100),
+        z.null()
+    ]).optional(),
+    fiscal_city: z.union([
+        z.string().max(100),
+        z.null()
+    ]).optional(),
+    fiscal_municipality: z.union([
+        z.string().max(100),
+        z.null()
+    ]).optional(),
+    fiscal_street: z.union([
+        z.string().max(255),
+        z.null()
+    ]).optional(),
+    fiscal_postal_code: z.union([
+        z.string().max(20),
         z.null()
     ]).optional()
 });
@@ -1177,7 +1277,6 @@ export const zCustomUserWritable = z.object({
     email: z.string().email().max(254),
     first_name: z.string().max(150).optional(),
     last_name: z.string().max(150).optional(),
-    company_id: z.string().uuid(),
     branch_ids: z.array(z.string().uuid()).optional()
 });
 
@@ -1399,14 +1498,24 @@ export const zProviderWritable = z.object({
     ]).optional()
 });
 
+/**
+ * Shared username/email validation and user-creation logic for every
+ * /v1/ serializer that creates a CustomUser (design.md decision 7).
+ *
+ * PR 2's OnboardingUserSerializer reuses this class with an ANONYMOUS
+ * caller. Zero references to self.context['request'] anywhere in this
+ * class — enforced by
+ * BaseUserCreateSerializerSeamTestCase, not by convention. Referencing
+ * the request here would make AnonymousUser.company raise and turn
+ * onboarding into a 500 for a bug introduced in the authenticated path.
+ */
 export const zRegisterUserRequestWritable = z.object({
     email: z.string().email().min(1).max(254),
     password: z.string().min(1).max(128),
-    company_id: z.string().uuid(),
-    branch_ids: z.array(z.string().uuid()).optional(),
     first_name: z.string().max(150).optional(),
     last_name: z.string().max(150).optional(),
-    username: z.string().min(1).max(150).regex(/^[\w.@+-]+$/)
+    username: z.string().min(1).max(150).regex(/^[\w.@+-]+$/),
+    branch_ids: z.array(z.string().uuid()).optional()
 });
 
 /**
@@ -1962,6 +2071,12 @@ export const zV1MeasurementUpdateData = z.object({
 });
 
 export const zV1MeasurementUpdateResponse = zMeasurementUnit;
+
+export const zV1OnboardingCreateData = z.object({
+    body: z.never().optional(),
+    path: z.never().optional(),
+    query: z.never().optional()
+});
 
 export const zV1ProductListData = z.object({
     body: z.never().optional(),
