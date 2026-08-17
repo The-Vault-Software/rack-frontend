@@ -1,6 +1,7 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom';
 import LoginPage from './pages/auth/LoginPage';
 import RegisterPage from './pages/auth/RegisterPage';
+import LicenseInactivePage from './pages/license/LicenseInactivePage';
 import DashboardPage from './pages/dashboard/DashboardPage';
 import CreateCompanyPage from './pages/company/CreateCompanyPage';
 import SetupBranchPage from './pages/auth/SetupBranchPage';
@@ -28,6 +29,13 @@ export const router = createBrowserRouter([
     {
         path: '/register',
         element: <RegisterPage />
+    },
+    {
+        // Public — reached via a hard `window.location.replace` navigation
+        // from the response interceptor's 402 latch, before any session
+        // exists. Deliberately outside ProtectedLayout.
+        path: '/licencia-inactiva',
+        element: <LicenseInactivePage />
     },
     {
         element: <ProtectedLayout />,
