@@ -136,6 +136,21 @@ describe('buildOnboardingPayload', () => {
     expect(payload.owner).toEqual(formValues.owner);
     expect(payload.employees[0].email).toBe('emp0@example.com');
   });
+
+  // Task 6.4.5 (Req: `onboarding-wizard` #2, #4): company_id, license_date,
+  // and max_branches are server-assigned by the /v1/onboarding/ endpoint and
+  // no longer accepted as client input — proven here by inspecting the
+  // actual built payload's keys, not by reading the source alone.
+  it('never includes company_id, license_date, or max_branches in the built payload', () => {
+    const payload = buildOnboardingPayload(buildFormValues());
+
+    expect(Object.keys(payload.company)).not.toContain('company_id');
+    expect(Object.keys(payload.company)).not.toContain('license_date');
+    expect(Object.keys(payload.company)).not.toContain('max_branches');
+    expect(payload).not.toHaveProperty('company_id');
+    expect(payload).not.toHaveProperty('license_date');
+    expect(payload).not.toHaveProperty('max_branches');
+  });
 });
 
 describe('reindexEmployeesAfterBranchRemoval', () => {

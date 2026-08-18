@@ -159,22 +159,22 @@ The error-shape asymmetry is the likeliest silent bug in this change: DRF's own 
 ### 6.1 Remove `RegisterPage.tsx` and mount the wizard at `/register`
 This deletes the last raw `fetch` in application code (`RegisterPage.tsx:87`) — the one call site a compile-time `tsc -b` pass after regeneration cannot catch, since no generated type touches it today.
 
-- [ ] 6.1.1 Delete `src/pages/auth/RegisterPage.tsx`. n/a (Req: `onboarding-wizard` #9)
-- [ ] 6.1.2 Update `router.tsx`: `/register` renders `OnboardingWizard`. n/a (Req: `onboarding-wizard` #1)
+- [x] 6.1.1 Delete `src/pages/auth/RegisterPage.tsx`. n/a (Req: `onboarding-wizard` #9)
+- [x] 6.1.2 Update `router.tsx`: `/register` renders `OnboardingWizard`. n/a (Req: `onboarding-wizard` #1)
 
 ### 6.2 Delete legacy signup pages, redirect legacy routes, retarget `ProtectedLayout`
-- [ ] 6.2.1 RED — write a routing test (React Router test utilities) asserting `/create-company` and `/setup-branch` navigate to `/register` unconditionally (not gated on a 410 response). (Req: `onboarding-wizard` #10)
-- [ ] 6.2.2 GREEN — delete `src/pages/company/CreateCompanyPage.tsx` and `src/pages/auth/SetupBranchPage.tsx`; add `/create-company` and `/setup-branch` as `<Navigate to="/register" replace />` entries in `router.tsx`, positioned **outside** `ProtectedLayout`; change `ProtectedLayout.tsx`'s companyless redirect target from `/create-company` to `/register`.
+- [x] 6.2.1 RED — write a routing test (React Router test utilities) asserting `/create-company` and `/setup-branch` navigate to `/register` unconditionally (not gated on a 410 response). (Req: `onboarding-wizard` #10)
+- [x] 6.2.2 GREEN — delete `src/pages/company/CreateCompanyPage.tsx` and `src/pages/auth/SetupBranchPage.tsx`; add `/create-company` and `/setup-branch` as `<Navigate to="/register" replace />` entries in `router.tsx`, positioned **outside** `ProtectedLayout`; change `ProtectedLayout.tsx`'s companyless redirect target from `/create-company` to `/register`.
 
 ### 6.3 Forbid raw `fetch` outside `src/client/`
-- [ ] 6.3.1 Add an ESLint rule to `eslint.config.js` (e.g. `no-restricted-syntax` on `CallExpression[callee.name='fetch']`, scoped to exclude `src/client/**`) so a future raw `fetch` fails lint, not just review. n/a (Req: `onboarding-wizard` #9)
+- [x] 6.3.1 Add an ESLint rule to `eslint.config.js` (e.g. `no-restricted-syntax` on `CallExpression[callee.name='fetch']`, scoped to exclude `src/client/**`) so a future raw `fetch` fails lint, not just review. n/a (Req: `onboarding-wizard` #9)
 
 ### 6.4 Final change-wide verification
-- [ ] 6.4.1 `npm test` — full suite green, including Phases 1–5's tests still passing after the router/page changes in this phase.
-- [ ] 6.4.2 `npm run build` (`tsc -b && vite build`) — necessary but explicitly insufficient per the proposal's own argument; it does not substitute for 6.4.1.
-- [ ] 6.4.3 `npm run lint`.
-- [ ] 6.4.4 Static repo scan: `rg "fetch\(" src --glob '!src/client/**'` returns zero matches (mirrors proposal Success Criterion "No raw `fetch` remains outside `src/client/`"). This is the requirement-9 gate `npm run build` cannot provide.
-- [ ] 6.4.5 Confirm the request body sent by the wizard never includes `company_id`, `license_date`, or `max_branches` (server-assigned, no longer accepted client input).
+- [x] 6.4.1 `npm test` — full suite green, including Phases 1–5's tests still passing after the router/page changes in this phase.
+- [x] 6.4.2 `npm run build` (`tsc -b && vite build`) — necessary but explicitly insufficient per the proposal's own argument; it does not substitute for 6.4.1.
+- [x] 6.4.3 `npm run lint`.
+- [x] 6.4.4 Static repo scan: `rg "fetch\(" src --glob '!src/client/**'` returns zero matches (mirrors proposal Success Criterion "No raw `fetch` remains outside `src/client/`"). This is the requirement-9 gate `npm run build` cannot provide. DEVIATION (flagged, not silent): the literal command returns ONE match — `SalesAnalytics.tsx`'s `refetch()` — a substring collision of the plain-text regex with TanStack Query's `refetch`, not a raw-fetch violation (confirmed: the AST-based ESLint rule from 6.3.1, which matches `callee.name === 'fetch'` exactly, does not flag it; a word-boundary variant `rg "\bfetch\(" src --glob '!src/client/**'` returns zero matches). Requirement 9 is satisfied; the task's exact literal command is not byte-for-byte zero due to this pre-existing, unrelated identifier collision.
+- [x] 6.4.5 Confirm the request body sent by the wizard never includes `company_id`, `license_date`, or `max_branches` (server-assigned, no longer accepted client input). Proved by a new assertion in `onboardingPayload.test.ts` inspecting `buildOnboardingPayload`'s actual output keys, not by inspection alone.
 
 n/a for 6.4.* (verification only, no new authored behavior).
 

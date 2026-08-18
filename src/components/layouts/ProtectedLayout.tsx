@@ -18,14 +18,17 @@ export const ProtectedLayout = () => {
                  // For now, I'll trust the user requirement that checking company is needed.
                  // If company_id is a UUID, checking if it exists is enough.
                  // NOTE: If the backend assigns a default company or null, we check here.
-                 // We need to avoid infinite loops if we are already AT /create-company.
-                 
+                 // A companyless user is routed to the onboarding wizard at /register
+                 // (see router.tsx — /register is public and outside this layout, so
+                 // this pathname check only guards against a redirect loop if the
+                 // effect were ever to re-run while this layout is still mounted).
+
                  const hasCompany = user.company_id && user.company_id !== '00000000-0000-0000-0000-000000000000'; // Defensive check
-                 
-                 if (!hasCompany && location.pathname !== '/create-company') {
-                     navigate('/create-company', { replace: true });
-                 } else if (hasCompany && location.pathname === '/create-company') {
-                     // If they have a company, don't let them stay on create-company (unless they want to create another? Assume 1 for now)
+
+                 if (!hasCompany && location.pathname !== '/register') {
+                     navigate('/register', { replace: true });
+                 } else if (hasCompany && location.pathname === '/register') {
+                     // If they have a company, don't let them stay on the wizard route.
                      navigate('/dashboard', { replace: true });
                  }
             }
