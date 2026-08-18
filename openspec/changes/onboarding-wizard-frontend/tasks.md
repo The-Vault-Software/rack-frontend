@@ -116,22 +116,22 @@ The error-shape asymmetry is the likeliest silent bug in this change: DRF's own 
 - [ ] 3.2 Obtain a `schema.yml` exported from the merged change-2 backend and replace the local stale copy (no `/v1/onboarding/` path today). n/a
 - [ ] 3.3 Run `npm run generate-api`; confirm the generated onboarding mutation hook's actual name — the design's `v1OnboardingCreateMutation` is an **assumption**, not a verified fact, until this step runs. Record the actual name for Phase 4/5. n/a
 - [ ] 3.4 Confirm `CreateCompanyPage.tsx` now fails to compile (its `v1CompanyCreateMutation` import breaks because `/v1/company/` is 410). This is **expected and correct** — do not fix it here; Phase 6 deletes the file. n/a
-- [ ] 3.5 Reconcile Phase 2's hand-typed `buildOnboardingPayload`/`mapOnboardingErrors` interfaces against the newly generated types; adjust only if the verified payload shape in `design.md` diverges from what actually generated. (Req: `onboarding-wizard` #5, #6)
+- [x] 3.5 Reconcile Phase 2's hand-typed `buildOnboardingPayload`/`mapOnboardingErrors` interfaces against the newly generated types; adjust only if the verified payload shape in `design.md` diverges from what actually generated. (Req: `onboarding-wizard` #5, #6) — done in Phase 4: `V1OnboardingCreateData.body` generates as `never` (schema.yml's `/v1/onboarding/` POST has no `requestBody` section at all). Nothing generated to reconcile the hand-written interfaces against; they are kept as-is (see comment added to `onboardingPayload.ts`). Flagged as a Phase 5 risk: the generated mutation call will fail type-checking on a real `body` until the backend's OpenAPI schema documents a request body for this operation.
 
 ---
 
 ## Phase 4 — Wizard Steps 1–2 (PR Slice 4, ~340 lines, depends on Phase 3)
 
 ### 4.1 `CompanyStep`
-- [ ] 4.1.1 RED — write `src/pages/onboarding/steps/CompanyStep.test.tsx`: required fields (name, email, RIF, estado, ciudad, municipio, calle) block advancement when empty; optional código postal does not block advancement; a RIF with correct structure and mod-11 check digit passes (reuses Phase 2 fixtures); a wrong check digit or `C-` prefix blocks advancement with a field-level error. (Req: `onboarding-wizard` #2, #3)
-- [ ] 4.1.2 GREEN — create `src/pages/onboarding/steps/CompanyStep.tsx` using the Zod schema with `isValidRif`/`normalizeRif` from Phase 2 composed via `.refine()`, plus a required-ness refine local to this step (per design D-F, required-ness stays out of the validator itself).
+- [x] 4.1.1 RED — write `src/pages/onboarding/steps/CompanyStep.test.tsx`: required fields (name, email, RIF, estado, ciudad, municipio, calle) block advancement when empty; optional código postal does not block advancement; a RIF with correct structure and mod-11 check digit passes (reuses Phase 2 fixtures); a wrong check digit or `C-` prefix blocks advancement with a field-level error. (Req: `onboarding-wizard` #2, #3)
+- [x] 4.1.2 GREEN — create `src/pages/onboarding/steps/CompanyStep.tsx` using the Zod schema with `isValidRif`/`normalizeRif` from Phase 2 composed via `.refine()`, plus a required-ness refine local to this step (per design D-F, required-ness stays out of the validator itself).
 
 ### 4.2 `BranchesStep`
-- [ ] 4.2.1 RED — write `src/pages/onboarding/steps/BranchesStep.test.tsx`: 0 branches blocks advancement; the "add branch" control is unavailable/disabled at 2 branches; exactly 1 valid branch (second omitted) advances. (Req: `onboarding-wizard` #4)
-- [ ] 4.2.2 GREEN — create `src/pages/onboarding/steps/BranchesStep.tsx` using `useFieldArray` bounded to min 1 / max 2.
+- [x] 4.2.1 RED — write `src/pages/onboarding/steps/BranchesStep.test.tsx`: 0 branches blocks advancement; the "add branch" control is unavailable/disabled at 2 branches; exactly 1 valid branch (second omitted) advances. (Req: `onboarding-wizard` #4)
+- [x] 4.2.2 GREEN — create `src/pages/onboarding/steps/BranchesStep.tsx` using `useFieldArray` bounded to min 1 / max 2.
 
 ### 4.3 Slice verification
-- [ ] 4.3.1 `npm test` green for Phase 4 files; `npm run lint`; `tsc -b` clean. n/a
+- [x] 4.3.1 `npm test` green for Phase 4 files; `npm run lint`; `tsc -b` clean. n/a
 
 ---
 
