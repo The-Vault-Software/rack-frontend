@@ -481,7 +481,14 @@ export const v1MeasurementUpdate = <ThrowOnError extends boolean = false>(option
  * under /v1/: it creates a tenant, so there is no prior OWNER to
  * authenticate as (unlike POST /v1/register/, PR 1).
  */
-export const v1OnboardingCreate = <ThrowOnError extends boolean = false>(options?: Options<V1OnboardingCreateData, ThrowOnError>) => (options?.client ?? client).post<V1OnboardingCreateResponses, unknown, ThrowOnError>({ url: '/v1/onboarding/', ...options });
+export const v1OnboardingCreate = <ThrowOnError extends boolean = false>(options: Options<V1OnboardingCreateData, ThrowOnError>) => (options.client ?? client).post<V1OnboardingCreateResponses, unknown, ThrowOnError>({
+    url: '/v1/onboarding/',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 export const v1ProductList = <ThrowOnError extends boolean = false>(options?: Options<V1ProductListData, ThrowOnError>) => (options?.client ?? client).get<V1ProductListResponses, unknown, ThrowOnError>({ url: '/v1/product/', ...options });
 

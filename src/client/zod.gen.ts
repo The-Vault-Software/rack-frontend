@@ -124,6 +124,24 @@ export const zAffectedSale = z.object({
     total_paid: z.string().regex(/^-?\d{0,10}(?:\.\d{0,2})?$/).readonly()
 });
 
+/**
+ * Shared username/email validation and user-creation logic for every
+ * /v1/ serializer that creates a CustomUser (design.md decision 7).
+ *
+ * PR 2's OnboardingUserSerializer reuses this class with an ANONYMOUS
+ * caller. Zero references to self.context['request'] anywhere in this
+ * class — enforced by
+ * BaseUserCreateSerializerSeamTestCase, not by convention. Referencing
+ * the request here would make AnonymousUser.company raise and turn
+ * onboarding into a 500 for a bug introduced in the authenticated path.
+ */
+export const zBaseUserCreateRequest = z.object({
+    email: z.string().email().min(1).max(254),
+    first_name: z.string().max(150).optional(),
+    last_name: z.string().max(150).optional(),
+    username: z.string().min(1).max(150).regex(/^[\w.@+-]+$/)
+});
+
 export const zBranch = z.object({
     name: z.string().max(200),
     address: z.union([
@@ -491,6 +509,119 @@ export const zMeasurementUnit = z.object({
 export const zMeasurementUnitRequest = z.object({
     name: z.string().min(1).max(200),
     decimals: z.boolean().optional()
+});
+
+/**
+ * Deliberately NOT BranchSerializer: that one performs a
+ * Company.objects.get() and counts live Branch rows against
+ * context['company'], neither of which exist yet at onboarding time —
+ * the branch-count bound is enforced by OnboardingSerializer.validate()
+ * instead (task 2.7).
+ */
+export const zOnboardingBranchRequest = z.object({
+    name: z.string().min(1).max(200),
+    address: z.union([
+        z.string().max(200),
+        z.null()
+    ]).optional(),
+    phone: z.union([
+        z.string().max(40),
+        z.null()
+    ]).optional(),
+    email: z.union([
+        z.string().email().max(200),
+        z.null()
+    ]).optional()
+});
+
+/**
+ * Required at onboarding, unlike CompanySerializer's PATCH-optional
+ * shape: rif and the four fiscal fields other than the postal code
+ * (company-fiscal-identity spec: 'Structured Fiscal Address', 'RIF
+ * Format and Check-Digit Validation'). No UniqueValidator on rif/name/
+ * email here — the transactional create() path (task 2.8) maps a
+ * duplicate IntegrityError to a field-scoped ValidationError via a
+ * savepoint, which is the authoritative mechanism for this endpoint.
+ */
+export const zOnboardingCompanyRequest = z.object({
+    name: z.string().min(1).max(100),
+    email: z.string().email().min(1).max(200),
+    rif: z.string().min(1),
+    fiscal_state: z.union([
+        z.string().max(100),
+        z.null()
+    ]),
+    fiscal_city: z.union([
+        z.string().max(100),
+        z.null()
+    ]),
+    fiscal_municipality: z.union([
+        z.string().max(100),
+        z.null()
+    ]),
+    fiscal_street: z.union([
+        z.string().max(255),
+        z.null()
+    ]),
+    fiscal_postal_code: z.union([
+        z.string(),
+        z.null()
+    ]).optional()
+});
+
+export const zOnboardingCreatedBranch = z.object({
+    id: z.string(),
+    name: z.string()
+});
+
+export const zOnboardingCreatedCompany = z.object({
+    id: z.string(),
+    name: z.string()
+});
+
+export const zOnboardingCreatedEmployee = z.object({
+    id: z.string(),
+    email: z.string().email()
+});
+
+export const zOnboardingCreatedUser = z.object({
+    id: z.string(),
+    email: z.string().email()
+});
+
+export const zOnboardingResult = z.object({
+    company: zOnboardingCreatedCompany,
+    branches: z.array(zOnboardingCreatedBranch),
+    owner: zOnboardingCreatedUser,
+    employees: z.array(zOnboardingCreatedEmployee)
+});
+
+/**
+ * Reuses BaseUserCreateSerializer's validate_username/validate_email/
+ * _create_user with an ANONYMOUS caller. References its branch by
+ * payload position (branch_index into the same request's branches
+ * list), never by id — no company_id, no branch_ids, no
+ * PrimaryKeyRelatedField anywhere on this serializer.
+ */
+export const zOnboardingUserRequest = z.object({
+    email: z.string().email().min(1).max(254),
+    first_name: z.string().max(150).optional(),
+    last_name: z.string().max(150).optional(),
+    username: z.string().min(1).max(150).regex(/^[\w.@+-]+$/),
+    branch_index: z.number().int().gte(0)
+});
+
+/**
+ * Owns the whole transactional creation (task 2.8's create()).
+ * Payload-index referencing only (design.md decision 2): the owner is
+ * attached to EVERY branch in the payload and carries no branch_index;
+ * each employee references its branch by position within `branches`.
+ */
+export const zOnboardingRequest = z.object({
+    company: zOnboardingCompanyRequest,
+    branches: z.array(zOnboardingBranchRequest),
+    owner: zBaseUserCreateRequest,
+    employees: z.array(zOnboardingUserRequest)
 });
 
 export const zPaginatedAdminCompanyLicenseList = z.object({
@@ -1224,6 +1355,25 @@ export const zAccountRequestWritable = z.object({
     details: z.array(z.record(z.unknown()))
 });
 
+/**
+ * Shared username/email validation and user-creation logic for every
+ * /v1/ serializer that creates a CustomUser (design.md decision 7).
+ *
+ * PR 2's OnboardingUserSerializer reuses this class with an ANONYMOUS
+ * caller. Zero references to self.context['request'] anywhere in this
+ * class — enforced by
+ * BaseUserCreateSerializerSeamTestCase, not by convention. Referencing
+ * the request here would make AnonymousUser.company raise and turn
+ * onboarding into a 500 for a bug introduced in the authenticated path.
+ */
+export const zBaseUserCreateRequestWritable = z.object({
+    email: z.string().email().min(1).max(254),
+    password: z.string().min(1).max(128),
+    first_name: z.string().max(150).optional(),
+    last_name: z.string().max(150).optional(),
+    username: z.string().min(1).max(150).regex(/^[\w.@+-]+$/)
+});
+
 export const zBranchWritable = z.object({
     name: z.string().max(200),
     address: z.union([
@@ -1314,6 +1464,35 @@ export const zInventoryAdjustmentWriteRequestWritable = z.object({
 export const zMeasurementUnitWritable = z.object({
     name: z.string().max(200),
     decimals: z.boolean().optional()
+});
+
+/**
+ * Reuses BaseUserCreateSerializer's validate_username/validate_email/
+ * _create_user with an ANONYMOUS caller. References its branch by
+ * payload position (branch_index into the same request's branches
+ * list), never by id — no company_id, no branch_ids, no
+ * PrimaryKeyRelatedField anywhere on this serializer.
+ */
+export const zOnboardingUserRequestWritable = z.object({
+    email: z.string().email().min(1).max(254),
+    password: z.string().min(1).max(128),
+    first_name: z.string().max(150).optional(),
+    last_name: z.string().max(150).optional(),
+    username: z.string().min(1).max(150).regex(/^[\w.@+-]+$/),
+    branch_index: z.number().int().gte(0)
+});
+
+/**
+ * Owns the whole transactional creation (task 2.8's create()).
+ * Payload-index referencing only (design.md decision 2): the owner is
+ * attached to EVERY branch in the payload and carries no branch_index;
+ * each employee references its branch by position within `branches`.
+ */
+export const zOnboardingRequestWritable = z.object({
+    company: zOnboardingCompanyRequest,
+    branches: z.array(zOnboardingBranchRequest),
+    owner: zBaseUserCreateRequestWritable,
+    employees: z.array(zOnboardingUserRequestWritable)
 });
 
 export const zPaginatedAccountListListWritable = z.object({
@@ -2073,10 +2252,12 @@ export const zV1MeasurementUpdateData = z.object({
 export const zV1MeasurementUpdateResponse = zMeasurementUnit;
 
 export const zV1OnboardingCreateData = z.object({
-    body: z.never().optional(),
+    body: zOnboardingRequestWritable,
     path: z.never().optional(),
     query: z.never().optional()
 });
+
+export const zV1OnboardingCreateResponse = zOnboardingResult;
 
 export const zV1ProductListData = z.object({
     body: z.never().optional(),
