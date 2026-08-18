@@ -2,7 +2,7 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { V1AccountsCreateData, V1AccountsCreateResponses, V1AccountsDestroyData, V1AccountsDestroyResponses, V1AccountsListData, V1AccountsListResponses, V1AccountsPartialUpdateData, V1AccountsPartialUpdateResponses, V1AccountsPaymentsCreateData, V1AccountsPaymentsCreateResponses, V1AccountsPaymentsListData, V1AccountsPaymentsListResponses, V1AccountsRetrieveData, V1AccountsRetrieveResponses, V1AccountsUpdateData, V1AccountsUpdateResponses, V1AdjustmentsCreateData, V1AdjustmentsCreateResponses, V1AdjustmentsListData, V1AdjustmentsListResponses, V1AdjustmentsRetrieveData, V1AdjustmentsRetrieveResponses, V1AdminCompaniesLicenseExtendCreateData, V1AdminCompaniesLicenseExtendCreateResponses, V1AdminCompaniesLicenseRestoreCreateData, V1AdminCompaniesLicenseRestoreCreateErrors, V1AdminCompaniesLicenseRestoreCreateResponses, V1AdminCompaniesLicenseRevokeCreateData, V1AdminCompaniesLicenseRevokeCreateErrors, V1AdminCompaniesLicenseRevokeCreateResponses, V1AdminCompaniesListData, V1AdminCompaniesListResponses, V1BranchCreateData, V1BranchCreateResponses, V1BranchDestroyData, V1BranchDestroyResponses, V1BranchListData, V1BranchListResponses, V1BranchPartialUpdateData, V1BranchPartialUpdateResponses, V1BranchRetrieveData, V1BranchRetrieveResponses, V1BranchUpdateData, V1BranchUpdateResponses, V1CategoryCreateData, V1CategoryCreateResponses, V1CategoryDestroyData, V1CategoryDestroyResponses, V1CategoryListData, V1CategoryListResponses, V1CategoryPartialUpdateData, V1CategoryPartialUpdateResponses, V1CategoryRetrieveData, V1CategoryRetrieveResponses, V1CategoryUpdateData, V1CategoryUpdateResponses, V1CompanyCreateData, V1CompanyCreateResponses, V1CompanyPartialUpdateData, V1CompanyPartialUpdateResponses, V1CompanyRetrieveData, V1CompanyRetrieveResponses, V1CompanyUpdateData, V1CompanyUpdateResponses, V1CustomerPaymentsCreateData, V1CustomerPaymentsCreateErrors, V1CustomerPaymentsCreateResponses, V1CustomerPaymentsListData, V1CustomerPaymentsListResponses, V1CustomerPaymentsReverseCreateData, V1CustomerPaymentsReverseCreateErrors, V1CustomerPaymentsReverseCreateResponses, V1CustomerSalePaymentsListData, V1CustomerSalePaymentsListResponses, V1CustomersCreateData, V1CustomersCreateResponses, V1CustomersDestroyData, V1CustomersDestroyResponses, V1CustomersListData, V1CustomersListResponses, V1CustomersPartialUpdateData, V1CustomersPartialUpdateResponses, V1CustomersRetrieveData, V1CustomersRetrieveResponses, V1CustomersUpdateData, V1CustomersUpdateResponses, V1ExchangeRatesHistoryRetrieveData, V1ExchangeRatesHistoryRetrieveResponses, V1ExchangeRatesRetrieveData, V1ExchangeRatesRetrieveResponses, V1ExchangeRatesTodayRetrieveData, V1ExchangeRatesTodayRetrieveResponses, V1LoginCreateData, V1LoginCreateResponses, V1LogoutCreateData, V1LogoutCreateResponses, V1MeasurementCreateData, V1MeasurementCreateResponses, V1MeasurementDestroyData, V1MeasurementDestroyResponses, V1MeasurementListData, V1MeasurementListResponses, V1MeasurementPartialUpdateData, V1MeasurementPartialUpdateResponses, V1MeasurementRetrieveData, V1MeasurementRetrieveResponses, V1MeasurementUpdateData, V1MeasurementUpdateResponses, V1ProductBranchStockListData, V1ProductBranchStockListResponses, V1ProductCreateData, V1ProductCreateResponses, V1ProductDestroyData, V1ProductDestroyResponses, V1ProductListData, V1ProductListResponses, V1ProductPartialUpdateData, V1ProductPartialUpdateResponses, V1ProductRetrieveData, V1ProductRetrieveResponses, V1ProductUpdateData, V1ProductUpdateResponses, V1ProvidersCreateData, V1ProvidersCreateResponses, V1ProvidersDestroyData, V1ProvidersDestroyResponses, V1ProvidersListData, V1ProvidersListResponses, V1ProvidersPartialUpdateData, V1ProvidersPartialUpdateResponses, V1ProvidersRetrieveData, V1ProvidersRetrieveResponses, V1ProvidersUpdateData, V1ProvidersUpdateResponses, V1RefreshCreateData, V1RefreshCreateResponses, V1RegisterCreateData, V1RegisterCreateResponses, V1SalePaymentsReverseCreateData, V1SalePaymentsReverseCreateErrors, V1SalePaymentsReverseCreateResponses, V1SalesCreateData, V1SalesCreateResponses, V1SalesDestroyData, V1SalesDestroyResponses, V1SalesListData, V1SalesListResponses, V1SalesPartialUpdateData, V1SalesPartialUpdateResponses, V1SalesPaymentsCreateData, V1SalesPaymentsCreateResponses, V1SalesPaymentsListData, V1SalesPaymentsListResponses, V1SalesRetrieveData, V1SalesRetrieveResponses, V1SalesUpdateData, V1SalesUpdateResponses, V1UserBranchesRetrieveData, V1UserBranchesRetrieveResponses, V1UserBranchesUpdateData, V1UserBranchesUpdateResponses, V1UserInfoPartialUpdateData, V1UserInfoPartialUpdateResponses, V1UserInfoRetrieveData, V1UserInfoRetrieveResponses, V1UserInfoUpdateData, V1UserInfoUpdateResponses } from './types.gen';
+import type { V1AccountsCreateData, V1AccountsCreateResponses, V1AccountsDestroyData, V1AccountsDestroyResponses, V1AccountsListData, V1AccountsListResponses, V1AccountsPartialUpdateData, V1AccountsPartialUpdateResponses, V1AccountsPaymentsCreateData, V1AccountsPaymentsCreateResponses, V1AccountsPaymentsListData, V1AccountsPaymentsListResponses, V1AccountsRetrieveData, V1AccountsRetrieveResponses, V1AccountsUpdateData, V1AccountsUpdateResponses, V1AdjustmentsCreateData, V1AdjustmentsCreateResponses, V1AdjustmentsListData, V1AdjustmentsListResponses, V1AdjustmentsRetrieveData, V1AdjustmentsRetrieveResponses, V1AdminCompaniesLicenseExtendCreateData, V1AdminCompaniesLicenseExtendCreateResponses, V1AdminCompaniesLicenseRestoreCreateData, V1AdminCompaniesLicenseRestoreCreateErrors, V1AdminCompaniesLicenseRestoreCreateResponses, V1AdminCompaniesLicenseRevokeCreateData, V1AdminCompaniesLicenseRevokeCreateErrors, V1AdminCompaniesLicenseRevokeCreateResponses, V1AdminCompaniesListData, V1AdminCompaniesListResponses, V1BranchCreateData, V1BranchCreateResponses, V1BranchDestroyData, V1BranchDestroyResponses, V1BranchListData, V1BranchListResponses, V1BranchPartialUpdateData, V1BranchPartialUpdateResponses, V1BranchRetrieveData, V1BranchRetrieveResponses, V1BranchUpdateData, V1BranchUpdateResponses, V1CategoryCreateData, V1CategoryCreateResponses, V1CategoryDestroyData, V1CategoryDestroyResponses, V1CategoryListData, V1CategoryListResponses, V1CategoryPartialUpdateData, V1CategoryPartialUpdateResponses, V1CategoryRetrieveData, V1CategoryRetrieveResponses, V1CategoryUpdateData, V1CategoryUpdateResponses, V1CompanyCreateData, V1CompanyCreateResponses, V1CompanyPartialUpdateData, V1CompanyPartialUpdateResponses, V1CompanyRetrieveData, V1CompanyRetrieveResponses, V1CompanyUpdateData, V1CompanyUpdateResponses, V1CustomerPaymentsCreateData, V1CustomerPaymentsCreateErrors, V1CustomerPaymentsCreateResponses, V1CustomerPaymentsListData, V1CustomerPaymentsListResponses, V1CustomerPaymentsReverseCreateData, V1CustomerPaymentsReverseCreateErrors, V1CustomerPaymentsReverseCreateResponses, V1CustomerSalePaymentsListData, V1CustomerSalePaymentsListResponses, V1CustomersCreateData, V1CustomersCreateResponses, V1CustomersDestroyData, V1CustomersDestroyResponses, V1CustomersListData, V1CustomersListResponses, V1CustomersPartialUpdateData, V1CustomersPartialUpdateResponses, V1CustomersRetrieveData, V1CustomersRetrieveResponses, V1CustomersUpdateData, V1CustomersUpdateResponses, V1ExchangeRatesHistoryRetrieveData, V1ExchangeRatesHistoryRetrieveResponses, V1ExchangeRatesRetrieveData, V1ExchangeRatesRetrieveResponses, V1ExchangeRatesTodayRetrieveData, V1ExchangeRatesTodayRetrieveResponses, V1LoginCreateData, V1LoginCreateResponses, V1LogoutCreateData, V1LogoutCreateResponses, V1MeasurementCreateData, V1MeasurementCreateResponses, V1MeasurementDestroyData, V1MeasurementDestroyResponses, V1MeasurementListData, V1MeasurementListResponses, V1MeasurementPartialUpdateData, V1MeasurementPartialUpdateResponses, V1MeasurementRetrieveData, V1MeasurementRetrieveResponses, V1MeasurementUpdateData, V1MeasurementUpdateResponses, V1OnboardingCreateData, V1OnboardingCreateResponses, V1ProductBranchStockListData, V1ProductBranchStockListResponses, V1ProductCreateData, V1ProductCreateResponses, V1ProductDestroyData, V1ProductDestroyResponses, V1ProductListData, V1ProductListResponses, V1ProductPartialUpdateData, V1ProductPartialUpdateResponses, V1ProductRetrieveData, V1ProductRetrieveResponses, V1ProductUpdateData, V1ProductUpdateResponses, V1ProvidersCreateData, V1ProvidersCreateResponses, V1ProvidersDestroyData, V1ProvidersDestroyResponses, V1ProvidersListData, V1ProvidersListResponses, V1ProvidersPartialUpdateData, V1ProvidersPartialUpdateResponses, V1ProvidersRetrieveData, V1ProvidersRetrieveResponses, V1ProvidersUpdateData, V1ProvidersUpdateResponses, V1RefreshCreateData, V1RefreshCreateResponses, V1RegisterCreateData, V1RegisterCreateResponses, V1SalePaymentsReverseCreateData, V1SalePaymentsReverseCreateErrors, V1SalePaymentsReverseCreateResponses, V1SalesCreateData, V1SalesCreateResponses, V1SalesDestroyData, V1SalesDestroyResponses, V1SalesListData, V1SalesListResponses, V1SalesPartialUpdateData, V1SalesPartialUpdateResponses, V1SalesPaymentsCreateData, V1SalesPaymentsCreateResponses, V1SalesPaymentsListData, V1SalesPaymentsListResponses, V1SalesRetrieveData, V1SalesRetrieveResponses, V1SalesUpdateData, V1SalesUpdateResponses, V1UserBranchesRetrieveData, V1UserBranchesRetrieveResponses, V1UserBranchesUpdateData, V1UserBranchesUpdateResponses, V1UserInfoPartialUpdateData, V1UserInfoPartialUpdateResponses, V1UserInfoRetrieveData, V1UserInfoRetrieveResponses, V1UserInfoUpdateData, V1UserInfoUpdateResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -287,8 +287,20 @@ export const v1CategoryUpdate = <ThrowOnError extends boolean = false>(options: 
     }
 });
 
+/**
+ * company-onboarding spec: 'Legacy Company Creation Path Closed'.
+ * POST is shadowed by post() below (410 Gone) — create()/perform_create()
+ * are deliberately gone, not merely overridden, so there is no code path
+ * left that creates a Company from this view.
+ */
 export const v1CompanyRetrieve = <ThrowOnError extends boolean = false>(options?: Options<V1CompanyRetrieveData, ThrowOnError>) => (options?.client ?? client).get<V1CompanyRetrieveResponses, unknown, ThrowOnError>({ url: '/v1/company/', ...options });
 
+/**
+ * company-onboarding spec: 'Legacy Company Creation Path Closed'.
+ * POST is shadowed by post() below (410 Gone) — create()/perform_create()
+ * are deliberately gone, not merely overridden, so there is no code path
+ * left that creates a Company from this view.
+ */
 export const v1CompanyPartialUpdate = <ThrowOnError extends boolean = false>(options?: Options<V1CompanyPartialUpdateData, ThrowOnError>) => (options?.client ?? client).patch<V1CompanyPartialUpdateResponses, unknown, ThrowOnError>({
     url: '/v1/company/',
     ...options,
@@ -298,6 +310,12 @@ export const v1CompanyPartialUpdate = <ThrowOnError extends boolean = false>(opt
     }
 });
 
+/**
+ * company-onboarding spec: 'Legacy Company Creation Path Closed'.
+ * POST is shadowed by post() below (410 Gone) — create()/perform_create()
+ * are deliberately gone, not merely overridden, so there is no code path
+ * left that creates a Company from this view.
+ */
 export const v1CompanyCreate = <ThrowOnError extends boolean = false>(options: Options<V1CompanyCreateData, ThrowOnError>) => (options.client ?? client).post<V1CompanyCreateResponses, unknown, ThrowOnError>({
     url: '/v1/company/',
     ...options,
@@ -307,6 +325,12 @@ export const v1CompanyCreate = <ThrowOnError extends boolean = false>(options: O
     }
 });
 
+/**
+ * company-onboarding spec: 'Legacy Company Creation Path Closed'.
+ * POST is shadowed by post() below (410 Gone) — create()/perform_create()
+ * are deliberately gone, not merely overridden, so there is no code path
+ * left that creates a Company from this view.
+ */
 export const v1CompanyUpdate = <ThrowOnError extends boolean = false>(options: Options<V1CompanyUpdateData, ThrowOnError>) => (options.client ?? client).put<V1CompanyUpdateResponses, unknown, ThrowOnError>({
     url: '/v1/company/',
     ...options,
@@ -451,6 +475,21 @@ export const v1MeasurementUpdate = <ThrowOnError extends boolean = false>(option
     }
 });
 
+/**
+ * POST /v1/onboarding/ — company-onboarding spec: 'Transactional
+ * Onboarding Endpoint'. The single remaining anonymous write endpoint
+ * under /v1/: it creates a tenant, so there is no prior OWNER to
+ * authenticate as (unlike POST /v1/register/, PR 1).
+ */
+export const v1OnboardingCreate = <ThrowOnError extends boolean = false>(options: Options<V1OnboardingCreateData, ThrowOnError>) => (options.client ?? client).post<V1OnboardingCreateResponses, unknown, ThrowOnError>({
+    url: '/v1/onboarding/',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
 export const v1ProductList = <ThrowOnError extends boolean = false>(options?: Options<V1ProductListData, ThrowOnError>) => (options?.client ?? client).get<V1ProductListResponses, unknown, ThrowOnError>({ url: '/v1/product/', ...options });
 
 export const v1ProductCreate = <ThrowOnError extends boolean = false>(options: Options<V1ProductCreateData, ThrowOnError>) => (options.client ?? client).post<V1ProductCreateResponses, unknown, ThrowOnError>({
@@ -532,6 +571,12 @@ export const v1RefreshCreate = <ThrowOnError extends boolean = false>(options: O
     }
 });
 
+/**
+ * user-roles spec: 'Adding a User to an Existing Company Requires
+ * Authenticated OWNER'. POST /v1/register/ adds a user to a tenant that
+ * already exists, unlike POST /v1/onboarding/ (PR 2), which creates a
+ * new tenant and has no prior OWNER to authenticate as.
+ */
 export const v1RegisterCreate = <ThrowOnError extends boolean = false>(options: Options<V1RegisterCreateData, ThrowOnError>) => (options.client ?? client).post<V1RegisterCreateResponses, unknown, ThrowOnError>({
     url: '/v1/register/',
     ...options,

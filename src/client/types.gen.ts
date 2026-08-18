@@ -140,6 +140,27 @@ export type AffectedSale = {
     readonly total_paid: string;
 };
 
+/**
+ * Shared username/email validation and user-creation logic for every
+ * /v1/ serializer that creates a CustomUser (design.md decision 7).
+ *
+ * PR 2's OnboardingUserSerializer reuses this class with an ANONYMOUS
+ * caller. Zero references to self.context['request'] anywhere in this
+ * class — enforced by
+ * BaseUserCreateSerializerSeamTestCase, not by convention. Referencing
+ * the request here would make AnonymousUser.company raise and turn
+ * onboarding into a 500 for a bug introduced in the authenticated path.
+ */
+export type BaseUserCreateRequest = {
+    email: string;
+    first_name?: string;
+    last_name?: string;
+    /**
+     * Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only.
+     */
+    username: string;
+};
+
 export type Branch = {
     name: string;
     address?: string | null;
@@ -171,19 +192,29 @@ export type Company = {
     readonly max_branches: number;
     readonly license_date: string;
     readonly id: string;
+    fiscal_state?: string | null;
+    fiscal_city?: string | null;
+    fiscal_municipality?: string | null;
+    fiscal_street?: string | null;
+    fiscal_postal_code?: string | null;
 };
 
 export type CompanyRequest = {
     name: string;
     email: string;
     rif?: string | null;
+    fiscal_state?: string | null;
+    fiscal_city?: string | null;
+    fiscal_municipality?: string | null;
+    fiscal_street?: string | null;
+    fiscal_postal_code?: string | null;
 };
 
 export type CustomUser = {
     email: string;
     first_name?: string;
     last_name?: string;
-    company_id: string;
+    readonly company_id: string;
     branch_ids?: Array<string>;
     role: RoleEnum;
     /**
@@ -198,7 +229,6 @@ export type CustomUserRequest = {
     email: string;
     first_name?: string;
     last_name?: string;
-    company_id: string;
     branch_ids?: Array<string>;
 };
 
@@ -424,6 +454,98 @@ export type MeasurementUnitRequest = {
     decimals?: boolean;
 };
 
+/**
+ * Deliberately NOT BranchSerializer: that one performs a
+ * Company.objects.get() and counts live Branch rows against
+ * context['company'], neither of which exist yet at onboarding time —
+ * the branch-count bound is enforced by OnboardingSerializer.validate()
+ * instead (task 2.7).
+ */
+export type OnboardingBranchRequest = {
+    name: string;
+    address?: string | null;
+    phone?: string | null;
+    email?: string | null;
+};
+
+/**
+ * Required at onboarding, unlike CompanySerializer's PATCH-optional
+ * shape: rif and the four fiscal fields other than the postal code
+ * (company-fiscal-identity spec: 'Structured Fiscal Address', 'RIF
+ * Format and Check-Digit Validation'). No UniqueValidator on rif/name/
+ * email here — the transactional create() path (task 2.8) maps a
+ * duplicate IntegrityError to a field-scoped ValidationError via a
+ * savepoint, which is the authoritative mechanism for this endpoint.
+ */
+export type OnboardingCompanyRequest = {
+    name: string;
+    email: string;
+    rif: string;
+    fiscal_state: string | null;
+    fiscal_city: string | null;
+    fiscal_municipality: string | null;
+    fiscal_street: string | null;
+    fiscal_postal_code?: string | null;
+};
+
+export type OnboardingCreatedBranch = {
+    id: string;
+    name: string;
+};
+
+export type OnboardingCreatedCompany = {
+    id: string;
+    name: string;
+};
+
+export type OnboardingCreatedEmployee = {
+    id: string;
+    email: string;
+};
+
+export type OnboardingCreatedUser = {
+    id: string;
+    email: string;
+};
+
+/**
+ * Owns the whole transactional creation (task 2.8's create()).
+ * Payload-index referencing only (design.md decision 2): the owner is
+ * attached to EVERY branch in the payload and carries no branch_index;
+ * each employee references its branch by position within `branches`.
+ */
+export type OnboardingRequest = {
+    company: OnboardingCompanyRequest;
+    branches: Array<OnboardingBranchRequest>;
+    owner: BaseUserCreateRequest;
+    employees: Array<OnboardingUserRequest>;
+};
+
+export type OnboardingResult = {
+    company: OnboardingCreatedCompany;
+    branches: Array<OnboardingCreatedBranch>;
+    owner: OnboardingCreatedUser;
+    employees: Array<OnboardingCreatedEmployee>;
+};
+
+/**
+ * Reuses BaseUserCreateSerializer's validate_username/validate_email/
+ * _create_user with an ANONYMOUS caller. References its branch by
+ * payload position (branch_index into the same request's branches
+ * list), never by id — no company_id, no branch_ids, no
+ * PrimaryKeyRelatedField anywhere on this serializer.
+ */
+export type OnboardingUserRequest = {
+    email: string;
+    first_name?: string;
+    last_name?: string;
+    /**
+     * Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only.
+     */
+    username: string;
+    branch_index: number;
+};
+
 export type PaginatedAccountListList = {
     count: number;
     next?: string | null;
@@ -491,13 +613,17 @@ export type PatchedCompanyRequest = {
     name?: string;
     email?: string;
     rif?: string | null;
+    fiscal_state?: string | null;
+    fiscal_city?: string | null;
+    fiscal_municipality?: string | null;
+    fiscal_street?: string | null;
+    fiscal_postal_code?: string | null;
 };
 
 export type PatchedCustomUserRequest = {
     email?: string;
     first_name?: string;
     last_name?: string;
-    company_id?: string;
     branch_ids?: Array<string>;
 };
 
@@ -653,6 +779,17 @@ export type ProviderRequest = {
  */
 export type ReasonEnum = 'NON_PAYMENT' | 'FRAUD' | 'CUSTOMER_REQUEST' | 'OTHER';
 
+/**
+ * Shared username/email validation and user-creation logic for every
+ * /v1/ serializer that creates a CustomUser (design.md decision 7).
+ *
+ * PR 2's OnboardingUserSerializer reuses this class with an ANONYMOUS
+ * caller. Zero references to self.context['request'] anywhere in this
+ * class — enforced by
+ * BaseUserCreateSerializerSeamTestCase, not by convention. Referencing
+ * the request here would make AnonymousUser.company raise and turn
+ * onboarding into a 500 for a bug introduced in the authenticated path.
+ */
 export type RegisterUser = {
     email: string;
     first_name?: string;
@@ -663,6 +800,17 @@ export type RegisterUser = {
     username: string;
 };
 
+/**
+ * Shared username/email validation and user-creation logic for every
+ * /v1/ serializer that creates a CustomUser (design.md decision 7).
+ *
+ * PR 2's OnboardingUserSerializer reuses this class with an ANONYMOUS
+ * caller. Zero references to self.context['request'] anywhere in this
+ * class — enforced by
+ * BaseUserCreateSerializerSeamTestCase, not by convention. Referencing
+ * the request here would make AnonymousUser.company raise and turn
+ * onboarding into a 500 for a bug introduced in the authenticated path.
+ */
 export type RegisterUserRequest = {
     email: string;
     first_name?: string;
@@ -871,6 +1019,28 @@ export type AccountRequestWritable = {
     }>;
 };
 
+/**
+ * Shared username/email validation and user-creation logic for every
+ * /v1/ serializer that creates a CustomUser (design.md decision 7).
+ *
+ * PR 2's OnboardingUserSerializer reuses this class with an ANONYMOUS
+ * caller. Zero references to self.context['request'] anywhere in this
+ * class — enforced by
+ * BaseUserCreateSerializerSeamTestCase, not by convention. Referencing
+ * the request here would make AnonymousUser.company raise and turn
+ * onboarding into a 500 for a bug introduced in the authenticated path.
+ */
+export type BaseUserCreateRequestWritable = {
+    email: string;
+    password: string;
+    first_name?: string;
+    last_name?: string;
+    /**
+     * Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only.
+     */
+    username: string;
+};
+
 export type BranchWritable = {
     name: string;
     address?: string | null;
@@ -886,13 +1056,17 @@ export type CompanyWritable = {
     name: string;
     email: string;
     rif?: string | null;
+    fiscal_state?: string | null;
+    fiscal_city?: string | null;
+    fiscal_municipality?: string | null;
+    fiscal_street?: string | null;
+    fiscal_postal_code?: string | null;
 };
 
 export type CustomUserWritable = {
     email: string;
     first_name?: string;
     last_name?: string;
-    company_id: string;
     branch_ids?: Array<string>;
 };
 
@@ -920,6 +1094,38 @@ export type InventoryAdjustmentWriteRequestWritable = {
 export type MeasurementUnitWritable = {
     name: string;
     decimals?: boolean;
+};
+
+/**
+ * Owns the whole transactional creation (task 2.8's create()).
+ * Payload-index referencing only (design.md decision 2): the owner is
+ * attached to EVERY branch in the payload and carries no branch_index;
+ * each employee references its branch by position within `branches`.
+ */
+export type OnboardingRequestWritable = {
+    company: OnboardingCompanyRequest;
+    branches: Array<OnboardingBranchRequest>;
+    owner: BaseUserCreateRequestWritable;
+    employees: Array<OnboardingUserRequestWritable>;
+};
+
+/**
+ * Reuses BaseUserCreateSerializer's validate_username/validate_email/
+ * _create_user with an ANONYMOUS caller. References its branch by
+ * payload position (branch_index into the same request's branches
+ * list), never by id — no company_id, no branch_ids, no
+ * PrimaryKeyRelatedField anywhere on this serializer.
+ */
+export type OnboardingUserRequestWritable = {
+    email: string;
+    password: string;
+    first_name?: string;
+    last_name?: string;
+    /**
+     * Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only.
+     */
+    username: string;
+    branch_index: number;
 };
 
 export type PaginatedAccountListListWritable = {
@@ -1036,17 +1242,27 @@ export type ProviderWritable = {
     changed_by?: number | null;
 };
 
+/**
+ * Shared username/email validation and user-creation logic for every
+ * /v1/ serializer that creates a CustomUser (design.md decision 7).
+ *
+ * PR 2's OnboardingUserSerializer reuses this class with an ANONYMOUS
+ * caller. Zero references to self.context['request'] anywhere in this
+ * class — enforced by
+ * BaseUserCreateSerializerSeamTestCase, not by convention. Referencing
+ * the request here would make AnonymousUser.company raise and turn
+ * onboarding into a 500 for a bug introduced in the authenticated path.
+ */
 export type RegisterUserRequestWritable = {
     email: string;
     password: string;
-    company_id: string;
-    branch_ids?: Array<string>;
     first_name?: string;
     last_name?: string;
     /**
      * Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only.
      */
     username: string;
+    branch_ids?: Array<string>;
 };
 
 /**
@@ -1944,6 +2160,19 @@ export type V1MeasurementUpdateResponses = {
 };
 
 export type V1MeasurementUpdateResponse = V1MeasurementUpdateResponses[keyof V1MeasurementUpdateResponses];
+
+export type V1OnboardingCreateData = {
+    body: OnboardingRequestWritable;
+    path?: never;
+    query?: never;
+    url: '/v1/onboarding/';
+};
+
+export type V1OnboardingCreateResponses = {
+    201: OnboardingResult;
+};
+
+export type V1OnboardingCreateResponse = V1OnboardingCreateResponses[keyof V1OnboardingCreateResponses];
 
 export type V1ProductListData = {
     body?: never;
