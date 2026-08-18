@@ -27,11 +27,11 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (!isLoading && isAuthenticated) {
-      const from = (location.state as { from?: string })?.from || '/dashboard';
-      
-      // If they have no company, but are authenticated, they should probably go to create-company
-      // unless ProtectedLayout already handles that after navigate('/dashboard')
-      // Actually, dashboard will be wrapped by ProtectedLayout which will redirect to /create-company if needed.
+      // '/' rather than a named page: HomeRedirect is the single place that
+      // decides where a user starts, and it sends superusers to the licence
+      // panel. Naming a destination here would fork that decision in two.
+      const from = (location.state as { from?: string })?.from || '/';
+
       navigate(from, { replace: true });
     }
   }, [isAuthenticated, isLoading, navigate, location.state, user]);
@@ -50,7 +50,7 @@ export default function LoginPage() {
       // Invalidate user info to fetch the new session
       await queryClient.invalidateQueries({ queryKey: v1UserInfoRetrieveOptions({}).queryKey });
       toast.success('Sesión iniciada correctamente');
-      navigate('/dashboard');
+      navigate('/');
     },
     onError: (error) => {
       console.error(error);
