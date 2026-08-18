@@ -1,10 +1,8 @@
-import { createBrowserRouter, Navigate } from 'react-router-dom';
+import { createBrowserRouter, Navigate, type RouteObject } from 'react-router-dom';
 import LoginPage from './pages/auth/LoginPage';
-import RegisterPage from './pages/auth/RegisterPage';
+import OnboardingWizard from './pages/onboarding/OnboardingWizard';
 import LicenseInactivePage from './pages/license/LicenseInactivePage';
 import DashboardPage from './pages/dashboard/DashboardPage';
-import CreateCompanyPage from './pages/company/CreateCompanyPage';
-import SetupBranchPage from './pages/auth/SetupBranchPage';
 import { ProtectedLayout } from './components/layouts/ProtectedLayout';
 import InventoryPage from './pages/inventory/InventoryPage';
 import DashboardLayout from './layouts/DashboardLayout';
@@ -21,14 +19,14 @@ import InventoryAdjustmentsPage from './pages/inventory-adjustments/InventoryAdj
 import { SuperUserLayout } from './components/layouts/SuperUserLayout';
 import LicenseAdminPage from './pages/admin/LicenseAdminPage';
 
-export const router = createBrowserRouter([
+export const routes: RouteObject[] = [
     {
         path: '/login',
         element: <LoginPage />
     },
     {
         path: '/register',
-        element: <RegisterPage />
+        element: <OnboardingWizard />
     },
     {
         // Public — reached via a hard `window.location.replace` navigation
@@ -38,16 +36,24 @@ export const router = createBrowserRouter([
         element: <LicenseInactivePage />
     },
     {
+        // A user reaching either legacy signup route is, by definition, a
+        // companyless user — exactly the case `ProtectedLayout` gates on and
+        // redirects away from. Keeping these redirects OUTSIDE
+        // ProtectedLayout (unconditional, not gated on auth state) is what
+        // makes them reachable for the people who need them; nesting them
+        // inside the layout would make the redirect unreachable for a
+        // companyless authed user, since ProtectedLayout would just bounce
+        // them right back to /register anyway.
+        path: '/create-company',
+        element: <Navigate to="/register" replace />
+    },
+    {
+        path: '/setup-branch',
+        element: <Navigate to="/register" replace />
+    },
+    {
         element: <ProtectedLayout />,
         children: [
-            {
-                path: '/create-company',
-                element: <CreateCompanyPage />
-            },
-            {
-                path: '/setup-branch',
-                element: <SetupBranchPage />
-            },
             {
                 path: '/print/sale/:id',
                 element: <PrintSalePage />
@@ -127,4 +133,6 @@ export const router = createBrowserRouter([
             }
         ]
     }
-]);
+];
+
+export const router = createBrowserRouter(routes);
