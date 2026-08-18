@@ -1,6 +1,7 @@
 import { createBrowserRouter, Navigate, type RouteObject } from 'react-router-dom';
 import LoginPage from './pages/auth/LoginPage';
 import OnboardingWizard from './pages/onboarding/OnboardingWizard';
+import { HomeRedirect } from './components/routing/HomeRedirect';
 import LicenseInactivePage from './pages/license/LicenseInactivePage';
 import DashboardPage from './pages/dashboard/DashboardPage';
 import { ProtectedLayout } from './components/layouts/ProtectedLayout';
@@ -127,7 +128,7 @@ export const routes: RouteObject[] = [
                     },
                     {
                         path: '/',
-                        element: <Navigate to="/dashboard" replace />
+                        element: <HomeRedirect />
                     }
                 ]
             }
