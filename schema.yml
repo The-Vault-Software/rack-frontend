@@ -755,6 +755,11 @@ paths:
   /v1/company/:
     get:
       operationId: v1_company_retrieve
+      description: |-
+        company-onboarding spec: 'Legacy Company Creation Path Closed'.
+        POST is shadowed by post() below (410 Gone) — create()/perform_create()
+        are deliberately gone, not merely overridden, so there is no code path
+        left that creates a Company from this view.
       tags:
       - v1
       responses:
@@ -766,6 +771,11 @@ paths:
           description: ''
     post:
       operationId: v1_company_create
+      description: |-
+        company-onboarding spec: 'Legacy Company Creation Path Closed'.
+        POST is shadowed by post() below (410 Gone) — create()/perform_create()
+        are deliberately gone, not merely overridden, so there is no code path
+        left that creates a Company from this view.
       tags:
       - v1
       requestBody:
@@ -791,6 +801,11 @@ paths:
           description: ''
     put:
       operationId: v1_company_update
+      description: |-
+        company-onboarding spec: 'Legacy Company Creation Path Closed'.
+        POST is shadowed by post() below (410 Gone) — create()/perform_create()
+        are deliberately gone, not merely overridden, so there is no code path
+        left that creates a Company from this view.
       tags:
       - v1
       requestBody:
@@ -814,6 +829,11 @@ paths:
           description: ''
     patch:
       operationId: v1_company_partial_update
+      description: |-
+        company-onboarding spec: 'Legacy Company Creation Path Closed'.
+        POST is shadowed by post() below (410 Gone) — create()/perform_create()
+        are deliberately gone, not merely overridden, so there is no code path
+        left that creates a Company from this view.
       tags:
       - v1
       requestBody:
@@ -1266,6 +1286,37 @@ paths:
       responses:
         '204':
           description: No response body
+  /v1/onboarding/:
+    post:
+      operationId: v1_onboarding_create
+      description: |-
+        POST /v1/onboarding/ — company-onboarding spec: 'Transactional
+        Onboarding Endpoint'. The single remaining anonymous write endpoint
+        under /v1/: it creates a tenant, so there is no prior OWNER to
+        authenticate as (unlike POST /v1/register/, PR 1).
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OnboardingRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/OnboardingRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/OnboardingRequest'
+        required: true
+      security:
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OnboardingResult'
+          description: ''
   /v1/product/:
     get:
       operationId: v1_product_list
@@ -1562,6 +1613,11 @@ paths:
   /v1/register/:
     post:
       operationId: v1_register_create
+      description: |-
+        user-roles spec: 'Adding a User to an Existing Company Requires
+        Authenticated OWNER'. POST /v1/register/ adds a user to a tenant that
+        already exists, unlike POST /v1/onboarding/ (PR 2), which creates a
+        new tenant and has no prior OWNER to authenticate as.
       tags:
       - v1
       requestBody:
@@ -1576,8 +1632,6 @@ paths:
             schema:
               $ref: '#/components/schemas/RegisterUserRequest'
         required: true
-      security:
-      - {}
       responses:
         '201':
           content:
@@ -2338,6 +2392,46 @@ components:
       - payment_status
       - sale_id
       - total_paid
+    BaseUserCreateRequest:
+      type: object
+      description: |-
+        Shared username/email validation and user-creation logic for every
+        /v1/ serializer that creates a CustomUser (design.md decision 7).
+
+        PR 2's OnboardingUserSerializer reuses this class with an ANONYMOUS
+        caller. Zero references to self.context['request'] anywhere in this
+        class — enforced by
+        BaseUserCreateSerializerSeamTestCase, not by convention. Referencing
+        the request here would make AnonymousUser.company raise and turn
+        onboarding into a 500 for a bug introduced in the authenticated path.
+      properties:
+        email:
+          type: string
+          format: email
+          minLength: 1
+          maxLength: 254
+        password:
+          type: string
+          writeOnly: true
+          minLength: 1
+          maxLength: 128
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
+        username:
+          type: string
+          minLength: 1
+          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+          pattern: ^[\w.@+-]+$
+          maxLength: 150
+      required:
+      - email
+      - password
+      - username
     Branch:
       type: object
       properties:
@@ -2421,7 +2515,6 @@ components:
         rif:
           type: string
           nullable: true
-          maxLength: 12
         max_branches:
           type: integer
           readOnly: true
@@ -2433,6 +2526,26 @@ components:
           type: string
           format: uuid
           readOnly: true
+        fiscal_state:
+          type: string
+          nullable: true
+          maxLength: 100
+        fiscal_city:
+          type: string
+          nullable: true
+          maxLength: 100
+        fiscal_municipality:
+          type: string
+          nullable: true
+          maxLength: 100
+        fiscal_street:
+          type: string
+          nullable: true
+          maxLength: 255
+        fiscal_postal_code:
+          type: string
+          nullable: true
+          maxLength: 20
       required:
       - email
       - id
@@ -2454,7 +2567,27 @@ components:
         rif:
           type: string
           nullable: true
-          maxLength: 12
+          minLength: 1
+        fiscal_state:
+          type: string
+          nullable: true
+          maxLength: 100
+        fiscal_city:
+          type: string
+          nullable: true
+          maxLength: 100
+        fiscal_municipality:
+          type: string
+          nullable: true
+          maxLength: 100
+        fiscal_street:
+          type: string
+          nullable: true
+          maxLength: 255
+        fiscal_postal_code:
+          type: string
+          nullable: true
+          maxLength: 20
       required:
       - email
       - name
@@ -2474,6 +2607,7 @@ components:
         company_id:
           type: string
           format: uuid
+          readOnly: true
         branch_ids:
           type: array
           items:
@@ -2508,16 +2642,12 @@ components:
         last_name:
           type: string
           maxLength: 150
-        company_id:
-          type: string
-          format: uuid
         branch_ids:
           type: array
           items:
             type: string
             format: uuid
       required:
-      - company_id
       - email
     Customer:
       type: object
@@ -3105,6 +3235,211 @@ components:
           type: boolean
       required:
       - name
+    OnboardingBranchRequest:
+      type: object
+      description: |-
+        Deliberately NOT BranchSerializer: that one performs a
+        Company.objects.get() and counts live Branch rows against
+        context['company'], neither of which exist yet at onboarding time —
+        the branch-count bound is enforced by OnboardingSerializer.validate()
+        instead (task 2.7).
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 200
+        address:
+          type: string
+          nullable: true
+          maxLength: 200
+        phone:
+          type: string
+          nullable: true
+          maxLength: 40
+        email:
+          type: string
+          format: email
+          nullable: true
+          maxLength: 200
+      required:
+      - name
+    OnboardingCompanyRequest:
+      type: object
+      description: |-
+        Required at onboarding, unlike CompanySerializer's PATCH-optional
+        shape: rif and the four fiscal fields other than the postal code
+        (company-fiscal-identity spec: 'Structured Fiscal Address', 'RIF
+        Format and Check-Digit Validation'). No UniqueValidator on rif/name/
+        email here — the transactional create() path (task 2.8) maps a
+        duplicate IntegrityError to a field-scoped ValidationError via a
+        savepoint, which is the authoritative mechanism for this endpoint.
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        email:
+          type: string
+          format: email
+          minLength: 1
+          maxLength: 200
+        rif:
+          type: string
+          minLength: 1
+        fiscal_state:
+          type: string
+          nullable: true
+          maxLength: 100
+        fiscal_city:
+          type: string
+          nullable: true
+          maxLength: 100
+        fiscal_municipality:
+          type: string
+          nullable: true
+          maxLength: 100
+        fiscal_street:
+          type: string
+          nullable: true
+          maxLength: 255
+        fiscal_postal_code:
+          type: string
+          nullable: true
+      required:
+      - email
+      - fiscal_city
+      - fiscal_municipality
+      - fiscal_state
+      - fiscal_street
+      - name
+      - rif
+    OnboardingCreatedBranch:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+      required:
+      - id
+      - name
+    OnboardingCreatedCompany:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+      required:
+      - id
+      - name
+    OnboardingCreatedEmployee:
+      type: object
+      properties:
+        id:
+          type: string
+        email:
+          type: string
+          format: email
+      required:
+      - email
+      - id
+    OnboardingCreatedUser:
+      type: object
+      properties:
+        id:
+          type: string
+        email:
+          type: string
+          format: email
+      required:
+      - email
+      - id
+    OnboardingRequest:
+      type: object
+      description: |-
+        Owns the whole transactional creation (task 2.8's create()).
+        Payload-index referencing only (design.md decision 2): the owner is
+        attached to EVERY branch in the payload and carries no branch_index;
+        each employee references its branch by position within `branches`.
+      properties:
+        company:
+          $ref: '#/components/schemas/OnboardingCompanyRequest'
+        branches:
+          type: array
+          items:
+            $ref: '#/components/schemas/OnboardingBranchRequest'
+        owner:
+          $ref: '#/components/schemas/BaseUserCreateRequest'
+        employees:
+          type: array
+          items:
+            $ref: '#/components/schemas/OnboardingUserRequest'
+      required:
+      - branches
+      - company
+      - employees
+      - owner
+    OnboardingResult:
+      type: object
+      properties:
+        company:
+          $ref: '#/components/schemas/OnboardingCreatedCompany'
+        branches:
+          type: array
+          items:
+            $ref: '#/components/schemas/OnboardingCreatedBranch'
+        owner:
+          $ref: '#/components/schemas/OnboardingCreatedUser'
+        employees:
+          type: array
+          items:
+            $ref: '#/components/schemas/OnboardingCreatedEmployee'
+      required:
+      - branches
+      - company
+      - employees
+      - owner
+    OnboardingUserRequest:
+      type: object
+      description: |-
+        Reuses BaseUserCreateSerializer's validate_username/validate_email/
+        _create_user with an ANONYMOUS caller. References its branch by
+        payload position (branch_index into the same request's branches
+        list), never by id — no company_id, no branch_ids, no
+        PrimaryKeyRelatedField anywhere on this serializer.
+      properties:
+        email:
+          type: string
+          format: email
+          minLength: 1
+          maxLength: 254
+        password:
+          type: string
+          writeOnly: true
+          minLength: 1
+          maxLength: 128
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
+        username:
+          type: string
+          minLength: 1
+          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+          pattern: ^[\w.@+-]+$
+          maxLength: 150
+        branch_index:
+          type: integer
+          minimum: 0
+      required:
+      - branch_index
+      - email
+      - password
+      - username
     PaginatedAccountListList:
       type: object
       required:
@@ -3307,7 +3642,27 @@ components:
         rif:
           type: string
           nullable: true
-          maxLength: 12
+          minLength: 1
+        fiscal_state:
+          type: string
+          nullable: true
+          maxLength: 100
+        fiscal_city:
+          type: string
+          nullable: true
+          maxLength: 100
+        fiscal_municipality:
+          type: string
+          nullable: true
+          maxLength: 100
+        fiscal_street:
+          type: string
+          nullable: true
+          maxLength: 255
+        fiscal_postal_code:
+          type: string
+          nullable: true
+          maxLength: 20
     PatchedCustomUserRequest:
       type: object
       properties:
@@ -3322,9 +3677,6 @@ components:
         last_name:
           type: string
           maxLength: 150
-        company_id:
-          type: string
-          format: uuid
         branch_ids:
           type: array
           items:
@@ -3722,6 +4074,16 @@ components:
         * `OTHER` - Other
     RegisterUser:
       type: object
+      description: |-
+        Shared username/email validation and user-creation logic for every
+        /v1/ serializer that creates a CustomUser (design.md decision 7).
+
+        PR 2's OnboardingUserSerializer reuses this class with an ANONYMOUS
+        caller. Zero references to self.context['request'] anywhere in this
+        class — enforced by
+        BaseUserCreateSerializerSeamTestCase, not by convention. Referencing
+        the request here would make AnonymousUser.company raise and turn
+        onboarding into a 500 for a bug introduced in the authenticated path.
       properties:
         email:
           type: string
@@ -3744,6 +4106,16 @@ components:
       - username
     RegisterUserRequest:
       type: object
+      description: |-
+        Shared username/email validation and user-creation logic for every
+        /v1/ serializer that creates a CustomUser (design.md decision 7).
+
+        PR 2's OnboardingUserSerializer reuses this class with an ANONYMOUS
+        caller. Zero references to self.context['request'] anywhere in this
+        class — enforced by
+        BaseUserCreateSerializerSeamTestCase, not by convention. Referencing
+        the request here would make AnonymousUser.company raise and turn
+        onboarding into a 500 for a bug introduced in the authenticated path.
       properties:
         email:
           type: string
@@ -3755,17 +4127,6 @@ components:
           writeOnly: true
           minLength: 1
           maxLength: 128
-        company_id:
-          type: string
-          format: uuid
-          writeOnly: true
-        branch_ids:
-          type: array
-          items:
-            type: string
-            format: uuid
-            writeOnly: true
-          writeOnly: true
         first_name:
           type: string
           maxLength: 150
@@ -3779,8 +4140,14 @@ components:
             only.
           pattern: ^[\w.@+-]+$
           maxLength: 150
+        branch_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+            writeOnly: true
+          writeOnly: true
       required:
-      - company_id
       - email
       - password
       - username

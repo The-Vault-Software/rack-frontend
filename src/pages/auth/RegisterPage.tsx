@@ -105,9 +105,19 @@ export default function RegisterPage() {
             throw errorData; 
         }
 
-        const company = await companyResponse.json();
+        await companyResponse.json();
 
-        // 2. Register User with the real company_id
+        // 2. Register the user.
+        //
+        // company_id was removed here only to keep the build compiling after
+        // the client regeneration: the backend no longer accepts it, since
+        // POST /v1/register/ now requires an authenticated OWNER and derives
+        // the company from the requester.
+        //
+        // This does NOT make the flow work. This whole page is superseded by
+        // the onboarding wizard and is dead against the current API: step 1
+        // above posts to /v1/company/, which returns 410 Gone. Removing the
+        // field silences the type error, not the defect.
         await registerMutation.mutateAsync({
             body: {
                 username: data.username,
@@ -115,7 +125,6 @@ export default function RegisterPage() {
                 password: data.password,
                 first_name: data.first_name,
                 last_name: data.last_name,
-                company_id: company.id, // Use the real company ID
             }
         });
 

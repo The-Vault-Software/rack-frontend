@@ -4,8 +4,21 @@
  *
  * Typed against hand-written interfaces matching the design's verified
  * payload shape (`design.md`'s "Exact `/v1/onboarding/` payload" section).
- * These will be reconciled against the generated types in Phase 3, after
- * `schema.yml` regeneration.
+ *
+ * Reconciliation against generated types (tasks.md 3.5, done in Phase 4):
+ * `src/client/types.gen.ts`'s `V1OnboardingCreateData` types `body` as
+ * `never` — `schema.yml`'s `/v1/onboarding/` POST operation has NO
+ * `requestBody` section at all (verified by reading `schema.yml` directly),
+ * only a bodyless `responses: { '200': { description: 'No response body' } }`.
+ * This is a backend/`drf-spectacular` documentation gap, not a divergence in
+ * these hand-written interfaces: the payload shape below was independently
+ * verified against the backend's actual `OnboardingSerializer`, not against
+ * `schema.yml`. There is nothing generated to reconcile these interfaces
+ * against, so they are kept AS-IS. Consequence for Phase 5: calling
+ * `v1OnboardingCreate`/`v1OnboardingCreateMutation` with a real `body` will
+ * fail type-checking until the backend's OpenAPI schema documents a request
+ * body for this operation — out of scope for this frontend change (never
+ * hand-edit `src/client/**` or `schema.yml`).
  */
 
 import { normalizeRif } from '../../lib/rif';
