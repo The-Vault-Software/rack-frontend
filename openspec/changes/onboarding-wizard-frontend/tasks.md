@@ -92,19 +92,19 @@ This is the load-bearing seam. Do NOT widen the existing `status === 401` gate �
 ### 2.1 RIF validator
 Fixtures are fixed, not invented: `J-00123072-6` and `J-00002961-0` (the second is the only one exercising the remainder-10-collapses-to-0 branch; per Engram `reference/rif-mod11-algorithm`, do not re-derive the algorithm from scratch).
 
-- [ ] 2.1.1 RED — write `src/lib/rif.test.ts`: `isValidRif` — `J-00123072-6` ✓, `J-00002961-0` ✓ (remainder-10 branch), wrong check digit ✗, `C-00123072-6` ✗ (rejected regardless of check digit), `J-0012307-6` (short body) ✗, `X-00002961-0` ✗, `null` ✓ (always valid — required-ness lives outside the validator). `normalizeRif` — trims, upper-cases, whitespace-only input → `null` (never `""`). (Req: `onboarding-wizard` #3)
-- [ ] 2.1.2 GREEN — create `src/lib/rif.ts` exporting `normalizeRif` and `isValidRif`, transcribing the algorithm exactly: letter weights `{V:1,E:2,J:3,P:4,G:5}` × 4, digit weights `[3,2,7,6,5,4,3,2]`, `check = 11 - (total % 11)`, `check > 9 → 0`. No required-ness logic here — that belongs in the wizard's Zod `.refine()` (Phase 4).
+- [x] 2.1.1 RED — write `src/lib/rif.test.ts`: `isValidRif` — `J-00123072-6` ✓, `J-00002961-0` ✓ (remainder-10 branch), wrong check digit ✗, `C-00123072-6` ✗ (rejected regardless of check digit), `J-0012307-6` (short body) ✗, `X-00002961-0` ✗, `null` ✓ (always valid — required-ness lives outside the validator). `normalizeRif` — trims, upper-cases, whitespace-only input → `null` (never `""`). (Req: `onboarding-wizard` #3)
+- [x] 2.1.2 GREEN — create `src/lib/rif.ts` exporting `normalizeRif` and `isValidRif`, transcribing the algorithm exactly: letter weights `{V:1,E:2,J:3,P:4,G:5}` × 4, digit weights `[3,2,7,6,5,4,3,2]`, `check = 11 - (total % 11)`, `check > 9 → 0`. No required-ness logic here — that belongs in the wizard's Zod `.refine()` (Phase 4).
 
 ### 2.2 Error mapper + payload builder
 The error-shape asymmetry is the likeliest silent bug in this change: DRF's own field validation returns a positional array; the endpoint's `validate()`/`create()` return an object keyed by a **stringified index**; `branches` duplicate-name errors come back as a bare string, not a list. All three shapes must be tested explicitly — a mapper that handles one shape passes half the cases.
 
-- [ ] 2.2.1 RED — write `src/pages/onboarding/onboardingPayload.test.ts` for `mapOnboardingErrors(body)`: (a) DRF positional-array shape `{"employees":[{}, {"email":["..."]}]}` → maps to `employees.1.email`, step 3; (b) stringified-index object shape `{"employees":{"1":{"branch_index":"..."}}}` → maps to `employees.1.branch_index`, step 3; (c) keyed-object shape `{"company":{"rif":"This rif is already in use."}}` → maps to `company.rif`, step 1; (d) bare-string shape `{"branches":"Duplicate branch name in this request."}` → step-2 form-level error, not a per-field error; (e) mixed body with errors on multiple steps → returns the **lowest** step. (Req: `onboarding-wizard` #6)
-- [ ] 2.2.2 GREEN — implement `mapOnboardingErrors(body)` in `src/pages/onboarding/onboardingPayload.ts` as a pure function handling all four shapes and returning `{ setErrors: (setError) => void, lowestStep: number }` or equivalent.
-- [ ] 2.2.3 RED — extend the same test file for `buildOnboardingPayload`: employee `branch_index` values reflect array position at build time; removing a branch re-indexes every `employees[i].branch_index` that pointed at or past the removed position (clamped, not left dangling). (Req: `onboarding-wizard` #5)
-- [ ] 2.2.4 GREEN — implement `buildOnboardingPayload(formValues)` producing the exact verified request shape: `{ company: {...}, branches: [...1..2], owner: {...}, employees: [...>=1, branch_index] }`. Type against hand-written interfaces matching the design's verified payload shape for now; reconcile against generated types in Phase 4 after regeneration.
+- [x] 2.2.1 RED — write `src/pages/onboarding/onboardingPayload.test.ts` for `mapOnboardingErrors(body)`: (a) DRF positional-array shape `{"employees":[{}, {"email":["..."]}]}` → maps to `employees.1.email`, step 3; (b) stringified-index object shape `{"employees":{"1":{"branch_index":"..."}}}` → maps to `employees.1.branch_index`, step 3; (c) keyed-object shape `{"company":{"rif":"This rif is already in use."}}` → maps to `company.rif`, step 1; (d) bare-string shape `{"branches":"Duplicate branch name in this request."}` → step-2 form-level error, not a per-field error; (e) mixed body with errors on multiple steps → returns the **lowest** step. (Req: `onboarding-wizard` #6)
+- [x] 2.2.2 GREEN — implement `mapOnboardingErrors(body)` in `src/pages/onboarding/onboardingPayload.ts` as a pure function handling all four shapes and returning `{ setErrors: (setError) => void, lowestStep: number }` or equivalent.
+- [x] 2.2.3 RED — extend the same test file for `buildOnboardingPayload`: employee `branch_index` values reflect array position at build time; removing a branch re-indexes every `employees[i].branch_index` that pointed at or past the removed position (clamped, not left dangling). (Req: `onboarding-wizard` #5)
+- [x] 2.2.4 GREEN — implement `buildOnboardingPayload(formValues)` producing the exact verified request shape: `{ company: {...}, branches: [...1..2], owner: {...}, employees: [...>=1, branch_index] }`. Type against hand-written interfaces matching the design's verified payload shape for now; reconcile against generated types in Phase 4 after regeneration.
 
 ### 2.3 Slice verification
-- [ ] 2.3.1 `npm test` green for all Phase 2 files; `npm run lint`; `tsc -b` clean for touched files. n/a (verification, no new behavior)
+- [x] 2.3.1 `npm test` green for all Phase 2 files; `npm run lint`; `tsc -b` clean for touched files. n/a (verification, no new behavior)
 
 ---
 
@@ -116,41 +116,41 @@ The error-shape asymmetry is the likeliest silent bug in this change: DRF's own 
 - [ ] 3.2 Obtain a `schema.yml` exported from the merged change-2 backend and replace the local stale copy (no `/v1/onboarding/` path today). n/a
 - [ ] 3.3 Run `npm run generate-api`; confirm the generated onboarding mutation hook's actual name — the design's `v1OnboardingCreateMutation` is an **assumption**, not a verified fact, until this step runs. Record the actual name for Phase 4/5. n/a
 - [ ] 3.4 Confirm `CreateCompanyPage.tsx` now fails to compile (its `v1CompanyCreateMutation` import breaks because `/v1/company/` is 410). This is **expected and correct** — do not fix it here; Phase 6 deletes the file. n/a
-- [ ] 3.5 Reconcile Phase 2's hand-typed `buildOnboardingPayload`/`mapOnboardingErrors` interfaces against the newly generated types; adjust only if the verified payload shape in `design.md` diverges from what actually generated. (Req: `onboarding-wizard` #5, #6)
+- [x] 3.5 Reconcile Phase 2's hand-typed `buildOnboardingPayload`/`mapOnboardingErrors` interfaces against the newly generated types; adjust only if the verified payload shape in `design.md` diverges from what actually generated. (Req: `onboarding-wizard` #5, #6) — done in Phase 4: `V1OnboardingCreateData.body` generates as `never` (schema.yml's `/v1/onboarding/` POST has no `requestBody` section at all). Nothing generated to reconcile the hand-written interfaces against; they are kept as-is (see comment added to `onboardingPayload.ts`). Flagged as a Phase 5 risk: the generated mutation call will fail type-checking on a real `body` until the backend's OpenAPI schema documents a request body for this operation.
 
 ---
 
 ## Phase 4 — Wizard Steps 1–2 (PR Slice 4, ~340 lines, depends on Phase 3)
 
 ### 4.1 `CompanyStep`
-- [ ] 4.1.1 RED — write `src/pages/onboarding/steps/CompanyStep.test.tsx`: required fields (name, email, RIF, estado, ciudad, municipio, calle) block advancement when empty; optional código postal does not block advancement; a RIF with correct structure and mod-11 check digit passes (reuses Phase 2 fixtures); a wrong check digit or `C-` prefix blocks advancement with a field-level error. (Req: `onboarding-wizard` #2, #3)
-- [ ] 4.1.2 GREEN — create `src/pages/onboarding/steps/CompanyStep.tsx` using the Zod schema with `isValidRif`/`normalizeRif` from Phase 2 composed via `.refine()`, plus a required-ness refine local to this step (per design D-F, required-ness stays out of the validator itself).
+- [x] 4.1.1 RED — write `src/pages/onboarding/steps/CompanyStep.test.tsx`: required fields (name, email, RIF, estado, ciudad, municipio, calle) block advancement when empty; optional código postal does not block advancement; a RIF with correct structure and mod-11 check digit passes (reuses Phase 2 fixtures); a wrong check digit or `C-` prefix blocks advancement with a field-level error. (Req: `onboarding-wizard` #2, #3)
+- [x] 4.1.2 GREEN — create `src/pages/onboarding/steps/CompanyStep.tsx` using the Zod schema with `isValidRif`/`normalizeRif` from Phase 2 composed via `.refine()`, plus a required-ness refine local to this step (per design D-F, required-ness stays out of the validator itself).
 
 ### 4.2 `BranchesStep`
-- [ ] 4.2.1 RED — write `src/pages/onboarding/steps/BranchesStep.test.tsx`: 0 branches blocks advancement; the "add branch" control is unavailable/disabled at 2 branches; exactly 1 valid branch (second omitted) advances. (Req: `onboarding-wizard` #4)
-- [ ] 4.2.2 GREEN — create `src/pages/onboarding/steps/BranchesStep.tsx` using `useFieldArray` bounded to min 1 / max 2.
+- [x] 4.2.1 RED — write `src/pages/onboarding/steps/BranchesStep.test.tsx`: 0 branches blocks advancement; the "add branch" control is unavailable/disabled at 2 branches; exactly 1 valid branch (second omitted) advances. (Req: `onboarding-wizard` #4)
+- [x] 4.2.2 GREEN — create `src/pages/onboarding/steps/BranchesStep.tsx` using `useFieldArray` bounded to min 1 / max 2.
 
 ### 4.3 Slice verification
-- [ ] 4.3.1 `npm test` green for Phase 4 files; `npm run lint`; `tsc -b` clean. n/a
+- [x] 4.3.1 `npm test` green for Phase 4 files; `npm run lint`; `tsc -b` clean. n/a
 
 ---
 
 ## Phase 5 — Wizard Steps 3–4 + Shell + Submission (PR Slice 5, ~630 lines, depends on Phase 3, 4, 2)
 
 ### 5.1 `EmployeesStep`
-- [ ] 5.1.1 RED — write `src/pages/onboarding/steps/EmployeesStep.test.tsx`: 0 employees blocks advancement; seeding a 1-branch wizard state and binding an employee to index `1` is rejected client-side with **no network request fired**; 2-branch state with employees at index `0`/`1` advances. The branch `<select>`'s value is the array position, not a persisted id. (Req: `onboarding-wizard` #5)
-- [ ] 5.1.2 GREEN — create `src/pages/onboarding/steps/EmployeesStep.tsx` using `useFieldArray`, binding `employees[i].branch_index` to the branch `<select>`'s array position, validating the index is within `[0, branches.length)` before allowing advancement.
+- [x] 5.1.1 RED — write `src/pages/onboarding/steps/EmployeesStep.test.tsx`: 0 employees blocks advancement; seeding a 1-branch wizard state and binding an employee to index `1` is rejected client-side with **no network request fired**; 2-branch state with employees at index `0`/`1` advances. The branch `<select>`'s value is the array position, not a persisted id. (Req: `onboarding-wizard` #5)
+- [x] 5.1.2 GREEN — create `src/pages/onboarding/steps/EmployeesStep.tsx` using `useFieldArray`, binding `employees[i].branch_index` to the branch `<select>`'s array position, validating the index is within `[0, branches.length)` before allowing advancement. Also collects the account owner's credentials (a section not named in the spec's four steps — see apply-phase deviation note) since `buildOnboardingPayload`'s `owner` field needs a UI source and no dedicated owner step exists.
 
 ### 5.2 `ReviewStep`
-- [ ] 5.2.1 RED — write `src/pages/onboarding/steps/ReviewStep.test.tsx`: rendered text matches every required field entered in steps 1–3 (company, each branch, each employee) with no silent transformation or field drop. (Req: `onboarding-wizard` #7)
-- [ ] 5.2.2 GREEN — create `src/pages/onboarding/steps/ReviewStep.tsx`, read-only rendering of the current form state.
+- [x] 5.2.1 RED — write `src/pages/onboarding/steps/ReviewStep.test.tsx`: rendered text matches every required field entered in steps 1–3 (company, each branch, each employee) with no silent transformation or field drop. (Req: `onboarding-wizard` #7)
+- [x] 5.2.2 GREEN — create `src/pages/onboarding/steps/ReviewStep.tsx`, read-only rendering of the current form state.
 
 ### 5.3 `OnboardingWizard` shell + single transactional submission
-- [ ] 5.3.1 RED — write `src/pages/onboarding/OnboardingWizard.test.tsx`: (a) fresh visit renders step 1 only, steps 2–4 unreachable; (b) invalid step 1 blocks forward navigation and surfaces the field error; (c) backward navigation preserves already-entered in-memory data; (d) happy path fires **exactly one** `POST /v1/onboarding/` call (spy on the injected `fetch`, per design's `client.setConfig({ fetch })` — no `msw`, it is not installed) with the exact payload from `buildOnboardingPayload`, and no request fires on steps 1–3; (e) a rejected submission keeps the wizard on the offending step (via `mapOnboardingErrors`'s returned lowest step) with all entered values still populated, no "partial success" messaging; (f) no `localStorage`/`sessionStorage` write occurs at any step transition (spy on storage APIs) and a simulated refresh restarts at step 1. (Req: `onboarding-wizard` #1, #5 (submit-time reject), #6, #8)
-- [ ] 5.3.2 GREEN — create `src/pages/onboarding/OnboardingWizard.tsx`: single `useForm` over the merged step schemas, `step` in `useState`, `trigger([...stepFields])` gates advancement, submit-only mutation call using the generated hook confirmed in Phase 3, wiring `mapOnboardingErrors` on rejection.
+- [x] 5.3.1 RED — write `src/pages/onboarding/OnboardingWizard.test.tsx`: (a) fresh visit renders step 1 only, steps 2–4 unreachable; (b) invalid step 1 blocks forward navigation and surfaces the field error; (c) backward navigation preserves already-entered in-memory data; (d) happy path fires **exactly one** `POST /v1/onboarding/` call (spy on the injected `fetch`, per design's `client.setConfig({ fetch })` — no `msw`, it is not installed) with the exact payload from `buildOnboardingPayload`, and no request fires on steps 1–3; (e) a rejected submission keeps the wizard on the offending step (via `mapOnboardingErrors`'s returned lowest step) with all entered values still populated, no "partial success" messaging; (f) no `localStorage`/`sessionStorage` write occurs at any step transition (spy on storage APIs) and a simulated refresh restarts at step 1. (Req: `onboarding-wizard` #1, #5 (submit-time reject), #6, #8)
+- [x] 5.3.2 GREEN — create `src/pages/onboarding/OnboardingWizard.tsx`. DEVIATION from design.md D-C (flagged, not silent): kept Phase 4's accumulate-per-step pattern (shell `useState` holds each step's submitted values, passed back as `defaultValues` on backward nav) instead of one merged `useForm` + `trigger([...stepFields])`, so `CompanyStep`/`BranchesStep` and their existing tests stay untouched. Submits via `v1OnboardingCreateMutation()`; `V1OnboardingCreateData.body` now types as `OnboardingRequestWritable` (rack-backend#38 landed) — a narrow cast remains only for `company.rif`'s `string | null` vs the generated type's non-nullable `string`, since `CompanyStep`'s own schema already guarantees non-null by the time this runs.
 
 ### 5.4 Slice verification
-- [ ] 5.4.1 `npm test` green for Phase 5 files; `npm run lint`; `tsc -b` clean. n/a
+- [x] 5.4.1 `npm test` green for Phase 5 files (61/61 full suite, stable across repeated runs); `npm run lint` (14 problems, 8 errors/6 warnings, byte-identical to baseline); `tsc -b` clean.
 
 ---
 

@@ -3,8 +3,8 @@
 import { type DefaultError, type InfiniteData, infiniteQueryOptions, queryOptions, type UseMutationOptions } from '@tanstack/react-query';
 
 import { client } from '../client.gen';
-import { type Options, v1AccountsCreate, v1AccountsDestroy, v1AccountsList, v1AccountsPartialUpdate, v1AccountsPaymentsCreate, v1AccountsPaymentsList, v1AccountsRetrieve, v1AccountsUpdate, v1AdjustmentsCreate, v1AdjustmentsList, v1AdjustmentsRetrieve, v1AdminCompaniesLicenseExtendCreate, v1AdminCompaniesLicenseRestoreCreate, v1AdminCompaniesLicenseRevokeCreate, v1AdminCompaniesList, v1BranchCreate, v1BranchDestroy, v1BranchList, v1BranchPartialUpdate, v1BranchRetrieve, v1BranchUpdate, v1CategoryCreate, v1CategoryDestroy, v1CategoryList, v1CategoryPartialUpdate, v1CategoryRetrieve, v1CategoryUpdate, v1CompanyCreate, v1CompanyPartialUpdate, v1CompanyRetrieve, v1CompanyUpdate, v1CustomerPaymentsCreate, v1CustomerPaymentsList, v1CustomerPaymentsReverseCreate, v1CustomerSalePaymentsList, v1CustomersCreate, v1CustomersDestroy, v1CustomersList, v1CustomersPartialUpdate, v1CustomersRetrieve, v1CustomersUpdate, v1ExchangeRatesHistoryRetrieve, v1ExchangeRatesRetrieve, v1ExchangeRatesTodayRetrieve, v1LoginCreate, v1LogoutCreate, v1MeasurementCreate, v1MeasurementDestroy, v1MeasurementList, v1MeasurementPartialUpdate, v1MeasurementRetrieve, v1MeasurementUpdate, v1ProductBranchStockList, v1ProductCreate, v1ProductDestroy, v1ProductList, v1ProductPartialUpdate, v1ProductRetrieve, v1ProductUpdate, v1ProvidersCreate, v1ProvidersDestroy, v1ProvidersList, v1ProvidersPartialUpdate, v1ProvidersRetrieve, v1ProvidersUpdate, v1RefreshCreate, v1RegisterCreate, v1SalePaymentsReverseCreate, v1SalesCreate, v1SalesDestroy, v1SalesList, v1SalesPartialUpdate, v1SalesPaymentsCreate, v1SalesPaymentsList, v1SalesRetrieve, v1SalesUpdate, v1UserBranchesRetrieve, v1UserBranchesUpdate, v1UserInfoPartialUpdate, v1UserInfoRetrieve, v1UserInfoUpdate } from '../sdk.gen';
-import type { V1AccountsCreateData, V1AccountsCreateResponse, V1AccountsDestroyData, V1AccountsDestroyResponse, V1AccountsListData, V1AccountsListResponse, V1AccountsPartialUpdateData, V1AccountsPartialUpdateResponse, V1AccountsPaymentsCreateData, V1AccountsPaymentsCreateResponse, V1AccountsPaymentsListData, V1AccountsPaymentsListResponse, V1AccountsRetrieveData, V1AccountsRetrieveResponse, V1AccountsUpdateData, V1AccountsUpdateResponse, V1AdjustmentsCreateData, V1AdjustmentsCreateResponse, V1AdjustmentsListData, V1AdjustmentsListResponse, V1AdjustmentsRetrieveData, V1AdjustmentsRetrieveResponse, V1AdminCompaniesLicenseExtendCreateData, V1AdminCompaniesLicenseExtendCreateResponse, V1AdminCompaniesLicenseRestoreCreateData, V1AdminCompaniesLicenseRestoreCreateResponse, V1AdminCompaniesLicenseRevokeCreateData, V1AdminCompaniesLicenseRevokeCreateResponse, V1AdminCompaniesListData, V1AdminCompaniesListResponse, V1BranchCreateData, V1BranchCreateResponse, V1BranchDestroyData, V1BranchDestroyResponse, V1BranchListData, V1BranchListResponse, V1BranchPartialUpdateData, V1BranchPartialUpdateResponse, V1BranchRetrieveData, V1BranchRetrieveResponse, V1BranchUpdateData, V1BranchUpdateResponse, V1CategoryCreateData, V1CategoryCreateResponse, V1CategoryDestroyData, V1CategoryDestroyResponse, V1CategoryListData, V1CategoryListResponse, V1CategoryPartialUpdateData, V1CategoryPartialUpdateResponse, V1CategoryRetrieveData, V1CategoryRetrieveResponse, V1CategoryUpdateData, V1CategoryUpdateResponse, V1CompanyCreateData, V1CompanyCreateResponse, V1CompanyPartialUpdateData, V1CompanyPartialUpdateResponse, V1CompanyRetrieveData, V1CompanyRetrieveResponse, V1CompanyUpdateData, V1CompanyUpdateResponse, V1CustomerPaymentsCreateData, V1CustomerPaymentsCreateResponse, V1CustomerPaymentsListData, V1CustomerPaymentsListResponse, V1CustomerPaymentsReverseCreateData, V1CustomerPaymentsReverseCreateResponse, V1CustomerSalePaymentsListData, V1CustomerSalePaymentsListResponse, V1CustomersCreateData, V1CustomersCreateResponse, V1CustomersDestroyData, V1CustomersDestroyResponse, V1CustomersListData, V1CustomersListResponse, V1CustomersPartialUpdateData, V1CustomersPartialUpdateResponse, V1CustomersRetrieveData, V1CustomersRetrieveResponse, V1CustomersUpdateData, V1CustomersUpdateResponse, V1ExchangeRatesHistoryRetrieveData, V1ExchangeRatesRetrieveData, V1ExchangeRatesTodayRetrieveData, V1LoginCreateData, V1LogoutCreateData, V1MeasurementCreateData, V1MeasurementCreateResponse, V1MeasurementDestroyData, V1MeasurementDestroyResponse, V1MeasurementListData, V1MeasurementListResponse, V1MeasurementPartialUpdateData, V1MeasurementPartialUpdateResponse, V1MeasurementRetrieveData, V1MeasurementRetrieveResponse, V1MeasurementUpdateData, V1MeasurementUpdateResponse, V1ProductBranchStockListData, V1ProductBranchStockListResponse, V1ProductCreateData, V1ProductCreateResponse, V1ProductDestroyData, V1ProductDestroyResponse, V1ProductListData, V1ProductListResponse, V1ProductPartialUpdateData, V1ProductPartialUpdateResponse, V1ProductRetrieveData, V1ProductRetrieveResponse, V1ProductUpdateData, V1ProductUpdateResponse, V1ProvidersCreateData, V1ProvidersCreateResponse, V1ProvidersDestroyData, V1ProvidersDestroyResponse, V1ProvidersListData, V1ProvidersListResponse, V1ProvidersPartialUpdateData, V1ProvidersPartialUpdateResponse, V1ProvidersRetrieveData, V1ProvidersRetrieveResponse, V1ProvidersUpdateData, V1ProvidersUpdateResponse, V1RefreshCreateData, V1RefreshCreateResponse, V1RegisterCreateData, V1RegisterCreateResponse, V1SalePaymentsReverseCreateData, V1SalePaymentsReverseCreateResponse, V1SalesCreateData, V1SalesCreateResponse, V1SalesDestroyData, V1SalesDestroyResponse, V1SalesListData, V1SalesListResponse, V1SalesPartialUpdateData, V1SalesPartialUpdateResponse, V1SalesPaymentsCreateData, V1SalesPaymentsCreateResponse, V1SalesPaymentsListData, V1SalesPaymentsListResponse, V1SalesRetrieveData, V1SalesRetrieveResponse, V1SalesUpdateData, V1SalesUpdateResponse, V1UserBranchesRetrieveData, V1UserBranchesUpdateData, V1UserInfoPartialUpdateData, V1UserInfoPartialUpdateResponse, V1UserInfoRetrieveData, V1UserInfoRetrieveResponse, V1UserInfoUpdateData, V1UserInfoUpdateResponse } from '../types.gen';
+import { type Options, v1AccountsCreate, v1AccountsDestroy, v1AccountsList, v1AccountsPartialUpdate, v1AccountsPaymentsCreate, v1AccountsPaymentsList, v1AccountsRetrieve, v1AccountsUpdate, v1AdjustmentsCreate, v1AdjustmentsList, v1AdjustmentsRetrieve, v1AdminCompaniesLicenseExtendCreate, v1AdminCompaniesLicenseRestoreCreate, v1AdminCompaniesLicenseRevokeCreate, v1AdminCompaniesList, v1BranchCreate, v1BranchDestroy, v1BranchList, v1BranchPartialUpdate, v1BranchRetrieve, v1BranchUpdate, v1CategoryCreate, v1CategoryDestroy, v1CategoryList, v1CategoryPartialUpdate, v1CategoryRetrieve, v1CategoryUpdate, v1CompanyCreate, v1CompanyPartialUpdate, v1CompanyRetrieve, v1CompanyUpdate, v1CustomerPaymentsCreate, v1CustomerPaymentsList, v1CustomerPaymentsReverseCreate, v1CustomerSalePaymentsList, v1CustomersCreate, v1CustomersDestroy, v1CustomersList, v1CustomersPartialUpdate, v1CustomersRetrieve, v1CustomersUpdate, v1ExchangeRatesHistoryRetrieve, v1ExchangeRatesRetrieve, v1ExchangeRatesTodayRetrieve, v1LoginCreate, v1LogoutCreate, v1MeasurementCreate, v1MeasurementDestroy, v1MeasurementList, v1MeasurementPartialUpdate, v1MeasurementRetrieve, v1MeasurementUpdate, v1OnboardingCreate, v1ProductBranchStockList, v1ProductCreate, v1ProductDestroy, v1ProductList, v1ProductPartialUpdate, v1ProductRetrieve, v1ProductUpdate, v1ProvidersCreate, v1ProvidersDestroy, v1ProvidersList, v1ProvidersPartialUpdate, v1ProvidersRetrieve, v1ProvidersUpdate, v1RefreshCreate, v1RegisterCreate, v1SalePaymentsReverseCreate, v1SalesCreate, v1SalesDestroy, v1SalesList, v1SalesPartialUpdate, v1SalesPaymentsCreate, v1SalesPaymentsList, v1SalesRetrieve, v1SalesUpdate, v1UserBranchesRetrieve, v1UserBranchesUpdate, v1UserInfoPartialUpdate, v1UserInfoRetrieve, v1UserInfoUpdate } from '../sdk.gen';
+import type { V1AccountsCreateData, V1AccountsCreateResponse, V1AccountsDestroyData, V1AccountsDestroyResponse, V1AccountsListData, V1AccountsListResponse, V1AccountsPartialUpdateData, V1AccountsPartialUpdateResponse, V1AccountsPaymentsCreateData, V1AccountsPaymentsCreateResponse, V1AccountsPaymentsListData, V1AccountsPaymentsListResponse, V1AccountsRetrieveData, V1AccountsRetrieveResponse, V1AccountsUpdateData, V1AccountsUpdateResponse, V1AdjustmentsCreateData, V1AdjustmentsCreateResponse, V1AdjustmentsListData, V1AdjustmentsListResponse, V1AdjustmentsRetrieveData, V1AdjustmentsRetrieveResponse, V1AdminCompaniesLicenseExtendCreateData, V1AdminCompaniesLicenseExtendCreateResponse, V1AdminCompaniesLicenseRestoreCreateData, V1AdminCompaniesLicenseRestoreCreateResponse, V1AdminCompaniesLicenseRevokeCreateData, V1AdminCompaniesLicenseRevokeCreateResponse, V1AdminCompaniesListData, V1AdminCompaniesListResponse, V1BranchCreateData, V1BranchCreateResponse, V1BranchDestroyData, V1BranchDestroyResponse, V1BranchListData, V1BranchListResponse, V1BranchPartialUpdateData, V1BranchPartialUpdateResponse, V1BranchRetrieveData, V1BranchRetrieveResponse, V1BranchUpdateData, V1BranchUpdateResponse, V1CategoryCreateData, V1CategoryCreateResponse, V1CategoryDestroyData, V1CategoryDestroyResponse, V1CategoryListData, V1CategoryListResponse, V1CategoryPartialUpdateData, V1CategoryPartialUpdateResponse, V1CategoryRetrieveData, V1CategoryRetrieveResponse, V1CategoryUpdateData, V1CategoryUpdateResponse, V1CompanyCreateData, V1CompanyCreateResponse, V1CompanyPartialUpdateData, V1CompanyPartialUpdateResponse, V1CompanyRetrieveData, V1CompanyRetrieveResponse, V1CompanyUpdateData, V1CompanyUpdateResponse, V1CustomerPaymentsCreateData, V1CustomerPaymentsCreateResponse, V1CustomerPaymentsListData, V1CustomerPaymentsListResponse, V1CustomerPaymentsReverseCreateData, V1CustomerPaymentsReverseCreateResponse, V1CustomerSalePaymentsListData, V1CustomerSalePaymentsListResponse, V1CustomersCreateData, V1CustomersCreateResponse, V1CustomersDestroyData, V1CustomersDestroyResponse, V1CustomersListData, V1CustomersListResponse, V1CustomersPartialUpdateData, V1CustomersPartialUpdateResponse, V1CustomersRetrieveData, V1CustomersRetrieveResponse, V1CustomersUpdateData, V1CustomersUpdateResponse, V1ExchangeRatesHistoryRetrieveData, V1ExchangeRatesRetrieveData, V1ExchangeRatesTodayRetrieveData, V1LoginCreateData, V1LogoutCreateData, V1MeasurementCreateData, V1MeasurementCreateResponse, V1MeasurementDestroyData, V1MeasurementDestroyResponse, V1MeasurementListData, V1MeasurementListResponse, V1MeasurementPartialUpdateData, V1MeasurementPartialUpdateResponse, V1MeasurementRetrieveData, V1MeasurementRetrieveResponse, V1MeasurementUpdateData, V1MeasurementUpdateResponse, V1OnboardingCreateData, V1OnboardingCreateResponse, V1ProductBranchStockListData, V1ProductBranchStockListResponse, V1ProductCreateData, V1ProductCreateResponse, V1ProductDestroyData, V1ProductDestroyResponse, V1ProductListData, V1ProductListResponse, V1ProductPartialUpdateData, V1ProductPartialUpdateResponse, V1ProductRetrieveData, V1ProductRetrieveResponse, V1ProductUpdateData, V1ProductUpdateResponse, V1ProvidersCreateData, V1ProvidersCreateResponse, V1ProvidersDestroyData, V1ProvidersDestroyResponse, V1ProvidersListData, V1ProvidersListResponse, V1ProvidersPartialUpdateData, V1ProvidersPartialUpdateResponse, V1ProvidersRetrieveData, V1ProvidersRetrieveResponse, V1ProvidersUpdateData, V1ProvidersUpdateResponse, V1RefreshCreateData, V1RefreshCreateResponse, V1RegisterCreateData, V1RegisterCreateResponse, V1SalePaymentsReverseCreateData, V1SalePaymentsReverseCreateResponse, V1SalesCreateData, V1SalesCreateResponse, V1SalesDestroyData, V1SalesDestroyResponse, V1SalesListData, V1SalesListResponse, V1SalesPartialUpdateData, V1SalesPartialUpdateResponse, V1SalesPaymentsCreateData, V1SalesPaymentsCreateResponse, V1SalesPaymentsListData, V1SalesPaymentsListResponse, V1SalesRetrieveData, V1SalesRetrieveResponse, V1SalesUpdateData, V1SalesUpdateResponse, V1UserBranchesRetrieveData, V1UserBranchesUpdateData, V1UserInfoPartialUpdateData, V1UserInfoPartialUpdateResponse, V1UserInfoRetrieveData, V1UserInfoRetrieveResponse, V1UserInfoUpdateData, V1UserInfoUpdateResponse } from '../types.gen';
 
 export type QueryKey<TOptions extends Options> = [
     Pick<TOptions, 'baseUrl' | 'body' | 'headers' | 'path' | 'query'> & {
@@ -672,6 +672,12 @@ export const v1CategoryUpdateMutation = (options?: Partial<Options<V1CategoryUpd
 
 export const v1CompanyRetrieveQueryKey = (options?: Options<V1CompanyRetrieveData>) => createQueryKey('v1CompanyRetrieve', options);
 
+/**
+ * company-onboarding spec: 'Legacy Company Creation Path Closed'.
+ * POST is shadowed by post() below (410 Gone) — create()/perform_create()
+ * are deliberately gone, not merely overridden, so there is no code path
+ * left that creates a Company from this view.
+ */
 export const v1CompanyRetrieveOptions = (options?: Options<V1CompanyRetrieveData>) => queryOptions<V1CompanyRetrieveResponse, DefaultError, V1CompanyRetrieveResponse, ReturnType<typeof v1CompanyRetrieveQueryKey>>({
     queryFn: async ({ queryKey, signal }) => {
         const { data } = await v1CompanyRetrieve({
@@ -685,6 +691,12 @@ export const v1CompanyRetrieveOptions = (options?: Options<V1CompanyRetrieveData
     queryKey: v1CompanyRetrieveQueryKey(options)
 });
 
+/**
+ * company-onboarding spec: 'Legacy Company Creation Path Closed'.
+ * POST is shadowed by post() below (410 Gone) — create()/perform_create()
+ * are deliberately gone, not merely overridden, so there is no code path
+ * left that creates a Company from this view.
+ */
 export const v1CompanyPartialUpdateMutation = (options?: Partial<Options<V1CompanyPartialUpdateData>>): UseMutationOptions<V1CompanyPartialUpdateResponse, DefaultError, Options<V1CompanyPartialUpdateData>> => {
     const mutationOptions: UseMutationOptions<V1CompanyPartialUpdateResponse, DefaultError, Options<V1CompanyPartialUpdateData>> = {
         mutationFn: async (fnOptions) => {
@@ -699,6 +711,12 @@ export const v1CompanyPartialUpdateMutation = (options?: Partial<Options<V1Compa
     return mutationOptions;
 };
 
+/**
+ * company-onboarding spec: 'Legacy Company Creation Path Closed'.
+ * POST is shadowed by post() below (410 Gone) — create()/perform_create()
+ * are deliberately gone, not merely overridden, so there is no code path
+ * left that creates a Company from this view.
+ */
 export const v1CompanyCreateMutation = (options?: Partial<Options<V1CompanyCreateData>>): UseMutationOptions<V1CompanyCreateResponse, DefaultError, Options<V1CompanyCreateData>> => {
     const mutationOptions: UseMutationOptions<V1CompanyCreateResponse, DefaultError, Options<V1CompanyCreateData>> = {
         mutationFn: async (fnOptions) => {
@@ -713,6 +731,12 @@ export const v1CompanyCreateMutation = (options?: Partial<Options<V1CompanyCreat
     return mutationOptions;
 };
 
+/**
+ * company-onboarding spec: 'Legacy Company Creation Path Closed'.
+ * POST is shadowed by post() below (410 Gone) — create()/perform_create()
+ * are deliberately gone, not merely overridden, so there is no code path
+ * left that creates a Company from this view.
+ */
 export const v1CompanyUpdateMutation = (options?: Partial<Options<V1CompanyUpdateData>>): UseMutationOptions<V1CompanyUpdateResponse, DefaultError, Options<V1CompanyUpdateData>> => {
     const mutationOptions: UseMutationOptions<V1CompanyUpdateResponse, DefaultError, Options<V1CompanyUpdateData>> = {
         mutationFn: async (fnOptions) => {
@@ -1089,6 +1113,26 @@ export const v1MeasurementUpdateMutation = (options?: Partial<Options<V1Measurem
     return mutationOptions;
 };
 
+/**
+ * POST /v1/onboarding/ — company-onboarding spec: 'Transactional
+ * Onboarding Endpoint'. The single remaining anonymous write endpoint
+ * under /v1/: it creates a tenant, so there is no prior OWNER to
+ * authenticate as (unlike POST /v1/register/, PR 1).
+ */
+export const v1OnboardingCreateMutation = (options?: Partial<Options<V1OnboardingCreateData>>): UseMutationOptions<V1OnboardingCreateResponse, DefaultError, Options<V1OnboardingCreateData>> => {
+    const mutationOptions: UseMutationOptions<V1OnboardingCreateResponse, DefaultError, Options<V1OnboardingCreateData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await v1OnboardingCreate({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
 export const v1ProductListQueryKey = (options?: Options<V1ProductListData>) => createQueryKey('v1ProductList', options);
 
 export const v1ProductListOptions = (options?: Options<V1ProductListData>) => queryOptions<V1ProductListResponse, DefaultError, V1ProductListResponse, ReturnType<typeof v1ProductListQueryKey>>({
@@ -1294,6 +1338,12 @@ export const v1RefreshCreateMutation = (options?: Partial<Options<V1RefreshCreat
     return mutationOptions;
 };
 
+/**
+ * user-roles spec: 'Adding a User to an Existing Company Requires
+ * Authenticated OWNER'. POST /v1/register/ adds a user to a tenant that
+ * already exists, unlike POST /v1/onboarding/ (PR 2), which creates a
+ * new tenant and has no prior OWNER to authenticate as.
+ */
 export const v1RegisterCreateMutation = (options?: Partial<Options<V1RegisterCreateData>>): UseMutationOptions<V1RegisterCreateResponse, DefaultError, Options<V1RegisterCreateData>> => {
     const mutationOptions: UseMutationOptions<V1RegisterCreateResponse, DefaultError, Options<V1RegisterCreateData>> = {
         mutationFn: async (fnOptions) => {
