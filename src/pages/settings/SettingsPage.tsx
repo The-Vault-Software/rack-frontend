@@ -1,11 +1,15 @@
 import { useState } from 'react';
-import { Store, UserCircle, Building2 } from 'lucide-react';
+import { Store, UserCircle, Building2, Users } from 'lucide-react';
 import BranchSettingsPage from './BranchSettingsPage';
 import UserProfileForm from './UserProfileForm';
 import CompanySettingsForm from './CompanySettingsForm';
+import UsersSettings from './UsersSettings';
+import { useAuth } from '../../context/AuthContext';
 
 export default function SettingsPage() {
-  const [activeTab, setActiveTab] = useState<'branches' | 'profile' | 'company'>('branches');
+  const [activeTab, setActiveTab] = useState<'branches' | 'profile' | 'company' | 'users'>('branches');
+  const { user } = useAuth();
+  const isOwner = user?.role === 'OWNER';
 
   return (
     <div className="space-y-6">
@@ -47,6 +51,23 @@ export default function SettingsPage() {
             />
             Empresa
           </button>
+          {isOwner && (
+            <button
+              onClick={() => setActiveTab('users')}
+              className={`${
+                activeTab === 'users'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              } group inline-flex items-center py-4 px-1 border-b-2 font-medium text-sm cursor-pointer`}
+            >
+              <Users
+                className={`${
+                  activeTab === 'users' ? 'text-blue-500' : 'text-gray-400 group-hover:text-gray-500'
+                } -ml-0.5 mr-2 h-5 w-5`}
+              />
+              Usuarios
+            </button>
+          )}
           <button
             onClick={() => setActiveTab('profile')}
             className={`${
@@ -70,6 +91,7 @@ export default function SettingsPage() {
         {activeTab === 'branches' && <BranchSettingsPage hideHeader />}
         {activeTab === 'company' && <CompanySettingsForm />}
         {activeTab === 'profile' && <UserProfileForm />}
+        {activeTab === 'users' && isOwner && <UsersSettings />}
       </div>
     </div>
   );

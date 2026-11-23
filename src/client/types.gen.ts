@@ -248,6 +248,32 @@ export type CompanyRequest = {
     fiscal_postal_code?: string | null;
 };
 
+/**
+ * A member of the requesting owner's company, as the Users settings
+ * screen lists and edits them. Only `is_active` and `branch_ids` are
+ * writable; everything else is managed elsewhere or not at all.
+ */
+export type CompanyUser = {
+    readonly id: number;
+    readonly email: string;
+    /**
+     * Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only.
+     */
+    readonly username: string;
+    readonly first_name: string;
+    readonly last_name: string;
+    role: RoleEnum;
+    /**
+     * Active
+     *
+     * Designates whether this user should be treated as active. Unselect this instead of deleting accounts.
+     */
+    is_active?: boolean;
+    branch_ids?: Array<string>;
+    readonly date_joined: string;
+    readonly last_login: string | null;
+};
+
 export type CustomUser = {
     email: string;
     first_name?: string;
@@ -688,6 +714,21 @@ export type PatchedCompanyRequest = {
     fiscal_municipality?: string | null;
     fiscal_street?: string | null;
     fiscal_postal_code?: string | null;
+};
+
+/**
+ * A member of the requesting owner's company, as the Users settings
+ * screen lists and edits them. Only `is_active` and `branch_ids` are
+ * writable; everything else is managed elsewhere or not at all.
+ */
+export type PatchedCompanyUserRequest = {
+    /**
+     * Active
+     *
+     * Designates whether this user should be treated as active. Unselect this instead of deleting accounts.
+     */
+    is_active?: boolean;
+    branch_ids?: Array<string>;
 };
 
 export type PatchedCustomUserRequest = {
@@ -1215,6 +1256,21 @@ export type CompanyWritable = {
     fiscal_municipality?: string | null;
     fiscal_street?: string | null;
     fiscal_postal_code?: string | null;
+};
+
+/**
+ * A member of the requesting owner's company, as the Users settings
+ * screen lists and edits them. Only `is_active` and `branch_ids` are
+ * writable; everything else is managed elsewhere or not at all.
+ */
+export type CompanyUserWritable = {
+    /**
+     * Active
+     *
+     * Designates whether this user should be treated as active. Unselect this instead of deleting accounts.
+     */
+    is_active?: boolean;
+    branch_ids?: Array<string>;
 };
 
 export type CustomUserWritable = {
@@ -1984,6 +2040,34 @@ export type V1CompanyUpdateResponses = {
 };
 
 export type V1CompanyUpdateResponse = V1CompanyUpdateResponses[keyof V1CompanyUpdateResponses];
+
+export type V1CompanyUsersListData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/v1/company-users/';
+};
+
+export type V1CompanyUsersListResponses = {
+    200: Array<CompanyUser>;
+};
+
+export type V1CompanyUsersListResponse = V1CompanyUsersListResponses[keyof V1CompanyUsersListResponses];
+
+export type V1CompanyUsersPartialUpdateData = {
+    body?: PatchedCompanyUserRequest;
+    path: {
+        id: number;
+    };
+    query?: never;
+    url: '/v1/company-users/{id}/';
+};
+
+export type V1CompanyUsersPartialUpdateResponses = {
+    200: CompanyUser;
+};
+
+export type V1CompanyUsersPartialUpdateResponse = V1CompanyUsersPartialUpdateResponses[keyof V1CompanyUsersPartialUpdateResponses];
 
 export type V1CustomerPaymentsListData = {
     body?: never;
