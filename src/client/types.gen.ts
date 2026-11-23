@@ -110,10 +110,9 @@ export type AccountRequest = {
 /**
  * * `keep` - keep
  * * `markdown` - markdown
- * * `liquidation` - liquidation
  * * `no_data` - no_data
  */
-export type ActionEnum = 'keep' | 'markdown' | 'liquidation' | 'no_data';
+export type ActionEnum = 'keep' | 'markdown' | 'no_data';
 
 export type AdjustmentDetailItem = {
     readonly id: string;
@@ -171,7 +170,6 @@ export type AnalysisSummaryOut = {
     units_at_risk: number;
     value_at_risk: number;
     suggestions_count: number;
-    liquidation_count: number;
     expected_profit_gain: number;
     top20_revenue_share: number | null;
 };

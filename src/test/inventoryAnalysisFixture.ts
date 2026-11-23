@@ -78,10 +78,10 @@ export const yogurt = productFixture({
   daily_demand: 1,
   is_dead_stock: false,
   pricing: {
-    action: 'liquidation', reason: 'Liquidación: vencerían unidades aun vendiendo a costo', current_price: 3,
-    suggested_price: 1.5, change_pct: -50, expected_daily_demand: 2.8, expected_volume_change_pct: 182,
-    breakeven_volume_change_pct: null, current_margin_pct: 33.3, new_margin_pct: -33.3,
-    current_horizon_profit: -150, expected_horizon_profit: -60, units_at_risk_current: 75, units_at_risk_new: 20,
+    action: 'markdown', reason: 'Rebaja para vender antes del vencimiento', current_price: 3,
+    suggested_price: 2.1, change_pct: -30, expected_daily_demand: 1.7, expected_volume_change_pct: 70,
+    breakeven_volume_change_pct: 900, current_margin_pct: 33.3, new_margin_pct: 4.8,
+    current_horizon_profit: -150, expected_horizon_profit: -60, units_at_risk_current: 75, units_at_risk_new: 40,
   },
 })
 
@@ -92,7 +92,7 @@ export const analysisFixture: InventoryAnalysisOut = {
   summary: {
     products: 3, stock_value_cost: 420, stock_value_price: 700, revenue: 370, dead_stock_count: 1,
     dead_stock_value: 100, unclassified_count: 0, units_at_risk: 107, value_at_risk: 246,
-    suggestions_count: 2, liquidation_count: 1, expected_profit_gain: 113.3, top20_revenue_share: 0.76,
+    suggestions_count: 2, expected_profit_gain: 113.3, top20_revenue_share: 0.76,
   },
   products: [productFixture(), chicken, yogurt],
   methodology: [

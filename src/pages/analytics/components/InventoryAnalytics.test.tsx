@@ -53,7 +53,7 @@ describe('InventoryAnalytics', () => {
     expect(url.searchParams.get('horizon_days')).toBe('60')
   })
 
-  it('lists suggested price changes and filters liquidations', async () => {
+  it('lists suggested price changes, with no liquidation option', async () => {
     setup()
     await userEvent.click(screen.getByRole('button', { name: /Comenzar Análisis/ }))
     const table = await screen.findByRole('table')
@@ -61,9 +61,7 @@ describe('InventoryAnalytics', () => {
     expect(within(table).getByText('Pollo entero')).toBeInTheDocument()
     expect(within(table).getByText('Yogur')).toBeInTheDocument()
     expect(within(table).queryByText('Clavos')).toBeNull()
-
-    await userEvent.click(screen.getByRole('button', { name: 'Liquidar' }))
-    expect(within(screen.getByRole('table')).queryByText('Pollo entero')).toBeNull()
+    expect(screen.queryByText(/Liquidar/i)).toBeNull()
   })
 
   it('exports the loaded analysis to Excel', async () => {

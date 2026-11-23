@@ -86,13 +86,11 @@ export const zAccountRequest = z.object({
 /**
  * * `keep` - keep
  * * `markdown` - markdown
- * * `liquidation` - liquidation
  * * `no_data` - no_data
  */
 export const zActionEnum = z.enum([
     'keep',
     'markdown',
-    'liquidation',
     'no_data'
 ]);
 
@@ -164,7 +162,6 @@ export const zAnalysisSummaryOut = z.object({
     units_at_risk: z.number(),
     value_at_risk: z.number(),
     suggestions_count: z.number().int(),
-    liquidation_count: z.number().int(),
     expected_profit_gain: z.number(),
     top20_revenue_share: z.union([
         z.number(),

@@ -12,7 +12,7 @@ describe('inventory analysis export', () => {
     const rows = buildSuggestionRows(analysisFixture)
     // Yogurt gains 90, chicken 23.3; the kept product is left out.
     expect(rows.map((r) => r['Producto'])).toEqual(['Yogur', 'Pollo entero'])
-    expect(rows[0]['Acción']).toBe('Liquidar')
+    expect(rows.every((r) => r['Acción'] === 'Rebajar')).toBe(true)
     expect(rows[0]['Ganancia adicional (USD)']).toBe(90)
   })
 
@@ -24,9 +24,10 @@ describe('inventory analysis export', () => {
     expect(chickenRow['Vence en (días)']).toBe(4)
   })
 
-  it('reports break-even as empty when the new price is below cost', () => {
-    const [yogurtRow] = buildSuggestionRows(analysisFixture)
-    expect(yogurtRow['Volumen necesario para equilibrio (%)']).toBeNull()
+  it('never exports a suggested price under cost plus 5%', () => {
+    for (const row of buildSuggestionRows(analysisFixture)) {
+      expect(row['Precio sugerido (USD)'] as number).toBeGreaterThanOrEqual((row['Costo (USD)'] as number) * 1.05 - 1e-9)
+    }
   })
 
   it('ranks every product by revenue in the product sheet', () => {
