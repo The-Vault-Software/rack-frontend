@@ -854,6 +854,56 @@ paths:
               schema:
                 $ref: '#/components/schemas/Company'
           description: ''
+  /v1/company-users/:
+    get:
+      operationId: v1_company_users_list
+      description: Every user of the owner's company, for the Users settings screen.
+      tags:
+      - v1
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CompanyUser'
+          description: ''
+  /v1/company-users/{id}/:
+    patch:
+      operationId: v1_company_users_partial_update
+      description: |-
+        Activate or deactivate a member, or change their branches.
+
+        Scoped to the owner's company, so another tenant's user is a 404. Owners
+        cannot change themselves here (a deactivated sole owner would lock the
+        company out) nor other owners: only employees and managers.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedCompanyUserRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedCompanyUserRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedCompanyUserRequest'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompanyUser'
+          description: ''
   /v1/customer-payments/:
     get:
       operationId: v1_customer_payments_list
@@ -2712,6 +2762,63 @@ components:
       required:
       - email
       - name
+    CompanyUser:
+      type: object
+      description: |-
+        A member of the requesting owner's company, as the Users settings
+        screen lists and edits them. Only `is_active` and `branch_ids` are
+        writable; everything else is managed elsewhere or not at all.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        email:
+          type: string
+          format: email
+          readOnly: true
+        username:
+          type: string
+          readOnly: true
+          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+        first_name:
+          type: string
+          readOnly: true
+        last_name:
+          type: string
+          readOnly: true
+        role:
+          allOf:
+          - $ref: '#/components/schemas/RoleEnum'
+          readOnly: true
+        is_active:
+          type: boolean
+          title: Active
+          description: Designates whether this user should be treated as active. Unselect
+            this instead of deleting accounts.
+        branch_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+        date_joined:
+          type: string
+          format: date-time
+          readOnly: true
+        last_login:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+      required:
+      - date_joined
+      - email
+      - first_name
+      - id
+      - last_login
+      - last_name
+      - role
+      - username
     CustomUser:
       type: object
       properties:
@@ -3866,6 +3973,23 @@ components:
           type: string
           nullable: true
           maxLength: 20
+    PatchedCompanyUserRequest:
+      type: object
+      description: |-
+        A member of the requesting owner's company, as the Users settings
+        screen lists and edits them. Only `is_active` and `branch_ids` are
+        writable; everything else is managed elsewhere or not at all.
+      properties:
+        is_active:
+          type: boolean
+          title: Active
+          description: Designates whether this user should be treated as active. Unselect
+            this instead of deleting accounts.
+        branch_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
     PatchedCustomUserRequest:
       type: object
       properties:

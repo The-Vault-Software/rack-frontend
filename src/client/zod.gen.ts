@@ -809,6 +809,16 @@ export const zPatchedCompanyRequest = z.object({
     ]).optional()
 });
 
+/**
+ * A member of the requesting owner's company, as the Users settings
+ * screen lists and edits them. Only `is_active` and `branch_ids` are
+ * writable; everything else is managed elsewhere or not at all.
+ */
+export const zPatchedCompanyUserRequest = z.object({
+    is_active: z.boolean().optional(),
+    branch_ids: z.array(z.string().uuid()).optional()
+});
+
 export const zPatchedCustomUserRequest = z.object({
     email: z.string().email().min(1).max(254).optional(),
     first_name: z.string().max(150).optional(),
@@ -1292,6 +1302,27 @@ export const zRoleEnum = z.enum([
     'EMPLOYEE'
 ]);
 
+/**
+ * A member of the requesting owner's company, as the Users settings
+ * screen lists and edits them. Only `is_active` and `branch_ids` are
+ * writable; everything else is managed elsewhere or not at all.
+ */
+export const zCompanyUser = z.object({
+    id: z.number().int().readonly(),
+    email: z.string().email().readonly(),
+    username: z.string().readonly(),
+    first_name: z.string().readonly(),
+    last_name: z.string().readonly(),
+    role: zRoleEnum,
+    is_active: z.boolean().optional(),
+    branch_ids: z.array(z.string().uuid()).optional(),
+    date_joined: z.string().datetime().readonly(),
+    last_login: z.union([
+        z.string().datetime().readonly(),
+        z.null()
+    ]).readonly()
+});
+
 export const zCustomUser = z.object({
     email: z.string().email().max(254),
     first_name: z.string().max(150).optional(),
@@ -1672,6 +1703,16 @@ export const zCompanyWritable = z.object({
         z.string().max(20),
         z.null()
     ]).optional()
+});
+
+/**
+ * A member of the requesting owner's company, as the Users settings
+ * screen lists and edits them. Only `is_active` and `branch_ids` are
+ * writable; everything else is managed elsewhere or not at all.
+ */
+export const zCompanyUserWritable = z.object({
+    is_active: z.boolean().optional(),
+    branch_ids: z.array(z.string().uuid()).optional()
 });
 
 export const zCustomUserWritable = z.object({
@@ -2341,6 +2382,24 @@ export const zV1CompanyUpdateData = z.object({
 });
 
 export const zV1CompanyUpdateResponse = zCompany;
+
+export const zV1CompanyUsersListData = z.object({
+    body: z.never().optional(),
+    path: z.never().optional(),
+    query: z.never().optional()
+});
+
+export const zV1CompanyUsersListResponse = z.array(zCompanyUser);
+
+export const zV1CompanyUsersPartialUpdateData = z.object({
+    body: zPatchedCompanyUserRequest.optional(),
+    path: z.object({
+        id: z.number().int()
+    }),
+    query: z.never().optional()
+});
+
+export const zV1CompanyUsersPartialUpdateResponse = zCompanyUser;
 
 export const zV1CustomerPaymentsListData = z.object({
     body: z.never().optional(),

@@ -820,6 +820,76 @@ export const CompanyRequestSchema = {
     ]
 } as const;
 
+export const CompanyUserSchema = {
+    type: 'object',
+    description: 'A member of the requesting owner\'s company, as the Users settings\nscreen lists and edits them. Only `is_active` and `branch_ids` are\nwritable; everything else is managed elsewhere or not at all.',
+    properties: {
+        id: {
+            type: 'integer',
+            readOnly: true
+        },
+        email: {
+            type: 'string',
+            format: 'email',
+            readOnly: true
+        },
+        username: {
+            type: 'string',
+            readOnly: true,
+            description: 'Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only.'
+        },
+        first_name: {
+            type: 'string',
+            readOnly: true
+        },
+        last_name: {
+            type: 'string',
+            readOnly: true
+        },
+        role: {
+            allOf: [
+                {
+                    $ref: '#/components/schemas/RoleEnum'
+                }
+            ],
+            readOnly: true
+        },
+        is_active: {
+            type: 'boolean',
+            title: 'Active',
+            description: 'Designates whether this user should be treated as active. Unselect this instead of deleting accounts.'
+        },
+        branch_ids: {
+            type: 'array',
+            items: {
+                type: 'string',
+                format: 'uuid'
+            }
+        },
+        date_joined: {
+            type: 'string',
+            format: 'date-time',
+            readOnly: true
+        },
+        last_login: {
+            type: 'string',
+            format: 'date-time',
+            readOnly: true,
+            nullable: true
+        }
+    },
+    required: [
+        'date_joined',
+        'email',
+        'first_name',
+        'id',
+        'last_login',
+        'last_name',
+        'role',
+        'username'
+    ]
+} as const;
+
 export const CustomUserSchema = {
     type: 'object',
     properties: {
@@ -2254,6 +2324,25 @@ export const PatchedCompanyRequestSchema = {
             type: 'string',
             nullable: true,
             maxLength: 20
+        }
+    }
+} as const;
+
+export const PatchedCompanyUserRequestSchema = {
+    type: 'object',
+    description: 'A member of the requesting owner\'s company, as the Users settings\nscreen lists and edits them. Only `is_active` and `branch_ids` are\nwritable; everything else is managed elsewhere or not at all.',
+    properties: {
+        is_active: {
+            type: 'boolean',
+            title: 'Active',
+            description: 'Designates whether this user should be treated as active. Unselect this instead of deleting accounts.'
+        },
+        branch_ids: {
+            type: 'array',
+            items: {
+                type: 'string',
+                format: 'uuid'
+            }
         }
     }
 } as const;
@@ -3909,6 +3998,25 @@ export const CompanyWritableSchema = {
         'email',
         'name'
     ]
+} as const;
+
+export const CompanyUserWritableSchema = {
+    type: 'object',
+    description: 'A member of the requesting owner\'s company, as the Users settings\nscreen lists and edits them. Only `is_active` and `branch_ids` are\nwritable; everything else is managed elsewhere or not at all.',
+    properties: {
+        is_active: {
+            type: 'boolean',
+            title: 'Active',
+            description: 'Designates whether this user should be treated as active. Unselect this instead of deleting accounts.'
+        },
+        branch_ids: {
+            type: 'array',
+            items: {
+                type: 'string',
+                format: 'uuid'
+            }
+        }
+    }
 } as const;
 
 export const CustomUserWritableSchema = {
