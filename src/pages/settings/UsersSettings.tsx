@@ -196,7 +196,19 @@ function NewUserForm({ onDone }: { onDone: () => void }) {
   const text = (name: keyof Omit<NewUserValues, 'branch_ids'>, label: string, type = 'text') => (
     <div>
       <label htmlFor={`new-user-${name}`} className="mb-1 block text-sm font-medium text-gray-700">{label}</label>
-      <input id={`new-user-${name}`} type={type} autoComplete="off" {...register(name)} className={field} />
+      <input
+        id={`new-user-${name}`}
+        type={type}
+        // Chrome ignores autocomplete="off" on credential fields and fills in
+        // the signed-in owner's saved login, so the new account silently got
+        // the owner's password. "new-password" is the standard opt-out.
+        autoComplete={type === 'password' ? 'new-password' : 'off'}
+        autoCapitalize="none"
+        autoCorrect="off"
+        spellCheck={false}
+        {...register(name)}
+        className={field}
+      />
       {errors[name] && <p className="mt-1 text-xs text-red-600">{errors[name]?.message}</p>}
     </div>
   );

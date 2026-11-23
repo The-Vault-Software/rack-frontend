@@ -83,6 +83,13 @@ describe('UsersSettings', () => {
     })
   })
 
+  it('keeps browsers from autofilling the owner login into the new account', async () => {
+    setup()
+    await userEvent.click(await screen.findByRole('button', { name: /Nuevo usuario/ }))
+    expect(screen.getByLabelText('Contraseña')).toHaveAttribute('autocomplete', 'new-password')
+    expect(screen.getByLabelText('Correo electrónico')).toHaveAttribute('autocapitalize', 'none')
+  })
+
   it('validates the form before sending', async () => {
     const fetchMock = setup()
     await userEvent.click(await screen.findByRole('button', { name: /Nuevo usuario/ }))
