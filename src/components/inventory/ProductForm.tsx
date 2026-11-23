@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useForm, useFieldArray } from 'react-hook-form';
+import { useForm, useFieldArray, type FieldErrors, type UseFormRegister, type UseFormSetValue, type UseFormWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
@@ -14,6 +14,7 @@ import {
 } from '../../client/@tanstack/react-query.gen';
 import type { Category, MeasurementUnit, ProductMaster } from '../../client/types.gen';
 import { Plus, Trash2, Package, Layers, Divide } from 'lucide-react';
+import { PERISHABILITY_OPTIONS, defaultShelfLifeDays, perishabilityFormValue } from '../../lib/perishability';
 
 // Define the selling unit schema
 const sellingUnitSchema = z.object({
@@ -33,8 +34,21 @@ const productFormSchema = z.object({
   IVA: z.boolean().optional(),
   category: z.string().nullable().optional(),
   measurement_unit: z.string().nullable().optional(),
+  perishability: z.string().nullable().optional(),
+  shelf_life_days: z.string().nullable().optional(),
   selling_units: z.array(sellingUnitSchema).optional(),
 }).superRefine((data, ctx) => {
+  const perishable = !!data.perishability && data.perishability !== 'NONE';
+  if (perishable && data.shelf_life_days) {
+    const days = Number(data.shelf_life_days);
+    if (!Number.isInteger(days) || days < 1) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Ingresa un número entero de días mayor a 0',
+        path: ['shelf_life_days'],
+      });
+    }
+  }
   if (data.selling_units) {
     const names = data.selling_units.map(u => u.name.trim().toLowerCase());
     const duplicates = names.filter((name, index) => names.indexOf(name) !== index);
@@ -76,6 +90,8 @@ export default function ProductForm({ initialData, onSuccess }: ProductFormProps
       IVA: initialData?.IVA || false,
       category: initialData?.category || '',
       measurement_unit: initialData?.measurement_unit || '',
+      perishability: perishabilityFormValue(initialData?.perishability),
+      shelf_life_days: initialData?.shelf_life_days?.toString() || '',
       selling_units: []
     }
   });
@@ -103,6 +119,8 @@ export default function ProductForm({ initialData, onSuccess }: ProductFormProps
         IVA: fullProduct.IVA,
         category: fullProduct.category || '',
         measurement_unit: fullProduct.measurement_unit || '',
+        perishability: perishabilityFormValue(fullProduct.perishability),
+        shelf_life_days: fullProduct.shelf_life_days?.toString() || '',
         selling_units: fullProduct.selling_units || []
       });
     }
@@ -139,8 +157,13 @@ export default function ProductForm({ initialData, onSuccess }: ProductFormProps
   });
 
   const onSubmit = (data: ProductFormValues) => {
+    const perishable = !!data.perishability && data.perishability !== 'NONE';
     const payload = {
       ...data,
+      perishability: data.perishability === '' ? null : data.perishability,
+      // Blank days on a perishable product let the backend apply the class
+      // reference; non-perishable and unclassified products carry none.
+      shelf_life_days: perishable && data.shelf_life_days ? Number(data.shelf_life_days) : null,
       category: data.category === '' ? null : data.category,
       measurement_unit: data.measurement_unit === '' ? null : data.measurement_unit,
       description: data.description === '' ? null : data.description,
@@ -314,6 +337,8 @@ export default function ProductForm({ initialData, onSuccess }: ProductFormProps
               />
               {errors.description && <p className="mt-1 text-sm text-red-600">{errors.description.message}</p>}
             </div>
+
+            <PerishabilityFields register={register} watch={watch} setValue={setValue} errors={errors} />
 
             <div className="flex items-center p-3 bg-gray-50 rounded-lg">
               <input
@@ -512,6 +537,65 @@ export default function ProductForm({ initialData, onSuccess }: ProductFormProps
           </button>
         </div>
       </form>
+    </div>
+  );
+}
+
+interface PerishabilityFieldsProps {
+  register: UseFormRegister<ProductFormValues>;
+  watch: UseFormWatch<ProductFormValues>;
+  setValue: UseFormSetValue<ProductFormValues>;
+  errors: FieldErrors<ProductFormValues>;
+}
+
+function PerishabilityFields({ register, watch, setValue, errors }: PerishabilityFieldsProps) {
+  const perishability = watch('perishability');
+  const selected = PERISHABILITY_OPTIONS.find((o) => o.value === perishability);
+  const perishable = !!selected && selected.defaultDays !== null;
+  const { onChange, ...selectProps } = register('perishability');
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div>
+        <label htmlFor="perishability" className="block text-sm font-medium text-gray-700 mb-1">Caducidad</label>
+        <select
+          id="perishability"
+          {...selectProps}
+          onChange={(event) => {
+            onChange(event);
+            // A new class brings its reference days; keeping the old number
+            // would silently turn it into a manual override.
+            const days = defaultShelfLifeDays(event.target.value);
+            setValue('shelf_life_days', days === null ? '' : String(days));
+          }}
+          className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2.5 outline-none"
+        >
+          <option value="">Sin clasificar</option>
+          {PERISHABILITY_OPTIONS.map((option) => (
+            <option key={option.value} value={option.value}>{option.label}</option>
+          ))}
+        </select>
+        <p className="mt-1 text-xs text-gray-500">
+          {selected ? `Ej.: ${selected.examples}` : 'Se usa en el análisis de precios por vencimiento.'}
+        </p>
+      </div>
+
+      {perishable && (
+        <div>
+          <label htmlFor="shelf_life_days" className="block text-sm font-medium text-gray-700 mb-1">Vida útil (días)</label>
+          <input
+            id="shelf_life_days"
+            type="number"
+            min={1}
+            step={1}
+            {...register('shelf_life_days')}
+            placeholder={String(selected.defaultDays)}
+            className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2.5 outline-none"
+          />
+          <p className="mt-1 text-xs text-gray-500">Referencia: {selected.defaultDays} días. Ajústalo si este producto dura más o menos.</p>
+          {errors.shelf_life_days && <p className="mt-1 text-sm text-red-600">{errors.shelf_life_days.message}</p>}
+        </div>
+      )}
     </div>
   );
 }

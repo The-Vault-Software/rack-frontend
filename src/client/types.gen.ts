@@ -5,6 +5,13 @@ export type ClientOptions = {
 };
 
 /**
+ * * `A` - A
+ * * `B` - B
+ * * `C` - C
+ */
+export type AbcEnum = 'A' | 'B' | 'C';
+
+/**
  * Main serializer for creating and viewing accounts (purchases).
  * Supports nested creation of account details.
  * Increases stock when account is created.
@@ -100,6 +107,14 @@ export type AccountRequest = {
     provider?: string | null;
 };
 
+/**
+ * * `keep` - keep
+ * * `markdown` - markdown
+ * * `liquidation` - liquidation
+ * * `no_data` - no_data
+ */
+export type ActionEnum = 'keep' | 'markdown' | 'liquidation' | 'no_data';
+
 export type AdjustmentDetailItem = {
     readonly id: string;
     readonly product: string;
@@ -140,6 +155,27 @@ export type AffectedSale = {
     readonly total_paid: string;
 };
 
+export type AnalysisBranchOut = {
+    id: string;
+    name: string;
+};
+
+export type AnalysisSummaryOut = {
+    products: number;
+    stock_value_cost: number;
+    stock_value_price: number;
+    revenue: number;
+    dead_stock_count: number;
+    dead_stock_value: number;
+    unclassified_count: number;
+    units_at_risk: number;
+    value_at_risk: number;
+    suggestions_count: number;
+    liquidation_count: number;
+    expected_profit_gain: number;
+    top20_revenue_share: number | null;
+};
+
 /**
  * Shared username/email validation and user-creation logic for every
  * /v1/ serializer that creates a CustomUser (design.md decision 7).
@@ -160,6 +196,8 @@ export type BaseUserCreateRequest = {
      */
     username: string;
 };
+
+export type BlankEnum = '';
 
 export type Branch = {
     name: string;
@@ -399,6 +437,20 @@ export type CustomerSalePaymentList = {
     readonly created_at: string;
 };
 
+export type ElasticityOut = {
+    value: number;
+    source: SourceEnum;
+    weeks_used: number;
+};
+
+export type ExpiryOut = {
+    units_at_risk: number;
+    expired_now: number;
+    earliest_expiry: string | null;
+    days_to_earliest_expiry: number | null;
+    unknown_age_units: number;
+};
+
 export type InventoryAdjustmentDetailRead = {
     readonly id: string;
     readonly seq_number: number;
@@ -434,6 +486,17 @@ export type InventoryAdjustmentWriteRequest = {
     notes?: string | null;
 };
 
+export type InventoryAnalysisOut = {
+    generated_on: string;
+    branch: AnalysisBranchOut;
+    params: {
+        [key: string]: number;
+    };
+    summary: AnalysisSummaryOut;
+    products: Array<ProductAnalysisOut>;
+    methodology: Array<MethodologyItem>;
+};
+
 export type LicenseExtendRequest = {
     days: number;
 };
@@ -453,6 +516,13 @@ export type MeasurementUnitRequest = {
     name: string;
     decimals?: boolean;
 };
+
+export type MethodologyItem = {
+    topic: string;
+    detail: string;
+};
+
+export type NullEnum = unknown;
 
 /**
  * Deliberately NOT BranchSerializer: that one performs a
@@ -652,6 +722,8 @@ export type PatchedProductWriteDetailRequest = {
     IVA?: boolean;
     category?: string | null;
     measurement_unit?: string | null;
+    perishability?: PerishabilityEnum | BlankEnum | NullEnum | null;
+    shelf_life_days?: number | null;
     selling_units?: Array<ProductSellingUnitRequest>;
 };
 
@@ -688,6 +760,60 @@ export type PaymentStatus0CfEnum = 'PENDING' | 'PARTIALLY_PAID' | 'PAID';
 export type PaymentStatusC54Enum = 'PENDING' | 'PARTIALLY_PAID' | 'PAID' | 'OVERPAID';
 
 /**
+ * * `NONE` - Sin caducidad
+ * * `LONG` - Larga (~1 año)
+ * * `MEDIUM` - Media (~4 meses)
+ * * `SHORT` - Corta (~1 mes)
+ * * `FRESH` - Fresco (~10 días)
+ */
+export type PerishabilityEnum = 'NONE' | 'LONG' | 'MEDIUM' | 'SHORT' | 'FRESH';
+
+export type PricingOut = {
+    action: ActionEnum;
+    reason: string;
+    current_price: number;
+    suggested_price: number;
+    change_pct: number;
+    expected_daily_demand: number;
+    expected_volume_change_pct: number | null;
+    breakeven_volume_change_pct: number | null;
+    current_margin_pct: number | null;
+    new_margin_pct: number | null;
+    current_horizon_profit: number;
+    expected_horizon_profit: number;
+    units_at_risk_current: number;
+    units_at_risk_new: number;
+};
+
+export type ProductAnalysisOut = {
+    product_id: string;
+    name: string;
+    sku: string | null;
+    category: string | null;
+    abc: AbcEnum;
+    xyz: XyzEnum;
+    price: number;
+    cost: number;
+    stock: number;
+    stock_value_cost: number;
+    perishability: string | null;
+    shelf_life_days: number | null;
+    days_observed: number;
+    units_sold: number;
+    revenue: number;
+    daily_demand: number;
+    daily_demand_std: number;
+    weekly_cv: number | null;
+    coverage_days: number | null;
+    turnover_annual: number | null;
+    is_dead_stock: boolean;
+    elasticity: ElasticityOut;
+    expiry: ExpiryOut;
+    restock: RestockOut;
+    pricing: PricingOut;
+};
+
+/**
  * Serializador ligero para listados generales
  */
 export type ProductMaster = {
@@ -700,6 +826,8 @@ export type ProductMaster = {
     IVA?: boolean;
     category?: string | null;
     measurement_unit?: string | null;
+    perishability?: PerishabilityEnum | BlankEnum | NullEnum | null;
+    shelf_life_days?: number | null;
 };
 
 export type ProductSellingUnit = {
@@ -734,6 +862,8 @@ export type ProductWriteDetail = {
     IVA?: boolean;
     category?: string | null;
     measurement_unit?: string | null;
+    perishability?: PerishabilityEnum | BlankEnum | NullEnum | null;
+    shelf_life_days?: number | null;
     selling_units?: Array<ProductSellingUnit>;
 };
 
@@ -749,6 +879,8 @@ export type ProductWriteDetailRequest = {
     IVA?: boolean;
     category?: string | null;
     measurement_unit?: string | null;
+    perishability?: PerishabilityEnum | BlankEnum | NullEnum | null;
+    shelf_life_days?: number | null;
     selling_units?: Array<ProductSellingUnitRequest>;
 };
 
@@ -819,6 +951,15 @@ export type RegisterUserRequest = {
      * Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only.
      */
     username: string;
+};
+
+export type RestockOut = {
+    eoq: number;
+    safety_stock: number;
+    reorder_point: number;
+    days_until_empty: number | null;
+    days_until_reorder: number | null;
+    capped_by_shelf_life: boolean;
 };
 
 /**
@@ -952,6 +1093,12 @@ export type SaleRequest = {
     customer?: string | null;
 };
 
+/**
+ * * `data` - data
+ * * `default` - default
+ */
+export type SourceEnum = 'data' | 'default';
+
 export type TokenRefresh = {
     readonly access: string;
 };
@@ -959,6 +1106,13 @@ export type TokenRefresh = {
 export type TokenRefreshRequest = {
     refresh: string;
 };
+
+/**
+ * * `X` - X
+ * * `Y` - Y
+ * * `Z` - Z
+ */
+export type XyzEnum = 'X' | 'Y' | 'Z';
 
 /**
  * Main serializer for creating and viewing accounts (purchases).
@@ -1213,6 +1367,8 @@ export type ProductMasterWritable = {
     IVA?: boolean;
     category?: string | null;
     measurement_unit?: string | null;
+    perishability?: PerishabilityEnum | BlankEnum | NullEnum | null;
+    shelf_life_days?: number | null;
 };
 
 export type ProductStockSaleWritable = {
@@ -1231,6 +1387,8 @@ export type ProductWriteDetailWritable = {
     IVA?: boolean;
     category?: string | null;
     measurement_unit?: string | null;
+    perishability?: PerishabilityEnum | BlankEnum | NullEnum | null;
+    shelf_life_days?: number | null;
     selling_units?: Array<ProductSellingUnit>;
 };
 
@@ -2043,6 +2201,32 @@ export type V1ExchangeRatesTodayRetrieveResponses = {
      */
     200: unknown;
 };
+
+export type V1InventoryAnalysisRetrieveData = {
+    body?: never;
+    path?: never;
+    query: {
+        /**
+         * ULID de la sucursal a analizar.
+         */
+        branch_id: string;
+        /**
+         * Horizonte de evaluación de precios (7-180, por defecto 60).
+         */
+        horizon_days?: number;
+        /**
+         * Días de historial (14-365, por defecto 90).
+         */
+        window_days?: number;
+    };
+    url: '/v1/inventory-analysis/';
+};
+
+export type V1InventoryAnalysisRetrieveResponses = {
+    200: InventoryAnalysisOut;
+};
+
+export type V1InventoryAnalysisRetrieveResponse = V1InventoryAnalysisRetrieveResponses[keyof V1InventoryAnalysisRetrieveResponses];
 
 export type V1LoginCreateData = {
     body?: never;

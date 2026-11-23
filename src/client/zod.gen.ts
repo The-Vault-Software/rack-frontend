@@ -3,6 +3,17 @@
 import { z } from 'zod';
 
 /**
+ * * `A` - A
+ * * `B` - B
+ * * `C` - C
+ */
+export const zAbcEnum = z.enum([
+    'A',
+    'B',
+    'C'
+]);
+
+/**
  * Serializer for AccountDetail - used for reading account details.
  * For writing, use the nested 'details' field in AccountSerializer.
  */
@@ -72,6 +83,19 @@ export const zAccountRequest = z.object({
     ]).optional()
 });
 
+/**
+ * * `keep` - keep
+ * * `markdown` - markdown
+ * * `liquidation` - liquidation
+ * * `no_data` - no_data
+ */
+export const zActionEnum = z.enum([
+    'keep',
+    'markdown',
+    'liquidation',
+    'no_data'
+]);
+
 export const zAdjustmentDetailItem = z.object({
     id: z.string().uuid().readonly(),
     product: z.string().uuid().readonly(),
@@ -124,6 +148,30 @@ export const zAffectedSale = z.object({
     total_paid: z.string().regex(/^-?\d{0,10}(?:\.\d{0,2})?$/).readonly()
 });
 
+export const zAnalysisBranchOut = z.object({
+    id: z.string(),
+    name: z.string()
+});
+
+export const zAnalysisSummaryOut = z.object({
+    products: z.number().int(),
+    stock_value_cost: z.number(),
+    stock_value_price: z.number(),
+    revenue: z.number(),
+    dead_stock_count: z.number().int(),
+    dead_stock_value: z.number(),
+    unclassified_count: z.number().int(),
+    units_at_risk: z.number(),
+    value_at_risk: z.number(),
+    suggestions_count: z.number().int(),
+    liquidation_count: z.number().int(),
+    expected_profit_gain: z.number(),
+    top20_revenue_share: z.union([
+        z.number(),
+        z.null()
+    ])
+});
+
 /**
  * Shared username/email validation and user-creation logic for every
  * /v1/ serializer that creates a CustomUser (design.md decision 7).
@@ -141,6 +189,8 @@ export const zBaseUserCreateRequest = z.object({
     last_name: z.string().max(150).optional(),
     username: z.string().min(1).max(150).regex(/^[\w.@+-]+$/)
 });
+
+export const zBlankEnum = z.enum(['']);
 
 export const zBranch = z.object({
     name: z.string().max(200),
@@ -449,6 +499,20 @@ export const zCustomerPaymentRegistrationResult = z.object({
     affected_sales: z.array(zAffectedSale).readonly()
 });
 
+export const zExpiryOut = z.object({
+    units_at_risk: z.number(),
+    expired_now: z.number(),
+    earliest_expiry: z.union([
+        z.string().date(),
+        z.null()
+    ]),
+    days_to_earliest_expiry: z.union([
+        z.number().int(),
+        z.null()
+    ]),
+    unknown_age_units: z.number()
+});
+
 export const zInventoryAdjustmentDetailRead = z.object({
     id: z.string().uuid().readonly(),
     seq_number: z.number().int().readonly(),
@@ -510,6 +574,13 @@ export const zMeasurementUnitRequest = z.object({
     name: z.string().min(1).max(200),
     decimals: z.boolean().optional()
 });
+
+export const zMethodologyItem = z.object({
+    topic: z.string(),
+    detail: z.string()
+});
+
+export const zNullEnum = z.unknown();
 
 /**
  * Deliberately NOT BranchSerializer: that one performs a
@@ -884,6 +955,50 @@ export const zPaymentStatusC54Enum = z.enum([
 ]);
 
 /**
+ * * `NONE` - Sin caducidad
+ * * `LONG` - Larga (~1 año)
+ * * `MEDIUM` - Media (~4 meses)
+ * * `SHORT` - Corta (~1 mes)
+ * * `FRESH` - Fresco (~10 días)
+ */
+export const zPerishabilityEnum = z.enum([
+    'NONE',
+    'LONG',
+    'MEDIUM',
+    'SHORT',
+    'FRESH'
+]);
+
+export const zPricingOut = z.object({
+    action: zActionEnum,
+    reason: z.string(),
+    current_price: z.number(),
+    suggested_price: z.number(),
+    change_pct: z.number(),
+    expected_daily_demand: z.number(),
+    expected_volume_change_pct: z.union([
+        z.number(),
+        z.null()
+    ]),
+    breakeven_volume_change_pct: z.union([
+        z.number(),
+        z.null()
+    ]),
+    current_margin_pct: z.union([
+        z.number(),
+        z.null()
+    ]),
+    new_margin_pct: z.union([
+        z.number(),
+        z.null()
+    ]),
+    current_horizon_profit: z.number(),
+    expected_horizon_profit: z.number(),
+    units_at_risk_current: z.number(),
+    units_at_risk_new: z.number()
+});
+
+/**
  * Serializador ligero para listados generales
  */
 export const zProductMaster = z.object({
@@ -906,6 +1021,16 @@ export const zProductMaster = z.object({
     ]).optional(),
     measurement_unit: z.union([
         z.string().uuid(),
+        z.null()
+    ]).optional(),
+    perishability: z.union([
+        zPerishabilityEnum,
+        zBlankEnum,
+        zNullEnum,
+        z.null()
+    ]).optional(),
+    shelf_life_days: z.union([
+        z.coerce.bigint().gte(BigInt(1)).lte(BigInt(9223372036854776000)),
         z.null()
     ]).optional()
 });
@@ -948,6 +1073,16 @@ export const zPatchedProductWriteDetailRequest = z.object({
         z.string().uuid(),
         z.null()
     ]).optional(),
+    perishability: z.union([
+        zPerishabilityEnum,
+        zBlankEnum,
+        zNullEnum,
+        z.null()
+    ]).optional(),
+    shelf_life_days: z.union([
+        z.coerce.bigint().gte(BigInt(1)).lte(BigInt(9223372036854776000)),
+        z.null()
+    ]).optional(),
     selling_units: z.array(zProductSellingUnitRequest).optional()
 });
 
@@ -981,6 +1116,16 @@ export const zProductWriteDetail = z.object({
         z.string().uuid(),
         z.null()
     ]).optional(),
+    perishability: z.union([
+        zPerishabilityEnum,
+        zBlankEnum,
+        zNullEnum,
+        z.null()
+    ]).optional(),
+    shelf_life_days: z.union([
+        z.coerce.bigint().gte(BigInt(1)).lte(BigInt(9223372036854776000)),
+        z.null()
+    ]).optional(),
     selling_units: z.array(zProductSellingUnit).optional()
 });
 
@@ -1006,6 +1151,16 @@ export const zProductWriteDetailRequest = z.object({
     ]).optional(),
     measurement_unit: z.union([
         z.string().uuid(),
+        z.null()
+    ]).optional(),
+    perishability: z.union([
+        zPerishabilityEnum,
+        zBlankEnum,
+        zNullEnum,
+        z.null()
+    ]).optional(),
+    shelf_life_days: z.union([
+        z.coerce.bigint().gte(BigInt(1)).lte(BigInt(9223372036854776000)),
         z.null()
     ]).optional(),
     selling_units: z.array(zProductSellingUnitRequest).optional()
@@ -1109,6 +1264,21 @@ export const zRegisterUserRequest = z.object({
     first_name: z.string().max(150).optional(),
     last_name: z.string().max(150).optional(),
     username: z.string().min(1).max(150).regex(/^[\w.@+-]+$/)
+});
+
+export const zRestockOut = z.object({
+    eoq: z.number(),
+    safety_stock: z.number(),
+    reorder_point: z.number(),
+    days_until_empty: z.union([
+        z.number(),
+        z.null()
+    ]),
+    days_until_reorder: z.union([
+        z.number(),
+        z.null()
+    ]),
+    capped_by_shelf_life: z.boolean()
 });
 
 /**
@@ -1284,12 +1454,93 @@ export const zSaleRequest = z.object({
     ]).optional()
 });
 
+/**
+ * * `data` - data
+ * * `default` - default
+ */
+export const zSourceEnum = z.enum(['data', 'default']);
+
+export const zElasticityOut = z.object({
+    value: z.number(),
+    source: zSourceEnum,
+    weeks_used: z.number().int()
+});
+
 export const zTokenRefresh = z.object({
     access: z.string().readonly()
 });
 
 export const zTokenRefreshRequest = z.object({
     refresh: z.string().min(1)
+});
+
+/**
+ * * `X` - X
+ * * `Y` - Y
+ * * `Z` - Z
+ */
+export const zXyzEnum = z.enum([
+    'X',
+    'Y',
+    'Z'
+]);
+
+export const zProductAnalysisOut = z.object({
+    product_id: z.string(),
+    name: z.string(),
+    sku: z.union([
+        z.string(),
+        z.null()
+    ]),
+    category: z.union([
+        z.string(),
+        z.null()
+    ]),
+    abc: zAbcEnum,
+    xyz: zXyzEnum,
+    price: z.number(),
+    cost: z.number(),
+    stock: z.number(),
+    stock_value_cost: z.number(),
+    perishability: z.union([
+        z.string(),
+        z.null()
+    ]),
+    shelf_life_days: z.union([
+        z.number().int(),
+        z.null()
+    ]),
+    days_observed: z.number().int(),
+    units_sold: z.number(),
+    revenue: z.number(),
+    daily_demand: z.number(),
+    daily_demand_std: z.number(),
+    weekly_cv: z.union([
+        z.number(),
+        z.null()
+    ]),
+    coverage_days: z.union([
+        z.number(),
+        z.null()
+    ]),
+    turnover_annual: z.union([
+        z.number(),
+        z.null()
+    ]),
+    is_dead_stock: z.boolean(),
+    elasticity: zElasticityOut,
+    expiry: zExpiryOut,
+    restock: zRestockOut,
+    pricing: zPricingOut
+});
+
+export const zInventoryAnalysisOut = z.object({
+    generated_on: z.string().date(),
+    branch: zAnalysisBranchOut,
+    params: z.record(z.number()),
+    summary: zAnalysisSummaryOut,
+    products: z.array(zProductAnalysisOut),
+    methodology: z.array(zMethodologyItem)
 });
 
 /**
@@ -1623,6 +1874,16 @@ export const zProductMasterWritable = z.object({
     measurement_unit: z.union([
         z.string().uuid(),
         z.null()
+    ]).optional(),
+    perishability: z.union([
+        zPerishabilityEnum,
+        zBlankEnum,
+        zNullEnum,
+        z.null()
+    ]).optional(),
+    shelf_life_days: z.union([
+        z.coerce.bigint().gte(BigInt(1)).lte(BigInt(9223372036854776000)),
+        z.null()
     ]).optional()
 });
 
@@ -1652,6 +1913,16 @@ export const zProductWriteDetailWritable = z.object({
     ]).optional(),
     measurement_unit: z.union([
         z.string().uuid(),
+        z.null()
+    ]).optional(),
+    perishability: z.union([
+        zPerishabilityEnum,
+        zBlankEnum,
+        zNullEnum,
+        z.null()
+    ]).optional(),
+    shelf_life_days: z.union([
+        z.coerce.bigint().gte(BigInt(1)).lte(BigInt(9223372036854776000)),
         z.null()
     ]).optional(),
     selling_units: z.array(zProductSellingUnit).optional()
@@ -2179,6 +2450,18 @@ export const zV1ExchangeRatesTodayRetrieveData = z.object({
     path: z.never().optional(),
     query: z.never().optional()
 });
+
+export const zV1InventoryAnalysisRetrieveData = z.object({
+    body: z.never().optional(),
+    path: z.never().optional(),
+    query: z.object({
+        branch_id: z.string(),
+        horizon_days: z.number().int().optional(),
+        window_days: z.number().int().optional()
+    })
+});
+
+export const zV1InventoryAnalysisRetrieveResponse = zInventoryAnalysisOut;
 
 export const zV1LoginCreateData = z.object({
     body: z.never().optional(),
