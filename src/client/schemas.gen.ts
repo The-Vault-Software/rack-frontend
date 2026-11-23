@@ -342,11 +342,10 @@ export const ActionEnumSchema = {
     enum: [
         'keep',
         'markdown',
-        'liquidation',
         'no_data'
     ],
     type: 'string',
-    description: '* `keep` - keep\n* `markdown` - markdown\n* `liquidation` - liquidation\n* `no_data` - no_data'
+    description: '* `keep` - keep\n* `markdown` - markdown\n* `no_data` - no_data'
 } as const;
 
 export const AdjustmentDetailItemSchema = {
@@ -538,9 +537,6 @@ export const AnalysisSummaryOutSchema = {
         suggestions_count: {
             type: 'integer'
         },
-        liquidation_count: {
-            type: 'integer'
-        },
         expected_profit_gain: {
             type: 'number',
             format: 'double'
@@ -555,7 +551,6 @@ export const AnalysisSummaryOutSchema = {
         'dead_stock_count',
         'dead_stock_value',
         'expected_profit_gain',
-        'liquidation_count',
         'products',
         'revenue',
         'stock_value_cost',

@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { ArrowDownRight, CheckCircle2, Clock, TrendingUp, XCircle } from 'lucide-react';
 import type { ProductAnalysisOut } from '../../../client/types.gen';
 import { ACTION_LABELS, isPriceChange, profitGain } from '../../../utils/inventoryAnalysisExport';
@@ -14,14 +14,9 @@ interface Props {
 }
 
 export default function PriceSuggestions({ products, horizonDays }: Props) {
-  const [filter, setFilter] = useState<'all' | 'markdown' | 'liquidation'>('all');
-
   const suggestions = useMemo(
-    () => products
-      .filter(isPriceChange)
-      .filter((p) => filter === 'all' || p.pricing.action === filter)
-      .sort((a, b) => profitGain(b) - profitGain(a)),
-    [products, filter],
+    () => products.filter(isPriceChange).sort((a, b) => profitGain(b) - profitGain(a)),
+    [products],
   );
 
   return (
@@ -30,23 +25,9 @@ export default function PriceSuggestions({ products, horizonDays }: Props) {
         <div>
           <h2 className="text-3xl font-black text-gray-900 tracking-tight">Cambios de Precio Sugeridos</h2>
           <p className="text-gray-500 font-medium">
-            Rebajas que aumentan la ganancia esperada en {horizonDays} días por demanda, rotación o caducidad
+            Rebajas que aumentan la ganancia esperada en {horizonDays} días por demanda, rotación o caducidad.
+            Nunca por debajo del costo más un 5 %.
           </p>
-        </div>
-        <div className="flex gap-2" role="group" aria-label="Filtrar sugerencias">
-          {(['all', 'markdown', 'liquidation'] as const).map((value) => (
-            <button
-              key={value}
-              type="button"
-              onClick={() => setFilter(value)}
-              aria-pressed={filter === value}
-              className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider border transition-colors cursor-pointer ${
-                filter === value ? 'bg-gray-900 text-white border-gray-900' : 'bg-white text-gray-500 border-gray-200 hover:bg-gray-50'
-              }`}
-            >
-              {value === 'all' ? 'Todas' : ACTION_LABELS[value]}
-            </button>
-          ))}
         </div>
       </div>
 
@@ -84,9 +65,7 @@ export default function PriceSuggestions({ products, horizonDays }: Props) {
                           <span className="text-[10px] font-black text-gray-400">{p.abc}{p.xyz}</span>
                         </div>
                         <div className="mt-1 flex items-center gap-2">
-                          <span className={`text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-full ${
-                            pricing.action === 'liquidation' ? 'bg-rose-50 text-rose-600' : 'bg-amber-50 text-amber-700'
-                          }`}>
+                          <span className="text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-50 text-amber-700">
                             {ACTION_LABELS[pricing.action]}
                           </span>
                           <span className="text-xs text-gray-500">{pricing.reason}</span>
@@ -105,7 +84,7 @@ export default function PriceSuggestions({ products, horizonDays }: Props) {
                       </td>
                       <td className="px-4 py-4 text-right align-top whitespace-nowrap text-xs">
                         <div className="font-bold text-gray-900">{pct(expected)} esperado</div>
-                        <div className="text-gray-500">{breakeven === null ? 'bajo costo' : `${pct(breakeven)} necesario`}</div>
+                        <div className="text-gray-500">{breakeven === null ? '—' : `${pct(breakeven)} necesario`}</div>
                         {breakeven !== null && (
                           <div className={`mt-1 inline-flex items-center gap-1 font-bold ${clearsBreakeven ? 'text-emerald-600' : 'text-amber-600'}`}>
                             {clearsBreakeven ? <CheckCircle2 className="h-3 w-3" /> : <XCircle className="h-3 w-3" />}

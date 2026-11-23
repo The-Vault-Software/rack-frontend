@@ -5,7 +5,6 @@ import { perishabilityFormValue, perishabilityLabel } from '../lib/perishability
 export const ACTION_LABELS: Record<string, string> = {
   keep: 'Mantener',
   markdown: 'Rebajar',
-  liquidation: 'Liquidar',
   no_data: 'Sin datos',
 };
 
@@ -17,7 +16,7 @@ const n = (value: number | null | undefined, digits = 2) =>
   value === null || value === undefined ? null : Number(value.toFixed(digits));
 
 export function isPriceChange(product: ProductAnalysisOut) {
-  return product.pricing.action === 'markdown' || product.pricing.action === 'liquidation';
+  return product.pricing.action === 'markdown';
 }
 
 export function profitGain(product: ProductAnalysisOut) {
@@ -41,7 +40,6 @@ export function buildSummaryRows(analysis: InventoryAnalysisOut): Row[] {
     { Indicador: 'Unidades en riesgo de vencer', Valor: n(s.units_at_risk) },
     { Indicador: 'Valor en riesgo de vencer (USD, a costo)', Valor: n(s.value_at_risk) },
     { Indicador: 'Cambios de precio sugeridos', Valor: s.suggestions_count },
-    { Indicador: 'De ellos, liquidaciones', Valor: s.liquidation_count },
     { Indicador: `Ganancia adicional esperada en ${horizon} días (USD)`, Valor: n(s.expected_profit_gain) },
     { Indicador: 'Ingresos concentrados en el 20 % de productos', Valor: s.top20_revenue_share === null ? null : n(s.top20_revenue_share * 100, 1) },
     { Indicador: 'Productos sin categoría de caducidad', Valor: s.unclassified_count },

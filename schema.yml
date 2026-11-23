@@ -2379,13 +2379,11 @@ components:
       enum:
       - keep
       - markdown
-      - liquidation
       - no_data
       type: string
       description: |-
         * `keep` - keep
         * `markdown` - markdown
-        * `liquidation` - liquidation
         * `no_data` - no_data
     AdjustmentDetailItem:
       type: object
@@ -2537,8 +2535,6 @@ components:
           format: double
         suggestions_count:
           type: integer
-        liquidation_count:
-          type: integer
         expected_profit_gain:
           type: number
           format: double
@@ -2550,7 +2546,6 @@ components:
       - dead_stock_count
       - dead_stock_value
       - expected_profit_gain
-      - liquidation_count
       - products
       - revenue
       - stock_value_cost
