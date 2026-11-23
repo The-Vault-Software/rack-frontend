@@ -1143,6 +1143,40 @@ paths:
       responses:
         '200':
           description: No response body
+  /v1/inventory-analysis/:
+    get:
+      operationId: v1_inventory_analysis_retrieve
+      description: Analiza demanda, rotación, riesgo de vencimiento y reabastecimiento
+        de cada producto con stock o ventas en la sucursal, y sugiere rebajas de precio
+        con su punto de equilibrio. Se calcula en el momento sobre el historial completo
+        de la ventana; no guarda nada.
+      summary: Análisis de inventario y precios
+      parameters:
+      - in: query
+        name: branch_id
+        schema:
+          type: string
+        description: ULID de la sucursal a analizar.
+        required: true
+      - in: query
+        name: horizon_days
+        schema:
+          type: integer
+        description: Horizonte de evaluación de precios (7-180, por defecto 60).
+      - in: query
+        name: window_days
+        schema:
+          type: integer
+        description: Días de historial (14-365, por defecto 90).
+      tags:
+      - Inventory
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InventoryAnalysisOut'
+          description: ''
   /v1/login/:
     post:
       operationId: v1_login_create
@@ -2001,6 +2035,16 @@ paths:
           description: ''
 components:
   schemas:
+    AbcEnum:
+      enum:
+      - A
+      - B
+      - C
+      type: string
+      description: |-
+        * `A` - A
+        * `B` - B
+        * `C` - C
     Account:
       type: object
       description: |-
@@ -2281,6 +2325,18 @@ components:
       required:
       - branch
       - details
+    ActionEnum:
+      enum:
+      - keep
+      - markdown
+      - liquidation
+      - no_data
+      type: string
+      description: |-
+        * `keep` - keep
+        * `markdown` - markdown
+        * `liquidation` - liquidation
+        * `no_data` - no_data
     AdjustmentDetailItem:
       type: object
       properties:
@@ -2392,6 +2448,68 @@ components:
       - payment_status
       - sale_id
       - total_paid
+    AnalysisBranchOut:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+      required:
+      - id
+      - name
+    AnalysisSummaryOut:
+      type: object
+      properties:
+        products:
+          type: integer
+        stock_value_cost:
+          type: number
+          format: double
+        stock_value_price:
+          type: number
+          format: double
+        revenue:
+          type: number
+          format: double
+        dead_stock_count:
+          type: integer
+        dead_stock_value:
+          type: number
+          format: double
+        unclassified_count:
+          type: integer
+        units_at_risk:
+          type: number
+          format: double
+        value_at_risk:
+          type: number
+          format: double
+        suggestions_count:
+          type: integer
+        liquidation_count:
+          type: integer
+        expected_profit_gain:
+          type: number
+          format: double
+        top20_revenue_share:
+          type: number
+          format: double
+          nullable: true
+      required:
+      - dead_stock_count
+      - dead_stock_value
+      - expected_profit_gain
+      - liquidation_count
+      - products
+      - revenue
+      - stock_value_cost
+      - stock_value_price
+      - suggestions_count
+      - top20_revenue_share
+      - unclassified_count
+      - units_at_risk
+      - value_at_risk
     BaseUserCreateRequest:
       type: object
       description: |-
@@ -2432,6 +2550,9 @@ components:
       - email
       - password
       - username
+    BlankEnum:
+      enum:
+      - ''
     Branch:
       type: object
       properties:
@@ -3050,6 +3171,45 @@ components:
       - sale_seq_number
       - total_amount_usd
       - total_amount_ves
+    ElasticityOut:
+      type: object
+      properties:
+        value:
+          type: number
+          format: double
+        source:
+          $ref: '#/components/schemas/SourceEnum'
+        weeks_used:
+          type: integer
+      required:
+      - source
+      - value
+      - weeks_used
+    ExpiryOut:
+      type: object
+      properties:
+        units_at_risk:
+          type: number
+          format: double
+        expired_now:
+          type: number
+          format: double
+        earliest_expiry:
+          type: string
+          format: date
+          nullable: true
+        days_to_earliest_expiry:
+          type: integer
+          nullable: true
+        unknown_age_units:
+          type: number
+          format: double
+      required:
+      - days_to_earliest_expiry
+      - earliest_expiry
+      - expired_now
+      - units_at_risk
+      - unknown_age_units
     InventoryAdjustmentDetailRead:
       type: object
       properties:
@@ -3190,6 +3350,36 @@ components:
       - branch
       - details
       - reason
+    InventoryAnalysisOut:
+      type: object
+      properties:
+        generated_on:
+          type: string
+          format: date
+        branch:
+          $ref: '#/components/schemas/AnalysisBranchOut'
+        params:
+          type: object
+          additionalProperties:
+            type: number
+            format: double
+        summary:
+          $ref: '#/components/schemas/AnalysisSummaryOut'
+        products:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductAnalysisOut'
+        methodology:
+          type: array
+          items:
+            $ref: '#/components/schemas/MethodologyItem'
+      required:
+      - branch
+      - generated_on
+      - methodology
+      - params
+      - products
+      - summary
     LicenseExtendRequest:
       type: object
       properties:
@@ -3235,6 +3425,19 @@ components:
           type: boolean
       required:
       - name
+    MethodologyItem:
+      type: object
+      properties:
+        topic:
+          type: string
+        detail:
+          type: string
+      required:
+      - detail
+      - topic
+    NullEnum:
+      enum:
+      - null
     OnboardingBranchRequest:
       type: object
       description: |-
@@ -3747,6 +3950,18 @@ components:
           type: string
           format: uuid
           nullable: true
+        perishability:
+          nullable: true
+          oneOf:
+          - $ref: '#/components/schemas/PerishabilityEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+          - $ref: '#/components/schemas/NullEnum'
+        shelf_life_days:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 1
+          format: int64
+          nullable: true
         selling_units:
           type: array
           items:
@@ -3816,6 +4031,179 @@ components:
         * `PARTIALLY_PAID` - Partially Paid
         * `PAID` - Paid
         * `OVERPAID` - Overpaid
+    PerishabilityEnum:
+      enum:
+      - NONE
+      - LONG
+      - MEDIUM
+      - SHORT
+      - FRESH
+      type: string
+      description: |-
+        * `NONE` - Sin caducidad
+        * `LONG` - Larga (~1 año)
+        * `MEDIUM` - Media (~4 meses)
+        * `SHORT` - Corta (~1 mes)
+        * `FRESH` - Fresco (~10 días)
+    PricingOut:
+      type: object
+      properties:
+        action:
+          $ref: '#/components/schemas/ActionEnum'
+        reason:
+          type: string
+        current_price:
+          type: number
+          format: double
+        suggested_price:
+          type: number
+          format: double
+        change_pct:
+          type: number
+          format: double
+        expected_daily_demand:
+          type: number
+          format: double
+        expected_volume_change_pct:
+          type: number
+          format: double
+          nullable: true
+        breakeven_volume_change_pct:
+          type: number
+          format: double
+          nullable: true
+        current_margin_pct:
+          type: number
+          format: double
+          nullable: true
+        new_margin_pct:
+          type: number
+          format: double
+          nullable: true
+        current_horizon_profit:
+          type: number
+          format: double
+        expected_horizon_profit:
+          type: number
+          format: double
+        units_at_risk_current:
+          type: number
+          format: double
+        units_at_risk_new:
+          type: number
+          format: double
+      required:
+      - action
+      - breakeven_volume_change_pct
+      - change_pct
+      - current_horizon_profit
+      - current_margin_pct
+      - current_price
+      - expected_daily_demand
+      - expected_horizon_profit
+      - expected_volume_change_pct
+      - new_margin_pct
+      - reason
+      - suggested_price
+      - units_at_risk_current
+      - units_at_risk_new
+    ProductAnalysisOut:
+      type: object
+      properties:
+        product_id:
+          type: string
+        name:
+          type: string
+        sku:
+          type: string
+          nullable: true
+        category:
+          type: string
+          nullable: true
+        abc:
+          $ref: '#/components/schemas/AbcEnum'
+        xyz:
+          $ref: '#/components/schemas/XyzEnum'
+        price:
+          type: number
+          format: double
+        cost:
+          type: number
+          format: double
+        stock:
+          type: number
+          format: double
+        stock_value_cost:
+          type: number
+          format: double
+        perishability:
+          type: string
+          nullable: true
+        shelf_life_days:
+          type: integer
+          nullable: true
+        days_observed:
+          type: integer
+        units_sold:
+          type: number
+          format: double
+        revenue:
+          type: number
+          format: double
+        daily_demand:
+          type: number
+          format: double
+        daily_demand_std:
+          type: number
+          format: double
+        weekly_cv:
+          type: number
+          format: double
+          nullable: true
+        coverage_days:
+          type: number
+          format: double
+          nullable: true
+        turnover_annual:
+          type: number
+          format: double
+          nullable: true
+        is_dead_stock:
+          type: boolean
+        elasticity:
+          $ref: '#/components/schemas/ElasticityOut'
+        expiry:
+          $ref: '#/components/schemas/ExpiryOut'
+        restock:
+          $ref: '#/components/schemas/RestockOut'
+        pricing:
+          $ref: '#/components/schemas/PricingOut'
+      required:
+      - abc
+      - category
+      - cost
+      - coverage_days
+      - daily_demand
+      - daily_demand_std
+      - days_observed
+      - elasticity
+      - expiry
+      - is_dead_stock
+      - name
+      - perishability
+      - price
+      - pricing
+      - product_id
+      - restock
+      - revenue
+      - shelf_life_days
+      - sku
+      - stock
+      - stock_value_cost
+      - turnover_annual
+      - units_sold
+      - weekly_cv
+      - xyz
     ProductMaster:
       type: object
       description: Serializador ligero para listados generales
@@ -3851,6 +4239,18 @@ components:
         measurement_unit:
           type: string
           format: uuid
+          nullable: true
+        perishability:
+          nullable: true
+          oneOf:
+          - $ref: '#/components/schemas/PerishabilityEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+          - $ref: '#/components/schemas/NullEnum'
+        shelf_life_days:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 1
+          format: int64
           nullable: true
       required:
       - cost_price_usd
@@ -3946,6 +4346,18 @@ components:
           type: string
           format: uuid
           nullable: true
+        perishability:
+          nullable: true
+          oneOf:
+          - $ref: '#/components/schemas/PerishabilityEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+          - $ref: '#/components/schemas/NullEnum'
+        shelf_life_days:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 1
+          format: int64
+          nullable: true
         selling_units:
           type: array
           items:
@@ -3987,6 +4399,18 @@ components:
         measurement_unit:
           type: string
           format: uuid
+          nullable: true
+        perishability:
+          nullable: true
+          oneOf:
+          - $ref: '#/components/schemas/PerishabilityEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+          - $ref: '#/components/schemas/NullEnum'
+        shelf_life_days:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 1
+          format: int64
           nullable: true
         selling_units:
           type: array
@@ -4151,6 +4575,35 @@ components:
       - email
       - password
       - username
+    RestockOut:
+      type: object
+      properties:
+        eoq:
+          type: number
+          format: double
+        safety_stock:
+          type: number
+          format: double
+        reorder_point:
+          type: number
+          format: double
+        days_until_empty:
+          type: number
+          format: double
+          nullable: true
+        days_until_reorder:
+          type: number
+          format: double
+          nullable: true
+        capped_by_shelf_life:
+          type: boolean
+      required:
+      - capped_by_shelf_life
+      - days_until_empty
+      - days_until_reorder
+      - eoq
+      - reorder_point
+      - safety_stock
     RoleEnum:
       enum:
       - OWNER
@@ -4503,6 +4956,14 @@ components:
       required:
       - branch
       - details
+    SourceEnum:
+      enum:
+      - data
+      - default
+      type: string
+      description: |-
+        * `data` - data
+        * `default` - default
     TokenRefresh:
       type: object
       properties:
@@ -4520,3 +4981,13 @@ components:
           minLength: 1
       required:
       - refresh
+    XyzEnum:
+      enum:
+      - X
+      - Y
+      - Z
+      type: string
+      description: |-
+        * `X` - X
+        * `Y` - Y
+        * `Z` - Z
