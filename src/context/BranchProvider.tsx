@@ -14,9 +14,13 @@ export function BranchProvider({ children }: { children: ReactNode }) {
     enabled: isAuthenticated, 
   });
 
-  // Load selected branch from localStorage or default to first branch
+  // Load selected branch from localStorage or default to first branch.
+  // Also re-select when the selected branch drops out of the list (deleted in
+  // settings): otherwise every page kept querying and writing to it until the
+  // next full reload.
   useEffect(() => {
-    if (branches.length > 0 && !selectedBranch) {
+    const stillListed = selectedBranch && branches.some((b) => b.id === selectedBranch.id);
+    if (branches.length > 0 && !stillListed) {
       const savedBranchId = localStorage.getItem('selectedBranchId');
       const found = savedBranchId ? branches.find((b) => b.id === savedBranchId) : null;
       

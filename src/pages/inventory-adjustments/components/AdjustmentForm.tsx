@@ -62,6 +62,10 @@ const adjustmentFormSchema = z.object({
         ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'La cantidad es requerida', path: ['details', index, 'quantity_change'] });
       } else if (parseFloat(detail.quantity_change) === 0) {
         ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'La cantidad no puede ser cero', path: ['details', index, 'quantity_change'] });
+      } else if (parseFloat(detail.quantity_change) < 0 && !DECREASE_TYPES.includes(data.adjustment_type)) {
+        // Decrease types are negated on submit; an increase type sent as-is, so
+        // a "-5" here took stock out under a label that says it was added.
+        ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'La cantidad debe ser positiva para este tipo de ajuste', path: ['details', index, 'quantity_change'] });
       }
     }
   });

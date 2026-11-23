@@ -12,7 +12,7 @@ import {
   v1ProductBranchStockListQueryKey,
 } from '../../../client/@tanstack/react-query.gen';
 import { zSalePaymentRequestWritable } from '../../../client/zod.gen';
-import type { SalePaymentRequestWritable, SaleRequestWritable } from '../../../client/types.gen';
+import type { Sale, SalePaymentRequestWritable, SaleRequestWritable } from '../../../client/types.gen';
 import { usePaymentCalculations, type PaymentFormValues } from '../../accounts/hooks/usePaymentCalculations';
 import PaymentFormFields from '../../accounts/components/PaymentFormFields';
 import Modal from '../../../components/ui/Modal';
@@ -85,6 +85,7 @@ export default function SaleProcessModal({
   });
 
   const handleRegisterAndPay = async (data: PaymentFormValues) => {
+    let sale: Sale;
     try {
       // 1. Create Sale
       const salePayload: SaleRequestWritable = {
@@ -100,35 +101,36 @@ export default function SaleProcessModal({
         })
       };
 
-      const sale = await createSaleMutation.mutateAsync({ body: salePayload });
-      
-      // 2. Register Payment
-      const finalDiscount = (currency === 'USD' && adjustmentType !== 'off') ? data.discount : '0.00';
-      const paymentPayload: SalePaymentRequestWritable = {
-        amount: data.amount,
-        currency: data.currency,
-        payment_method: data.payment_method,
-        discount: finalDiscount || '0.00'
-      };
+      sale = await createSaleMutation.mutateAsync({ body: salePayload });
+    } catch (error) {
+      console.error(error);
+      toast.error('Error al registrar la venta');
+      return;
+    }
 
+    // 2. Register Payment. From here on the sale exists and its stock is
+    // deducted, so a failure must NOT leave the modal open with the cart
+    // intact: retrying "Registrar y Cobrar" or "Pagar Después" created the
+    // sale a second time, and "Cancelar" claimed nothing had been saved.
+    const finalDiscount = (currency === 'USD' && adjustmentType !== 'off') ? data.discount : '0.00';
+    const paymentPayload: SalePaymentRequestWritable = {
+      amount: data.amount,
+      currency: data.currency,
+      payment_method: data.payment_method,
+      discount: finalDiscount || '0.00'
+    };
+
+    try {
       await salePaymentMutation.mutateAsync({
         path: { sale_id: sale.id },
         body: paymentPayload
       });
-
       toast.success('Venta y cobro registrados exitosamente');
-      onSuccess();
     } catch (error) {
       console.error(error);
-      toast.error('Error al procesar la venta y el cobro');
-      // If sale was created but payment failed, we have a partial state. 
-      // The requirement says: "return the user to the cart" on cancel.
-      // But here we already created the sale. Ideally we should probably not fail silently on payment.
-      // But the error toast is shown. The user is still in the modal?
-      // If sale is created, we can't retry creating sale.
-      // We should probably close and let them go to history? Or switch to "Payment Only" mode?
-      // For now, let's just show error. The sale IS created.
+      toast.error(`Venta #${sale.seq_number} registrada, pero el cobro no pudo procesarse. Regístralo desde el historial de ventas.`);
     }
+    onSuccess();
   };
 
   const handlePayLater = async () => {
