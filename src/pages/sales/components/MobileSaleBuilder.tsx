@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   v1ProductListOptions,
@@ -50,6 +50,12 @@ export default function MobileSaleBuilder() {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCustomerId, setSelectedCustomerId] = useState<string>('');
+  // The sale is created the moment checkout is pressed, and "Pagar después"
+  // then leaves it as credit, so a sale left on the default customer became
+  // anonymous credit nobody could collect. Ask first, as the desktop does.
+  const [showNoCustomerConfirmation, setShowNoCustomerConfirmation] = useState(false);
+  const [highlightCustomer, setHighlightCustomer] = useState(false);
+  const customerSelectRef = useRef<HTMLSelectElement>(null);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [createdSale, setCreatedSale] = useState<Sale | null>(null);
@@ -230,6 +236,15 @@ export default function MobileSaleBuilder() {
     }
     if (cart.length === 0) return;
 
+    if (!selectedCustomerId) {
+      setShowNoCustomerConfirmation(true);
+      return;
+    }
+    submitSale();
+  };
+
+  const submitSale = () => {
+    if (!selectedBranch) return;
     const payload: SaleRequestWritable = {
       branch: selectedBranch.id,
       customer: selectedCustomerId || null,
@@ -389,15 +404,23 @@ export default function MobileSaleBuilder() {
                 <span>Cliente</span>
              </div>
              <select
+                ref={customerSelectRef}
+                aria-label="Cliente"
                 value={selectedCustomerId}
-                onChange={(e) => setSelectedCustomerId(e.target.value)}
-                className="w-full p-3 bg-white border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none appearance-none"
+                onChange={(e) => { setSelectedCustomerId(e.target.value); setHighlightCustomer(false); }}
+                className={cn(
+                  'w-full p-3 bg-white border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none appearance-none',
+                  highlightCustomer && 'border-amber-400 ring-2 ring-amber-300'
+                )}
               >
                 <option value="">Consumidor Final</option>
                 {customers.map((c: Customer) => (
                   <option key={c.id} value={c.id}>{c.name}</option>
                 ))}
               </select>
+              {highlightCustomer && (
+                <p className="mt-2 text-xs font-semibold text-amber-700">Elige el cliente de esta venta.</p>
+              )}
           </div>
 
           <div className="flex-1 overflow-y-auto space-y-4 px-1">
@@ -568,6 +591,27 @@ export default function MobileSaleBuilder() {
           </div>
         )}
       </Modal>
+
+      <ActionConfirmationModal
+        isOpen={showNoCustomerConfirmation}
+        onClose={() => {
+          setShowNoCustomerConfirmation(false);
+          // Point at the picker rather than focusing it: Headless UI hands focus
+          // back to the checkout button after its leave transition, and on a
+          // phone a focused <select> does not open anyway.
+          setHighlightCustomer(true);
+          customerSelectRef.current?.scrollIntoView?.({ block: 'center', behavior: 'smooth' });
+        }}
+        onConfirm={() => {
+          setShowNoCustomerConfirmation(false);
+          submitSale();
+        }}
+        title="¿Vender sin cliente?"
+        description="No has seleccionado un cliente. La venta se registrará como 'Consumidor Final' y, si la cobras después, el fiado quedará sin nombre. ¿Deseas continuar?"
+        confirmText="Continuar sin cliente"
+        cancelText="Seleccionar cliente"
+        variant="warning"
+      />
 
       <ActionConfirmationModal
         isOpen={isConfirmCloseOpen}
