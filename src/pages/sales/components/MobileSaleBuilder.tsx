@@ -26,6 +26,7 @@ import Modal from '../../../components/ui/Modal';
 import PaymentForm from '../../accounts/components/PaymentForm';
 import ActionConfirmationModal from '../../../components/ui/ActionConfirmationModal';
 import { cn } from '../../../lib/utils';
+import { useIncrementalList } from '../../../hooks/useIncrementalList';
 
 interface SellingUnit {
   id: string;
@@ -110,14 +111,19 @@ export default function MobileSaleBuilder() {
   };
 
   const filteredProducts = useMemo(() => {
-    if (!searchTerm) return products.slice(0, 20); // Limit initial view
+    if (!searchTerm) return products;
     const term = searchTerm.toLowerCase();
     return products.filter((p: ProductMaster) =>
       p.name.toLowerCase().includes(term) ||
       p.sku?.toLowerCase().includes(term) ||
       getCategoryName(p.category).toLowerCase().includes(term)
-    ).slice(0, 50);
+    );
   }, [products, searchTerm, categories]);
+
+  // Render the list in growing pages instead of capping it: the list used to
+  // stop at the first 20 products (50 when searching) with no way to see more.
+  const { visibleItems: visibleProducts, hasMore, sentinelRef } =
+    useIncrementalList(filteredProducts as ProductMaster[], 30, searchTerm);
 
   const total = useMemo(() => {
     return cart.reduce((acc: number, item: CartItem) => {
@@ -293,7 +299,7 @@ export default function MobileSaleBuilder() {
 
       {/* Main Content: Product List */}
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
-        {filteredProducts.map(product => {
+        {visibleProducts.map(product => {
           const stock = getStock(product.id);
           const basePrice = parseFloat(product.selling_price_usd || '0');
           const finalPrice = product.IVA ? basePrice * 1.16 : basePrice;
@@ -359,6 +365,7 @@ export default function MobileSaleBuilder() {
           );
         })}
 
+        {hasMore && <div ref={sentinelRef} data-testid="product-list-sentinel" aria-hidden="true" className="h-1" />}
         {filteredProducts.length === 0 && (
           <div className="pt-20 flex flex-col items-center text-gray-400">
             <Search className="h-12 w-12 mb-4 opacity-20" />
