@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
-import { render, screen, waitFor, within } from '@testing-library/react'
+import { act, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { client } from '../../../client/client.gen'
@@ -91,5 +91,39 @@ describe('MobileSaleBuilder checkout without a customer', () => {
     await userEvent.selectOptions(screen.getByLabelText('Cliente'), 'c1')
     await userEvent.click(screen.getByRole('button', { name: /Finalizar y Cobrar/ }))
     await waitFor(() => expect(screen.queryByText('¿Vender sin cliente?')).toBeNull())
+  })
+})
+
+describe('MobileSaleBuilder product list', () => {
+  it('reaches every product by scrolling: the list used to stop at the first 20', async () => {
+    const callbacks: IntersectionObserverCallback[] = []
+    vi.stubGlobal('IntersectionObserver', class {
+      constructor(cb: IntersectionObserverCallback) { callbacks.push(cb) }
+      observe() {}
+      disconnect() {}
+    })
+    const many = Array.from({ length: 45 }, (_, i) => ({ ...product, id: `p${i}`, name: `Producto ${String(i).padStart(2, '0')}` }))
+    client.setConfig({
+      baseUrl: 'http://localhost',
+      fetch: vi.fn(async (input: RequestInfo | URL) => {
+        const { pathname } = new URL((input as Request).url)
+        if (pathname === '/v1/product/') return json(many)
+        return json([])
+      }),
+    })
+    render(
+      <QueryClientProvider client={new QueryClient()}>
+        <BranchContext.Provider value={{ selectedBranch: branch as never, setSelectedBranch: vi.fn(), branches: [branch as never], isLoading: false }}>
+          <MobileSaleBuilder />
+        </BranchContext.Provider>
+      </QueryClientProvider>,
+    )
+
+    await screen.findByText('Producto 00')
+    expect(screen.queryByText('Producto 44')).toBeNull()
+
+    act(() => callbacks.at(-1)!([{ isIntersecting: true } as IntersectionObserverEntry], {} as IntersectionObserver))
+    expect(await screen.findByText('Producto 44')).toBeInTheDocument()
+    vi.unstubAllGlobals()
   })
 })
